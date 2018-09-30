@@ -71,7 +71,6 @@ public class RemoteDocumentRepository extends RemoteBase implements Repository<D
 
     public synchronized void save() {
         localDocumentRepository.save();
-
         upload();
     }
 

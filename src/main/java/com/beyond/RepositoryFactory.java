@@ -18,6 +18,9 @@ import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
+/**
+ * 生产仓库代理对象
+ */
 public class RepositoryFactory {
 
     public static Repository getLocalRepository(String path) {

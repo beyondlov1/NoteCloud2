@@ -10,6 +10,7 @@ import com.beyond.filter.impl.KeyFilter;
 import com.beyond.service.BindService;
 import com.beyond.service.MainService;
 import com.beyond.utils.ListUtils;
+import com.beyond.utils.TimeUtils;
 import javafx.animation.Animation;
 import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;
@@ -89,8 +90,6 @@ public class MainController {
     private Timer timer;
     private Timeline timeline;
 
-    private String selectedId;
-
     private MainService mainService;
 
     private BindService bindService;
@@ -112,17 +111,16 @@ public class MainController {
         Object source = keyEvent.getSource();
 
         //验证能否保存
-        String validContent = validate(content);
-        if (StringUtils.isBlank(validContent)&&!(keyEvent.isControlDown()&&keyEvent.getCode()==KeyCode.S)) {
+        Document document = validate(content);
+        if (document==null) return;
+        if (StringUtils.isBlank(document.getContent())&&!(keyEvent.isControlDown()&&keyEvent.getCode()==KeyCode.S)) {
             return;
         }
 
-        Document document = new Document();
         Date curr = new Date();
         document.setId(UUID.randomUUID().toString().replace("-", ""));
         document.setCreateTime(curr);
         document.setLastModifyTime(curr);
-        document.setContent(validContent);
         document.setVersion(1);
 
         mainService.add(document);
@@ -136,21 +134,30 @@ public class MainController {
         documentTableView.getSelectionModel().select(0);
     }
 
-    private String validate(String content) {
+    private Document validate(String content) {
         if (StringUtils.isNotBlank(content)){
             int length = content.length();
             if (length>NOTE.getType().length()+1&&content.endsWith(NOTE.getType()+"\n")){
-                return content.substring(0, length - NOTE.getType().length() - 1);
+                String validContent = content.substring(0, length - NOTE.getType().length() - 1);
+                Note note = new Note();
+                note.setContent(validContent);
+                return note;
             }
             if (length >TODO.getType().length()+1&&content.endsWith(TODO.getType()+"\n")){
-                return content.substring(0, length - TODO.getType().length() - 1);
+                String validContent =  content.substring(0, length - TODO.getType().length() - 1);
+                Todo todo = new Todo();
+                todo.setContent(validContent);
+                todo.setRemindTime(TimeUtils.parse(validContent));
+                return todo;
             }
             if (length >DOC.getType().length()+1&&content.endsWith(DOC.getType()+"\n")){
-                return content.substring(0, length - DOC.getType().length() - 1);
+                String validContent =  content.substring(0, length - DOC.getType().length() - 1);
+                Document document = new Document();
+                document.setContent(validContent);
+                return document;
             }
         }
         return null;
-
     }
 
     @FXML
@@ -159,14 +166,15 @@ public class MainController {
         Object source = keyEvent.getSource();
 
         //验证能否保存
-        String validContent = validate(content);
-        if (StringUtils.isBlank(validContent)&&!(keyEvent.isControlDown()&&keyEvent.getCode()==KeyCode.S)) {
+        Document document = validate(content);
+        if (document==null) return;
+        if (StringUtils.isBlank(document.getContent())&&!(keyEvent.isControlDown()&&keyEvent.getCode()==KeyCode.S)) {
             return;
         }
 
         FxDocument selectedDocument = documentTableView.getSelectionModel().getSelectedItem();
         int selectedIndex = documentTableView.getSelectionModel().getSelectedIndex();
-        selectedDocument.setContent(validContent);
+        selectedDocument.setContent(document.getContent());
 
         mainService.update(selectedDocument.toNormalDocument());
 
@@ -180,8 +188,9 @@ public class MainController {
     }
 
     @FXML
-    private void delete() {
-
+    public void delete() {
+        String selectedId = documentTableView.getSelectionModel().getSelectedItem().getId();
+        mainService.deleteById(selectedId);
     }
 
     public Text getMessage() {

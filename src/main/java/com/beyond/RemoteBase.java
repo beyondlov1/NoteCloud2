@@ -15,7 +15,10 @@ import org.apache.jackrabbit.webdav.client.methods.BaseDavRequest;
 import java.io.IOException;
 import java.io.InputStream;
 
-
+/**
+ * 远程服务基类
+ * 提供基本的远程连接方法
+ */
 public class RemoteBase {
 
     private CredentialsProvider credentialsProvider;

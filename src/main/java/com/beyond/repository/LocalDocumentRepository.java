@@ -155,7 +155,6 @@ public class LocalDocumentRepository implements Repository<Document> {
         localPropertyManager.batchSet(propertiesMap);
     }
 
-    @Override
     public synchronized void save(List<Document> list) {
         this.list = list;
         save();
@@ -190,7 +189,6 @@ public class LocalDocumentRepository implements Repository<Document> {
         lock.unlock();
     }
 
-    @Override
     public boolean isAvailable() {
         return !lock.isLocked();
     }

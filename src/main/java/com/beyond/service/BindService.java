@@ -6,6 +6,7 @@ import com.beyond.entity.Document;
 import com.beyond.utils.HtmlUtils;
 import com.beyond.utils.MarkDownUtils;
 import com.beyond.utils.ReflectUtils;
+import com.beyond.utils.SortUtils;
 import javafx.beans.property.Property;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
@@ -32,8 +33,10 @@ import java.util.List;
 
 import static org.apache.http.client.methods.RequestBuilder.delete;
 
+/**
+ * 绑定控件与数据服务
+ */
 public class BindService {
-
 
     private ObservableList<FxDocument> fxDocumentList;
 
@@ -42,6 +45,9 @@ public class BindService {
     }
 
     public void init(MainController mainController){
+
+        //order
+        SortUtils.sort(fxDocumentList,FxDocument.class,"lastModifyTime",SortUtils.SortType.DESC);
 
         //init table
         initTable(mainController.getDocumentTableView());
@@ -126,7 +132,7 @@ public class BindService {
                 KeyCode code = event.getCode();
                 switch (code) {
                     case DELETE:
-                        //TODO: delete
+                        mainController.delete();
                         break;
                     case I:
                         saveTextArea.requestFocus();
@@ -172,6 +178,7 @@ public class BindService {
             }
         });
     }
+
 
     private void changeInputMethod() {
 

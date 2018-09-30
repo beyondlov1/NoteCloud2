@@ -13,7 +13,7 @@
 <?import javafx.scene.text.Text?>
 <?import javafx.scene.web.WebView?>
 
-<HBox fx:id="container" prefHeight="661.0" prefWidth="1241.0" xmlns="http://javafx.com/javafx/8.0.121" xmlns:fx="http://javafx.com/fxml/1" >
+<HBox fx:id="container" prefHeight="661.0" prefWidth="1241.0" xmlns="http://javafx.com/javafx/8.0.121" xmlns:fx="http://javafx.com/fxml/1">
    <children>
     <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="583.0" prefWidth="400.0" HBox.hgrow="SOMETIMES">
          <children>
@@ -21,7 +21,7 @@
                <children>
                   <AnchorPane prefHeight="20.0" prefWidth="200.0">
                      <children>
-                        <Text fx:id="message" text="NoteCloud" textAlignment="CENTER"  />
+                        <Text fx:id="message" text="NoteCloud" textAlignment="CENTER" />
                      </children>
                   </AnchorPane>
                   <AnchorPane prefHeight="200.0" prefWidth="200.0" VBox.vgrow="ALWAYS">
@@ -54,6 +54,9 @@
                                     <TableColumn fx:id="lastModifyTimeTableColumn" minWidth="0.0" prefWidth="0.0" text="lastModifyTime" visible="false" />
                                     <TableColumn fx:id="operationTableColumn" prefWidth="51.0" text="operationTableColumn" visible="false" />
                                 </columns>
+                                 <columnResizePolicy>
+                                    <TableView fx:constant="CONSTRAINED_RESIZE_POLICY" />
+                                 </columnResizePolicy>
                               </TableView>
                            </children>
                         </AnchorPane>

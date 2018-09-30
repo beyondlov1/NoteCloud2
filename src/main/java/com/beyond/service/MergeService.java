@@ -15,6 +15,9 @@ import java.util.*;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
+/**
+ * 同步服务
+ */
 public class MergeService {
     private Repository<Document> localRepository;
     private Repository<Document> remoteRepository;
@@ -39,6 +42,7 @@ public class MergeService {
         this.remotePropertyManager = new RemotePropertyManager(url);
     }
 
+    @Deprecated
     public void asynHandle(){
         ExecutorService executorService = Executors.newCachedThreadPool();
         executorService.execute(new Runnable() {
@@ -49,6 +53,9 @@ public class MergeService {
         });
     }
 
+    /**
+     * 同步
+     */
     public synchronized void handle(){
         Map<String ,String> localProrpertiesMap = localPropertyManager.getAllProperties();
         Map<String, String> remotePropertiesMap = remotePropertyManager.getAllProperties();
@@ -90,7 +97,12 @@ public class MergeService {
         remoteRepository.unlock();
     }
 
+    /**
+     * 合并本地与远程
+     * @return 合并后列表
+     */
     private List merge() {
+        //获取本地和远程的文档
         localRepository.pull();
         List<Document> localList = localRepository.selectAll();
         remoteRepository.pull();
@@ -99,10 +111,7 @@ public class MergeService {
         Collections.reverse(localList);
         Collections.reverse(remoteList);
 
-        List<String> deletedDocumentIds = new ArrayList<>();
-        List<String> modifyDocumentIds = new ArrayList<>();
-        List<String> addDocumentIds = new ArrayList<>();
-
+        //获取远程和本地所有id
         List<String> remoteDocumentIds = new ArrayList<>();
         List<String> localDocumentIds = new ArrayList<>();
         for (Document remoteDocument : remoteList) {
@@ -112,12 +121,15 @@ public class MergeService {
             localDocumentIds.add(localDocumentId.getId());
         }
 
-        String modifyIdsStr = localPropertyManager.getProperty("_modifyIds");
-        if (modifyIdsStr.length()<1) return remoteList;
-        String[] modifyIds = modifyIdsStr.substring(0, modifyIdsStr.length() - 1).split(",");
+        //获取动过的id
+        List<String> deletedDocumentIds = new ArrayList<>();
+        List<String> modifyDocumentIds = new ArrayList<>();
+        List<String> addDocumentIds = new ArrayList<>();
 
-        //去重
-        Set<String> modifyIdsSet = new HashSet<>(Arrays.asList(modifyIds));
+        String modifyIdsStr = localPropertyManager.getProperty("_modifyIds");
+        if (StringUtils.isBlank(modifyIdsStr)) return remoteList;//如果没有修改过, 直接返回
+        String[] modifyIds = modifyIdsStr.substring(0, modifyIdsStr.length() - 1).split(",");//获取更改过的id
+        Set<String> modifyIdsSet = new HashSet<>(Arrays.asList(modifyIds));//去重
 
         for (String modifyId : modifyIdsSet) {
             if (localDocumentIds.contains(modifyId)) {
