@@ -36,13 +36,13 @@ public class MainApplication extends Application {
         primaryStage.setScene(scene);
         primaryStage.show();
 
-
-//        MainController controller = fxmlLoader.getController();
-//        controller.startSynchronize();
+        MainController controller = fxmlLoader.getController();
+        controller.startSynchronize();
 
         primaryStage.setOnCloseRequest(new EventHandler<WindowEvent>() {
             @Override
             public void handle(WindowEvent event) {
+                controller.stopSynchronize();
             }
         });
     }

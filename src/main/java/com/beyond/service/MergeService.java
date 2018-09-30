@@ -25,6 +25,7 @@ public class MergeService {
     private PropertyManager remotePropertyManager;
     private LocalPropertyManager remoteLocalPropertyManager;
     private LocalDocumentRepository remoteLocalDocumentRepository;
+    private int failCount = 0;
 
 //    public MergeService(LocalDocumentRepository localRepository, RemoteDocumentRepository remoteRepository, PropertyManager localPropertyManager, PropertyManager remotePropertyManager) {
 //        this.localRepository = localRepository;
@@ -57,9 +58,9 @@ public class MergeService {
      * 同步
      */
     public synchronized void handle(){
-        Map<String ,String> localProrpertiesMap = localPropertyManager.getAllProperties();
+        Map<String ,String> localPropertiesMap = localPropertyManager.getAllProperties();
         Map<String, String> remotePropertiesMap = remotePropertyManager.getAllProperties();
-        String localLastModifyTime = localProrpertiesMap.getOrDefault("_lastModifyTime","0");
+        String localLastModifyTime = localPropertiesMap.getOrDefault("_lastModifyTime","0");
         String remoteLastModifyTime = remotePropertiesMap.getOrDefault("_lastModifyTime","0");
         if (!StringUtils.equals(localLastModifyTime,"")
                 && !StringUtils.equals(localLastModifyTime,"0")
@@ -67,12 +68,11 @@ public class MergeService {
             return;
         }
 
-        while (!remoteRepository.isAvailable()){
-            try {
-                Thread.sleep(2000);
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-                F.logger.info(e.getMessage());
+        if (!remoteRepository.isAvailable()){
+            failCount++;
+            if (failCount>20){//连接20次失败, 强制解锁
+                remoteRepository.unlock();
+                failCount = 0;
             }
         }
 
@@ -81,7 +81,7 @@ public class MergeService {
         List<Document> merge = merge();
 
         //设置属性
-        String localVersion =localProrpertiesMap.getOrDefault("_version","0");
+        String localVersion =localPropertiesMap.getOrDefault("_version","0");
         String remoteVersion =  remotePropertiesMap.getOrDefault("_version","0");
         localPropertyManager.set("_lastModifyTime",localLastModifyTime.compareTo(remoteLastModifyTime)<0?remoteLastModifyTime:localLastModifyTime);
         remoteLocalPropertyManager.set("_lastModifyTime",localLastModifyTime.compareTo(remoteLastModifyTime)<0?remoteLastModifyTime:localLastModifyTime);
@@ -101,7 +101,7 @@ public class MergeService {
      * 合并本地与远程
      * @return 合并后列表
      */
-    private List merge() {
+    private List<Document> merge() {
         //获取本地和远程的文档
         localRepository.pull();
         List<Document> localList = localRepository.selectAll();
@@ -175,9 +175,9 @@ public class MergeService {
     }
 
     public static void main(String[] args) {
-        MergeService mergeService = new MergeService("./document/documents.xml",
+        MergeService mergeService = new MergeService("./repository/documents.xml",
                 "https://yura.teracloud.jp/dav/NoteCloud/repository/documents.xml",
-                "./document/tmp.xml");
+                "./repository/tmp.xml");
         mergeService.handle();
     }
 }

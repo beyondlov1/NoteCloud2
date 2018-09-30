@@ -3,12 +3,14 @@ package com.beyond;
 import com.beyond.entity.Document;
 import com.beyond.entity.Note;
 import com.beyond.entity.Todo;
+import com.beyond.f.F;
 import com.beyond.filter.Filter;
 import com.beyond.filter.FilterContainer;
 import com.beyond.filter.impl.ContentSuffixFilter;
 import com.beyond.filter.impl.KeyFilter;
 import com.beyond.service.BindService;
 import com.beyond.service.MainService;
+import com.beyond.service.MergeService;
 import com.beyond.utils.ListUtils;
 import com.beyond.utils.TimeUtils;
 import javafx.animation.Animation;
@@ -39,6 +41,8 @@ import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
 import java.util.UUID;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 import static com.beyond.DocumentType.DOC;
 import static com.beyond.DocumentType.NOTE;
@@ -94,6 +98,11 @@ public class MainController {
 
     private BindService bindService;
 
+    private MergeService mergeService;
+
+    private ExecutorService executorService;
+
+
     @FXML
     private void initialize() {
         init();
@@ -103,6 +112,11 @@ public class MainController {
         mainService = new MainService(this);
         bindService = new BindService(mainService.getFxDocuments());
         bindService.init(this);
+        mergeService = new MergeService(F.DEFAULT_LOCAL_PATH,
+                F.DEFAULT_REMOTE_PATH,
+                F.DEFAULT_TMP_PATH);
+        executorService = Executors.newCachedThreadPool();
+        timer = new Timer();
     }
 
     @FXML
@@ -191,6 +205,20 @@ public class MainController {
     public void delete() {
         String selectedId = documentTableView.getSelectionModel().getSelectedItem().getId();
         mainService.deleteById(selectedId);
+    }
+
+    public void startSynchronize(){
+        TimerTask timerTask = new TimerTask() {
+            @Override
+            public void run() {
+                mergeService.handle();
+            }
+        };
+        timer.schedule(timerTask,0,F.SYNC_PERIOD);
+    }
+
+    public void stopSynchronize(){
+        timer.cancel();
     }
 
     public Text getMessage() {

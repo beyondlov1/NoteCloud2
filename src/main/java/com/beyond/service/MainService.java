@@ -31,7 +31,7 @@ public class MainService {
         init();
     }
     public MainService(MainController mainController){
-        init();
+        this.init();
         this.mainController = mainController;
     }
 
@@ -65,7 +65,9 @@ public class MainService {
         defaultLocalRepository.save();
 
         //同步fxDocument
-        fxDocuments.add(0,new FxDocument(document));
+        FxDocument fxDocument = new FxDocument(document);
+        fxDocuments.add(0,fxDocument);
+        mainController.getDocumentTableView().refresh();
         return (String) id;
     }
 
@@ -101,6 +103,7 @@ public class MainService {
         if (index!=-1){
             fxDocuments.remove(index);
         }
+        mainController.getDocumentTableView().refresh();
         return (String) foundId;
     }
 
