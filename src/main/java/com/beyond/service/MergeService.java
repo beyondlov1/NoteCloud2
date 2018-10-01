@@ -27,6 +27,8 @@ public class MergeService {
     private LocalDocumentRepository remoteLocalDocumentRepository;
     private int failCount = 0;
 
+    private int mergeFlag = 0;
+
 //    public MergeService(LocalDocumentRepository localRepository, RemoteDocumentRepository remoteRepository, PropertyManager localPropertyManager, PropertyManager remotePropertyManager) {
 //        this.localRepository = localRepository;
 //        this.remoteRepository = remoteRepository;
@@ -41,17 +43,6 @@ public class MergeService {
         this.remoteLocalDocumentRepository = new LocalDocumentRepository(tmpPath);
         this.remoteRepository = new RemoteDocumentRepository(url, remoteLocalDocumentRepository, remoteLocalPropertyManager);
         this.remotePropertyManager = new RemotePropertyManager(url);
-    }
-
-    @Deprecated
-    public void asynHandle(){
-        ExecutorService executorService = Executors.newCachedThreadPool();
-        executorService.execute(new Runnable() {
-            @Override
-            public void run() {
-                handle();
-            }
-        });
     }
 
     /**
@@ -76,6 +67,7 @@ public class MergeService {
             }
         }
 
+        //锁
         remoteRepository.lock();
 
         List<Document> merge = merge();
@@ -91,10 +83,14 @@ public class MergeService {
         localPropertyManager.set("_modifyIds","");
         remoteLocalPropertyManager.set("_modifyIds","");
 
+        //持久化
         localRepository.save(merge);
         remoteRepository.save(merge);
 
+        //解锁
         remoteRepository.unlock();
+
+        mergeFlag = 1;
     }
 
     /**
@@ -125,7 +121,6 @@ public class MergeService {
         List<String> deletedDocumentIds = new ArrayList<>();
         List<String> modifyDocumentIds = new ArrayList<>();
         List<String> addDocumentIds = new ArrayList<>();
-
         String modifyIdsStr = localPropertyManager.getProperty("_modifyIds");
         if (StringUtils.isBlank(modifyIdsStr)) return remoteList;//如果没有修改过, 直接返回
         String[] modifyIds = modifyIdsStr.substring(0, modifyIdsStr.length() - 1).split(",");//获取更改过的id
@@ -146,7 +141,6 @@ public class MergeService {
 
         //以远程的为主
         List<Document> result = new ArrayList<>();
-
         for (Document remoteDocument : remoteList) {
             if (deletedDocumentIds.contains(remoteDocument.getId())) {//删除的不添加
                 continue;
@@ -172,6 +166,14 @@ public class MergeService {
         }
 
         return result;
+    }
+
+    public int getMergeFlag() {
+        return mergeFlag;
+    }
+
+    public void setMergeFlag(int mergeFlag) {
+        this.mergeFlag = mergeFlag;
     }
 
     public static void main(String[] args) {

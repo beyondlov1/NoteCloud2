@@ -12,6 +12,7 @@ import com.beyond.service.BindService;
 import com.beyond.service.MainService;
 import com.beyond.service.MergeService;
 import com.beyond.utils.ListUtils;
+import com.beyond.utils.SortUtils;
 import com.beyond.utils.TimeUtils;
 import javafx.animation.Animation;
 import javafx.animation.KeyFrame;
@@ -215,10 +216,41 @@ public class MainController {
             }
         };
         timer.schedule(timerTask,0,F.SYNC_PERIOD);
+        startRefresh();
     }
 
     public void stopSynchronize(){
         timer.cancel();
+        timeline.stop();
+    }
+
+    private void startRefresh(){
+        timeline = new Timeline(new KeyFrame(Duration.millis(F.VIEW_REFRESH_PERIOD), new EventHandler<ActionEvent>() {
+            @Override
+            public void handle(ActionEvent event) {
+                int mergeFlag = mergeService.getMergeFlag();
+                if (mergeFlag == 1){
+                    FxDocument selectedItem = documentTableView.getSelectionModel().getSelectedItem();
+                    //从文件获取文档
+                    mainService.pull();
+                    mainService.setFxDocuments();
+                    ObservableList<FxDocument> fxDocuments = mainService.getFxDocuments();
+
+                    //order
+                    SortUtils.sort(fxDocuments,FxDocument.class,"lastModifyTime",SortUtils.SortType.DESC);
+
+                    //刷新
+                    documentTableView.setItems(fxDocuments);
+                    documentTableView.getSelectionModel().select(ListUtils.getFxDocumentIndexById(fxDocuments,selectedItem.getId()));
+                    documentTableView.refresh();
+                    F.logger.info("refresh");
+                    mergeService.setMergeFlag(0);
+                }
+            }
+        }));
+        timeline.setDelay(new Duration(0));
+        timeline.setCycleCount(Animation.INDEFINITE);
+        timeline.play();
     }
 
     public Text getMessage() {

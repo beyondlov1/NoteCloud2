@@ -12,4 +12,5 @@ public class F {
     public static final String DEFAULT_TMP_PATH = "./repository/tmpDocuments.xml";
     public static final String DEFAULT_REMOTE_PATH = "https://yura.teracloud.jp/dav/NoteCloud/repository/documents.xml";
     public static final long SYNC_PERIOD = 10*1000;
+    public static final long VIEW_REFRESH_PERIOD = 5*1000;
 }

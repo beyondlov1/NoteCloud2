@@ -161,8 +161,9 @@ public class LocalDocumentRepository implements Repository<Document> {
     }
 
     public synchronized void pull(){
+        FileInputStream fileInputStream = null;
         try {
-            FileInputStream fileInputStream = new FileInputStream(path);
+            fileInputStream = new FileInputStream(path);
             Object object = xStream.fromXML(fileInputStream);
             if (object instanceof List) {
                 list = (List<Document>) object;
@@ -175,6 +176,14 @@ public class LocalDocumentRepository implements Repository<Document> {
             e.printStackTrace();
             save();
             F.logger.info("StreamException");
+        }finally {
+            try {
+                if (fileInputStream != null) {
+                    fileInputStream.close();
+                }
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
         }
     }
 

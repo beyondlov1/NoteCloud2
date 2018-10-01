@@ -45,7 +45,7 @@ public class MainService {
         setFxDocuments();
     }
 
-    private void setFxDocuments() {
+    public void setFxDocuments() {
         List<FxDocument> fxDocuments = new ArrayList<>();
         List<Document> documents = findAll();
         for (Document document : documents) {
@@ -153,5 +153,9 @@ public class MainService {
      */
     public ObservableList<FxDocument> getFxDocuments() {
         return fxDocuments;
+    }
+
+    public void pull(){
+        defaultLocalRepository.pull();
     }
 }

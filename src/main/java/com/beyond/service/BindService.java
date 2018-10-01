@@ -179,6 +179,13 @@ public class BindService {
         });
     }
 
+    public ObservableList<FxDocument> getFxDocumentList() {
+        return fxDocumentList;
+    }
+
+    public void setFxDocumentList(ObservableList<FxDocument> fxDocumentList) {
+        this.fxDocumentList = fxDocumentList;
+    }
 
     private void changeInputMethod() {
 
