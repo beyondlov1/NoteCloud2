@@ -1,5 +1,6 @@
 package com.beyond;
 
+import com.beyond.entity.User;
 import com.beyond.f.F;
 import org.apache.http.HttpEntity;
 import org.apache.http.auth.AuthScope;
@@ -21,23 +22,30 @@ import java.io.InputStream;
  */
 public class RemoteBase {
 
-    private CredentialsProvider credentialsProvider;
-
-    public RemoteBase(){
-        init();
-    }
-
-    protected void init() {
+    protected CredentialsProvider getCredentialsProvider(User user) {
         //初始化登陆
-        credentialsProvider = new BasicCredentialsProvider();
-        UsernamePasswordCredentials credentials = new UsernamePasswordCredentials(F.USERNAME, F.PASSWORD);
+        CredentialsProvider credentialsProvider = new BasicCredentialsProvider();
+        UsernamePasswordCredentials credentials = new UsernamePasswordCredentials(user.getUsername(), user.getPassword());
         credentialsProvider.setCredentials(AuthScope.ANY, credentials);
+        return credentialsProvider;
     }
-
     protected CloseableHttpClient getClient(){
         //initClient
         HttpClientBuilder builder = HttpClientBuilder.create();
+        builder.setDefaultCredentialsProvider(getCredentialsProvider(new User(F.USERNAME,F.PASSWORD)));
+        return builder.build();
+    }
+
+    protected CloseableHttpClient getClient(CredentialsProvider credentialsProvider){
+        //initClient
+        HttpClientBuilder builder = HttpClientBuilder.create();
         builder.setDefaultCredentialsProvider(credentialsProvider);
+        return builder.build();
+    }
+    protected CloseableHttpClient getClient(User user){
+        //initClient
+        HttpClientBuilder builder = HttpClientBuilder.create();
+        builder.setDefaultCredentialsProvider(getCredentialsProvider(user));
         return builder.build();
     }
 

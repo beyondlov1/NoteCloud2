@@ -12,32 +12,31 @@ import javafx.scene.Scene;
 import javafx.stage.Stage;
 import javafx.stage.WindowEvent;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 
 import java.io.IOException;
 import java.net.URL;
 
 public class MainApplication extends Application {
 
-    private Logger logger = LogManager.getLogger();
+    private Stage primaryStage;
 
     private ConfigService configService;
 
     private LoginService loginService;
+
 
     public static void main(String[] args) {
         launch(args);
     }
 
     public void init() {
-        String configPath ="config/config.properties";
-        this.configService = new ConfigService(configPath);
+        this.configService = new ConfigService(F.CONFIG_PATH);
         this.loginService = new LoginService();
     }
 
     @Override
     public void start(Stage primaryStage) throws Exception {
+        this.primaryStage = primaryStage;
         //加载配置文件
         if (StringUtils.isNotBlank(configService.getProperty("path.defaultLocalPath"))) {
             F.DEFAULT_LOCAL_PATH = configService.getProperty("path.defaultLocalPath");
@@ -60,38 +59,38 @@ public class MainApplication extends Application {
 
         //判斷能否登陸
         if (StringUtils.isNotBlank(configService.getProperty("username")) && StringUtils.isNotBlank(configService.getProperty("password"))) {
-            String username = configService.getProperty("username");
-            String password = configService.getProperty("password");
-            User user = new User(username,password);
+            F.USERNAME = configService.getProperty("username");
+            F.PASSWORD = configService.getProperty("password");
+            User user = new User(F.USERNAME,F.PASSWORD);
             User login = loginService.login(user);
             if (login!=null){
-                F.USERNAME = configService.getProperty("username");
-                F.PASSWORD = configService.getProperty("password");
-                loadMainView(primaryStage);
+                loadMainView();
             }else {
-                loadLoginView(primaryStage);
+                loadLoginView();
             }
         }else {
-            loadLoginView(primaryStage);
+            loadLoginView();
         }
-
-
+        primaryStage.show();
     }
 
-    private void loadLoginView(Stage primaryStage) throws IOException {
+    public Scene loadLoginView() throws IOException {
         URL loginResource = MainApplication.class.getClassLoader().getResource("views/login.fxml");
         FXMLLoader loginFxmlLoader = new FXMLLoader();
         loginFxmlLoader.setLocation(loginResource);
         loginFxmlLoader.setController(new LoginController());
         Parent loginParent = loginFxmlLoader.load();
 
+        LoginController loginController= loginFxmlLoader.getController();
+        loginController.setApplication(this);
+
         primaryStage.setTitle("NoteCloud");
         Scene scene = new Scene(loginParent);
         primaryStage.setScene(scene);
-        primaryStage.show();
+        return scene;
     }
 
-    private void loadMainView(Stage primaryStage) throws IOException {
+    public Scene loadMainView() throws IOException {
         URL mainResource = MainApplication.class.getClassLoader().getResource("views/main.fxml");
 
         //加载fxml
@@ -103,8 +102,6 @@ public class MainApplication extends Application {
 
         primaryStage.setTitle("NoteCloud");
         Scene scene = new Scene(parent);
-        primaryStage.setScene(scene);
-        primaryStage.show();
 
         MainController controller = fxmlLoader.getController();
         controller.startSynchronize();
@@ -115,5 +112,8 @@ public class MainApplication extends Application {
                 controller.stopSynchronize();
             }
         });
+
+        primaryStage.setScene(scene);
+        return scene;
     }
 }

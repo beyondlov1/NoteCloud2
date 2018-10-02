@@ -47,10 +47,9 @@ public class ConfigService {
 
     public void setProperty(String key,String value){
         properties.setProperty(key,value);
-        storeProperties();
     }
 
-    private void storeProperties() {
+    public void storeProperties() {
         FileWriter fileWriter = null;
         try {
             fileWriter = new FileWriter(configPath);
