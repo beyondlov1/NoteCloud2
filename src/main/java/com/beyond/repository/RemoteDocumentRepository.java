@@ -66,6 +66,7 @@ public class RemoteDocumentRepository extends RemoteBase implements Repository<D
     }
 
     public List<Document> selectAll() {
+        localDocumentRepository.pull();
         return localDocumentRepository.selectAll();
     }
 
