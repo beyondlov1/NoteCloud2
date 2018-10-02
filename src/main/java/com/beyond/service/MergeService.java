@@ -65,6 +65,7 @@ public class MergeService {
                 remoteRepository.unlock();
                 failCount = 0;
             }
+            return;
         }
 
         //锁
