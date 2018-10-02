@@ -76,8 +76,10 @@ public class MergeService {
         //设置属性
         String localVersion =localPropertiesMap.getOrDefault("_version","0");
         String remoteVersion =  remotePropertiesMap.getOrDefault("_version","0");
-        localPropertyManager.set("_lastModifyTime",localLastModifyTime.compareTo(remoteLastModifyTime)<0?remoteLastModifyTime:localLastModifyTime);
-        remoteLocalPropertyManager.set("_lastModifyTime",localLastModifyTime.compareTo(remoteLastModifyTime)<0?remoteLastModifyTime:localLastModifyTime);
+//        localPropertyManager.set("_lastModifyTime",localLastModifyTime.compareTo(remoteLastModifyTime)<0?remoteLastModifyTime:localLastModifyTime);
+//        remoteLocalPropertyManager.set("_lastModifyTime",localLastModifyTime.compareTo(remoteLastModifyTime)<0?remoteLastModifyTime:localLastModifyTime);
+        localPropertyManager.set("_lastModifyTime",System.currentTimeMillis()+"");
+        remoteLocalPropertyManager.set("_lastModifyTime",System.currentTimeMillis()+"");
         localPropertyManager.set("_version",localVersion.compareTo(remoteVersion)<0?remoteVersion:localVersion);
         remoteLocalPropertyManager.set("_version",localVersion.compareTo(remoteVersion)<0?remoteVersion:localVersion);
         //清空modifyIds
