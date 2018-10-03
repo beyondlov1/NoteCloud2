@@ -1,8 +1,13 @@
 package com.beyond;
 
+import com.beyond.f.F;
+import org.apache.commons.lang3.StringUtils;
+
 public enum  DocumentType {
 
-    NOTE("note"),TODO("todo"),DOC("end");
+    NOTE(StringUtils.isBlank(F.NOTE_SUFFIX)?"note":F.NOTE_SUFFIX),
+    TODO(StringUtils.isBlank(F.TODO_SUFFIX)?"todo": F.TODO_SUFFIX),
+    DOC(StringUtils.isBlank(F.DOC_SUFFIX)?"end":F.DOC_SUFFIX);
 
     private String type;
 

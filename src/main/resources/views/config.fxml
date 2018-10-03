@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.text.Text?>
+
+<AnchorPane prefHeight="400.0" prefWidth="600.0" xmlns="http://javafx.com/javafx/8.0.121" xmlns:fx="http://javafx.com/fxml/1">
+   <children>
+      <VBox alignment="CENTER" prefHeight="400.0" prefWidth="600.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+         <children>
+            <AnchorPane prefHeight="200.0" prefWidth="200.0">
+               <children>
+                  <Text layoutX="30.0" layoutY="30.0" strokeType="OUTSIDE" strokeWidth="0.0" text="快捷键" wrappingWidth="88.0" />
+                  <TextField fx:id="insertKey" layoutX="220.0" layoutY="15.0" promptText="添加: 默认  i" />
+                  <TextField fx:id="updateKey" layoutX="220.0" layoutY="52.0" promptText="更新: 默认 u" />
+                  <TextField fx:id="backKey" layoutX="220.0" layoutY="89.0" promptText="返回列表: 默认 ESC" />
+               </children>
+            </AnchorPane>
+            <AnchorPane layoutX="10.0" layoutY="10.0" prefHeight="200.0" prefWidth="200.0">
+               <children>
+                  <Text layoutX="30.0" layoutY="30.0" strokeType="OUTSIDE" strokeWidth="0.0" text="保存所需后缀" wrappingWidth="88.0" />
+                  <TextField fx:id="noteSuffix" layoutX="220.0" layoutY="15.0" promptText="Note: 默认 note" />
+                  <TextField fx:id="todoSuffix" layoutX="220.0" layoutY="52.0" promptText="Todo: 默认 todo" />
+                  <TextField fx:id="docSuffix" layoutX="220.0" layoutY="89.0" promptText="Doc: 默认 end" />
+               </children>
+            </AnchorPane>
+            <AnchorPane layoutX="10.0" layoutY="210.0" prefHeight="200.0" prefWidth="200.0">
+               <children>
+                  <Button layoutX="220.0" layoutY="15.0" mnemonicParsing="false" onAction="#save" text="保存并返回" />
+                  <Button layoutX="330.0" layoutY="15.0" mnemonicParsing="false" onAction="#cancel" text="取消" />
+               </children>
+            </AnchorPane>
+         </children>
+      </VBox>
+   </children>
+</AnchorPane>

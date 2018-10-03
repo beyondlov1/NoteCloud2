@@ -4,9 +4,7 @@ import com.beyond.entity.Document;
 import com.beyond.entity.Note;
 import com.beyond.entity.Todo;
 import com.beyond.f.F;
-import com.beyond.service.BindService;
-import com.beyond.service.MainService;
-import com.beyond.service.MergeService;
+import com.beyond.service.*;
 import com.beyond.utils.ListUtils;
 import com.beyond.utils.SortUtils;
 import com.beyond.utils.TimeUtils;
@@ -28,6 +26,7 @@ import javafx.scene.web.WebView;
 import javafx.util.Duration;
 import org.apache.commons.lang3.StringUtils;
 
+import java.io.IOException;
 import java.util.Date;
 import java.util.Timer;
 import java.util.TimerTask;
@@ -86,12 +85,12 @@ public class MainController {
     private Timeline timeline;
 
     private MainService mainService;
-
     private BindService bindService;
-
     private MergeService mergeService;
+    private ConfigService configService;
 
     private ExecutorService executorService;
+    private MainApplication application;
 
 
     @FXML
@@ -106,6 +105,7 @@ public class MainController {
         mergeService = new MergeService(F.DEFAULT_LOCAL_PATH,
                 F.DEFAULT_REMOTE_PATH,
                 F.DEFAULT_TMP_PATH);
+        configService = new ConfigService(F.CONFIG_PATH);
         executorService = Executors.newCachedThreadPool();
         timer = new Timer();
     }
@@ -196,6 +196,23 @@ public class MainController {
     public void delete() {
         String selectedId = documentTableView.getSelectionModel().getSelectedItem().getId();
         mainService.deleteById(selectedId);
+    }
+
+    @FXML
+    public void openConfig() throws IOException {
+        F.logger.info("open config");
+        application.loadConfigView();
+    }
+
+    @FXML
+    public void logout() throws IOException {
+        F.logger.info("logout");
+        //注销
+        configService.setProperty("password","");
+        configService.storeProperties();
+
+        //转到登录页面
+        application.loadLoginView();
     }
 
     public void startSynchronize() {
@@ -297,6 +314,13 @@ public class MainController {
         return deletedFxDocumentList;
     }
 
+    public void setApplication(MainApplication application) {
+        this.application = application;
+    }
+
+    public MainApplication getApplication() {
+        return application;
+    }
 }
 
 

@@ -20,6 +20,12 @@ public class MainApplication extends Application {
 
     private Stage primaryStage;
 
+    private Scene mainScene;
+
+    private Scene loginScene;
+
+    private Scene configScene;
+
     private ConfigService configService;
 
     private LoginService loginService;
@@ -56,6 +62,15 @@ public class MainApplication extends Application {
         if (StringUtils.isNotBlank(configService.getProperty("period.viewRefreshPeriod"))) {
             F.VIEW_REFRESH_PERIOD = Long.valueOf(configService.getProperty("period.viewRefreshPeriod"));
         }
+        if (StringUtils.isNotBlank(configService.getProperty("noteSuffix"))) {
+            F.NOTE_SUFFIX = configService.getProperty("noteSuffix");
+        }
+        if (StringUtils.isNotBlank(configService.getProperty("todoSuffix"))) {
+            F.TODO_SUFFIX = configService.getProperty("todoSuffix");
+        }
+        if (StringUtils.isNotBlank(configService.getProperty("docSuffix"))) {
+            F.DOC_SUFFIX = configService.getProperty("docSuffix");
+        }
 
         //判斷能否登陸
         if (StringUtils.isNotBlank(configService.getProperty("username")) && StringUtils.isNotBlank(configService.getProperty("password"))) {
@@ -75,6 +90,12 @@ public class MainApplication extends Application {
     }
 
     public Scene loadLoginView() throws IOException {
+
+        if (loginScene!=null){
+            primaryStage.setScene(loginScene);
+            return loginScene;
+        }
+
         URL loginResource = MainApplication.class.getClassLoader().getResource("views/login.fxml");
         FXMLLoader loginFxmlLoader = new FXMLLoader();
         loginFxmlLoader.setLocation(loginResource);
@@ -91,6 +112,12 @@ public class MainApplication extends Application {
     }
 
     public Scene loadMainView() throws IOException {
+
+        if (mainScene!=null){
+            primaryStage.setScene(mainScene);
+            return mainScene;
+        }
+
         URL mainResource = MainApplication.class.getClassLoader().getResource("views/main.fxml");
 
         //加载fxml
@@ -104,6 +131,7 @@ public class MainApplication extends Application {
         Scene scene = new Scene(parent);
 
         MainController controller = fxmlLoader.getController();
+        controller.setApplication(this);
         controller.startSynchronize();
 
         primaryStage.setOnCloseRequest(new EventHandler<WindowEvent>() {
@@ -116,4 +144,41 @@ public class MainApplication extends Application {
         primaryStage.setScene(scene);
         return scene;
     }
+
+
+    public Scene loadConfigView() throws IOException {
+
+        if (configScene!=null){
+            primaryStage.setScene(configScene);
+            return configScene;
+        }
+
+        URL configResource = MainApplication.class.getClassLoader().getResource("views/config.fxml");
+
+        //加载fxml
+        FXMLLoader fxmlLoader = new FXMLLoader();
+        fxmlLoader.setLocation(configResource);
+        fxmlLoader.setController(new ConfigController());
+        Parent parent = fxmlLoader.load();
+        //Parent parent = FXMLLoader.load(Objects.requireNonNull(mainResource)); //这种方法不能获取到controller
+
+        primaryStage.setTitle("NoteCloud");
+        Scene scene = new Scene(parent);
+
+        ConfigController controller = fxmlLoader.getController();
+        controller.setApplication(this);
+
+        primaryStage.setOnCloseRequest(new EventHandler<WindowEvent>() {
+            @Override
+            public void handle(WindowEvent event) {
+                //TODO: 关闭的时候要关闭同步线程
+                controller.cancel();
+            }
+        });
+
+        primaryStage.setScene(scene);
+        return scene;
+    }
+
+
 }
