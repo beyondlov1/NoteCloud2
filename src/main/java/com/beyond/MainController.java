@@ -231,9 +231,7 @@ public class MainController {
 
                     //刷新
                     documentTableView.setItems(fxDocuments);
-                    if (selectedItem == null) {
-                        documentTableView.getSelectionModel().selectFirst();
-                    }else {
+                    if (selectedItem != null) {
                         documentTableView.getSelectionModel().select(ListUtils.getFxDocumentIndexById(fxDocuments, selectedItem.getId()));
                     }
                     documentTableView.refresh();
