@@ -2,7 +2,6 @@ package com.beyond.service;
 
 import com.beyond.FxDocument;
 import com.beyond.MainController;
-import com.beyond.entity.Document;
 import com.beyond.utils.HtmlUtils;
 import com.beyond.utils.MarkDownUtils;
 import com.beyond.utils.ReflectUtils;
@@ -10,7 +9,6 @@ import com.beyond.utils.SortUtils;
 import javafx.beans.property.Property;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
-import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.event.EventHandler;
 import javafx.geometry.Insets;
@@ -27,9 +25,6 @@ import javafx.scene.text.TextFlow;
 import javafx.scene.web.WebView;
 import javafx.util.Callback;
 import org.apache.commons.lang3.StringUtils;
-
-import java.util.ArrayList;
-import java.util.List;
 
 import static org.apache.http.client.methods.RequestBuilder.delete;
 
@@ -56,14 +51,14 @@ public class BindService {
         initListener(mainController);
 
         //init focus
-        mainController.getContentTextAreaSaveOrUpdate().setFocusTraversable(false);
+        mainController.getContentTextAreaUpdate().setFocusTraversable(false);
         mainController.getContentTextAreaSave().setFocusTraversable(false);
         mainController.getTabPane().setFocusTraversable(false);
         focusTo(mainController.getDocumentTableView());
         mainController.getDocumentTableView().getSelectionModel().selectFirst();
 
         //init style
-        mainController.getContentTextAreaSaveOrUpdate().setWrapText(true);
+        mainController.getContentTextAreaUpdate().setWrapText(true);
         mainController.getContentTextAreaSave().setWrapText(true);
 
     }
@@ -83,7 +78,7 @@ public class BindService {
     public void initListener(MainController mainController) {
         TableView<FxDocument> documentTableView = mainController.getDocumentTableView();
         WebView webView = mainController.getWebView();
-        TextArea updateTextArea = mainController.getContentTextAreaSaveOrUpdate();
+        TextArea updateTextArea = mainController.getContentTextAreaUpdate();
         TextArea saveTextArea = mainController.getContentTextAreaSave();
 
         /*

@@ -76,8 +76,6 @@ public class MergeService {
         //设置属性
         String localVersion =localPropertiesMap.getOrDefault("_version","0");
         String remoteVersion =  remotePropertiesMap.getOrDefault("_version","0");
-//        localPropertyManager.set("_lastModifyTime",localLastModifyTime.compareTo(remoteLastModifyTime)<0?remoteLastModifyTime:localLastModifyTime);
-//        remoteLocalPropertyManager.set("_lastModifyTime",localLastModifyTime.compareTo(remoteLastModifyTime)<0?remoteLastModifyTime:localLastModifyTime);
         String currentTime = System.currentTimeMillis()+"";
         localPropertyManager.set("_lastModifyTime",currentTime);
         remoteLocalPropertyManager.set("_lastModifyTime", currentTime);
