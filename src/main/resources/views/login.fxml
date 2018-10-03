@@ -6,7 +6,6 @@
 <?import javafx.scene.control.PasswordField?>
 <?import javafx.scene.control.TextField?>
 <?import javafx.scene.layout.AnchorPane?>
-<?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.Pane?>
 <?import javafx.scene.layout.VBox?>
 <?import javafx.scene.text.Text?>
@@ -28,23 +27,12 @@
                         <Insets bottom="5.0" top="5.0" />
                      </VBox.margin>
                   </PasswordField>
-                  <HBox alignment="CENTER">
+                  <Pane>
                      <children>
-                        <CheckBox fx:id="rememberPass" mnemonicParsing="false" onAction="#rememberPass" text="记住密码">
-                           <HBox.margin>
-                              <Insets left="5.0" right="5.0" />
-                           </HBox.margin>
-                        </CheckBox>
-                        <CheckBox fx:id="rememberUsername" mnemonicParsing="false" text="记住用户名">
-                           <HBox.margin>
-                              <Insets left="5.0" right="5.0" />
-                           </HBox.margin>
-                        </CheckBox>
+                        <CheckBox fx:id="rememberUsername" layoutY="3.0" mnemonicParsing="false" text="记住用户名" />
+                        <CheckBox fx:id="rememberPass" layoutX="133.0" layoutY="3.0" mnemonicParsing="false" onAction="#rememberPass" text="记住密码" />
                      </children>
-                     <VBox.margin>
-                        <Insets bottom="5.0" top="5.0" />
-                     </VBox.margin>
-                  </HBox>
+                  </Pane>
                   <Button fx:id="login" mnemonicParsing="false" onAction="#login" prefHeight="30.0" prefWidth="202.0" text="登陆">
                      <VBox.margin>
                         <Insets bottom="5.0" top="5.0" />
