@@ -66,7 +66,6 @@ public class RemoteDocumentRepository extends RemoteBase implements Repository<D
     }
 
     public List<Document> selectAll() {
-        localDocumentRepository.pull();
         return localDocumentRepository.selectAll();
     }
 
@@ -123,6 +122,9 @@ public class RemoteDocumentRepository extends RemoteBase implements Repository<D
         }
 
         release(client);
+
+        //刷新下载到本地的文档
+        localDocumentRepository.pull();
 
         //下载属性
         if (localPropertyManager!=null&&remotePropertyManager!=null){

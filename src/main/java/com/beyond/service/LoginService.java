@@ -38,7 +38,7 @@ public class LoginService extends RemoteBase {
         CloseableHttpClient client = getClient(user);
         CloseableHttpResponse response = sendRequest(client, httpHead);
         StatusLine statusLine = response.getStatusLine();
-        System.out.println(statusLine);
+        F.logger.info(statusLine);
         this.release(client);
         if (statusLine.getStatusCode() > 400 && statusLine.getStatusCode()<500){
             return null;

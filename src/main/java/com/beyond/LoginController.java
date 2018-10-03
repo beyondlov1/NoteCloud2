@@ -85,9 +85,9 @@ public class LoginController {
 
     @FXML
     public User login() throws IOException {
+        msg.setText("登陆中...");
         String username = usernameText.getText();
         String password = passwordText.getText();
-        System.out.println(username+"  "+password);
         if (StringUtils.isBlank(username)||StringUtils.isBlank(password)){
             msg.setText("用户名或密码为空");
             return null;
@@ -99,12 +99,13 @@ public class LoginController {
             application.loadMainView();
             if (rememberUsername.isSelected()){
                 configService.setProperty("username",username);
+                configService.storeProperties();
             }
             if (rememberPass.isSelected()){
                 configService.setProperty("username",username);
                 configService.setProperty("password",password);
+                configService.storeProperties();
             }
-            configService.storeProperties();
         }else {
             msg.setText("用户名或密码错误");
         }
