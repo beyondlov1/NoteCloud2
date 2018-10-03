@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <?import javafx.geometry.Insets?>
+<?import javafx.scene.Group?>
 <?import javafx.scene.control.Button?>
 <?import javafx.scene.control.CheckBox?>
 <?import javafx.scene.control.PasswordField?>
@@ -27,12 +28,12 @@
                         <Insets bottom="5.0" top="5.0" />
                      </VBox.margin>
                   </PasswordField>
-                  <Pane>
+                  <Group>
                      <children>
-                        <CheckBox fx:id="rememberUsername" layoutY="3.0" mnemonicParsing="false" text="记住用户名" />
-                        <CheckBox fx:id="rememberPass" layoutX="133.0" layoutY="3.0" mnemonicParsing="false" onAction="#rememberPass" text="记住密码" />
+                        <CheckBox fx:id="rememberUsername" mnemonicParsing="false" text="记住用户名" />
+                        <CheckBox fx:id="rememberPass" layoutX="126.0" layoutY="1.0" mnemonicParsing="false" onAction="#rememberPass" text="记住密码" />
                      </children>
-                  </Pane>
+                  </Group>
                   <Button fx:id="login" mnemonicParsing="false" onAction="#login" prefHeight="30.0" prefWidth="202.0" text="登陆">
                      <VBox.margin>
                         <Insets bottom="5.0" top="5.0" />
