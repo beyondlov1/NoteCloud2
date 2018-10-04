@@ -81,15 +81,12 @@ public class MainController {
     private ObservableList<FxDocument> fxDocumentList = null;
     private ObservableList<FxDocument> deletedFxDocumentList = null;
 
-    private Timer timer;
     private Timeline timeline;
 
     private MainService mainService;
     private BindService bindService;
-    private MergeService mergeService;
     private ConfigService configService;
 
-    private ExecutorService executorService;
     private MainApplication application;
 
 
@@ -102,12 +99,7 @@ public class MainController {
         mainService = new MainService(this);
         bindService = new BindService(mainService.getFxDocuments());
         bindService.init(this);
-        mergeService = new MergeService(F.DEFAULT_LOCAL_PATH,
-                F.DEFAULT_REMOTE_PATH,
-                F.DEFAULT_TMP_PATH);
         configService = new ConfigService(F.CONFIG_PATH);
-        executorService = Executors.newCachedThreadPool();
-        timer = new Timer();
     }
 
     @FXML
@@ -201,6 +193,7 @@ public class MainController {
     @FXML
     public void openConfig() throws IOException {
         F.logger.info("open config");
+        this.stopRefresh();
         application.loadConfigView();
     }
 
@@ -215,23 +208,7 @@ public class MainController {
         application.loadLoginView();
     }
 
-    public void startSynchronize() {
-        TimerTask timerTask = new TimerTask() {
-            @Override
-            public void run() {
-                mergeService.handle();
-            }
-        };
-        timer.schedule(timerTask, 0, F.SYNC_PERIOD);
-        startRefresh();
-    }
-
-    public void stopSynchronize() {
-        timer.cancel();
-        timeline.stop();
-    }
-
-    private void startRefresh() {
+    public void startRefresh(MergeService mergeService) {
         timeline = new Timeline(new KeyFrame(Duration.millis(F.VIEW_REFRESH_PERIOD), new EventHandler<ActionEvent>() {
             @Override
             public void handle(ActionEvent event) {
@@ -260,6 +237,10 @@ public class MainController {
         timeline.setDelay(new Duration(0));
         timeline.setCycleCount(Animation.INDEFINITE);
         timeline.play();
+    }
+
+    public void stopRefresh() {
+        timeline.stop();
     }
 
     public Text getMessage() {
@@ -321,6 +302,8 @@ public class MainController {
     public MainApplication getApplication() {
         return application;
     }
+
+
 }
 
 

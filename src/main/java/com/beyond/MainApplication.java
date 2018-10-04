@@ -4,6 +4,8 @@ import com.beyond.entity.User;
 import com.beyond.f.F;
 import com.beyond.service.ConfigService;
 import com.beyond.service.LoginService;
+import com.beyond.service.MergeService;
+import com.beyond.service.SyncService;
 import javafx.application.Application;
 import javafx.event.EventHandler;
 import javafx.fxml.FXMLLoader;
@@ -15,6 +17,7 @@ import org.apache.commons.lang3.StringUtils;
 
 import java.io.IOException;
 import java.net.URL;
+import java.util.TimerTask;
 
 public class MainApplication extends Application {
 
@@ -30,6 +33,8 @@ public class MainApplication extends Application {
 
     private LoginService loginService;
 
+    private SyncService syncService;
+
 
     public static void main(String[] args) {
         launch(args);
@@ -38,6 +43,7 @@ public class MainApplication extends Application {
     public void init() {
         this.configService = new ConfigService(F.CONFIG_PATH);
         this.loginService = new LoginService();
+        this.syncService = new SyncService();
     }
 
     @Override
@@ -76,14 +82,14 @@ public class MainApplication extends Application {
         if (StringUtils.isNotBlank(configService.getProperty("username")) && StringUtils.isNotBlank(configService.getProperty("password"))) {
             F.USERNAME = configService.getProperty("username");
             F.PASSWORD = configService.getProperty("password");
-            User user = new User(F.USERNAME,F.PASSWORD);
+            User user = new User(F.USERNAME, F.PASSWORD);
             User login = loginService.login(user);
-            if (login!=null){
+            if (login != null) {
                 loadMainView();
-            }else {
+            } else {
                 loadLoginView();
             }
-        }else {
+        } else {
             loadLoginView();
         }
         primaryStage.show();
@@ -91,7 +97,7 @@ public class MainApplication extends Application {
 
     public Scene loadLoginView() throws IOException {
 
-        if (loginScene!=null){
+        if (loginScene != null) {
             primaryStage.setScene(loginScene);
             return loginScene;
         }
@@ -102,18 +108,26 @@ public class MainApplication extends Application {
         loginFxmlLoader.setController(new LoginController());
         Parent loginParent = loginFxmlLoader.load();
 
-        LoginController loginController= loginFxmlLoader.getController();
+        LoginController loginController = loginFxmlLoader.getController();
         loginController.setApplication(this);
 
         primaryStage.setTitle("NoteCloud");
-        Scene scene = new Scene(loginParent);
-        primaryStage.setScene(scene);
-        return scene;
+        loginScene = new Scene(loginParent);
+
+        primaryStage.setOnCloseRequest(new EventHandler<WindowEvent>() {
+            @Override
+            public void handle(WindowEvent event) {
+                syncService.stopSynchronize();
+            }
+        });
+
+        primaryStage.setScene(loginScene);
+        return loginScene;
     }
 
     public Scene loadMainView() throws IOException {
 
-        if (mainScene!=null){
+        if (mainScene != null) {
             primaryStage.setScene(mainScene);
             return mainScene;
         }
@@ -128,27 +142,29 @@ public class MainApplication extends Application {
         //Parent parent = FXMLLoader.load(Objects.requireNonNull(mainResource)); //这种方法不能获取到controller
 
         primaryStage.setTitle("NoteCloud");
-        Scene scene = new Scene(parent);
+        mainScene = new Scene(parent);
 
         MainController controller = fxmlLoader.getController();
         controller.setApplication(this);
-        controller.startSynchronize();
+        controller.startRefresh(syncService.getMergeService());
+        syncService.startSynchronize();
 
         primaryStage.setOnCloseRequest(new EventHandler<WindowEvent>() {
             @Override
             public void handle(WindowEvent event) {
-                controller.stopSynchronize();
+                controller.stopRefresh();
+                syncService.stopSynchronize();
             }
         });
 
-        primaryStage.setScene(scene);
-        return scene;
+        primaryStage.setScene(mainScene);
+        return mainScene;
     }
 
 
     public Scene loadConfigView() throws IOException {
 
-        if (configScene!=null){
+        if (configScene != null) {
             primaryStage.setScene(configScene);
             return configScene;
         }
@@ -163,7 +179,7 @@ public class MainApplication extends Application {
         //Parent parent = FXMLLoader.load(Objects.requireNonNull(mainResource)); //这种方法不能获取到controller
 
         primaryStage.setTitle("NoteCloud");
-        Scene scene = new Scene(parent);
+        configScene = new Scene(parent);
 
         ConfigController controller = fxmlLoader.getController();
         controller.setApplication(this);
@@ -171,13 +187,12 @@ public class MainApplication extends Application {
         primaryStage.setOnCloseRequest(new EventHandler<WindowEvent>() {
             @Override
             public void handle(WindowEvent event) {
-                //TODO: 关闭的时候要关闭同步线程
-                controller.cancel();
+                syncService.stopSynchronize();
             }
         });
 
-        primaryStage.setScene(scene);
-        return scene;
+        primaryStage.setScene(configScene);
+        return configScene;
     }
 
 
