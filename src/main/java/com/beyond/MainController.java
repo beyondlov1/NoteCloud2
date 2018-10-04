@@ -108,9 +108,15 @@ public class MainController {
         Object source = keyEvent.getSource();
 
         //验证能否保存
-        Document document = validate(content);
+        Document document;
+        if (keyEvent.isControlDown()&&keyEvent.getCode()==KeyCode.S){
+            document = new Document();
+            document.setContent(content);
+        }else{
+            document = validate(content);
+        }
         if (document == null) return;
-        if (StringUtils.isBlank(document.getContent()) && !(keyEvent.isControlDown() && keyEvent.getCode() == KeyCode.S)) {
+        if (StringUtils.isBlank(document.getContent())) {
             return;
         }
 
@@ -162,17 +168,22 @@ public class MainController {
         String content = contentTextAreaUpdate.getText();
         Object source = keyEvent.getSource();
 
-        //验证能否保存
-        Document document = validate(content);
-        if (document == null) return;
-        if (StringUtils.isBlank(document.getContent()) && !(keyEvent.isControlDown() && keyEvent.getCode() == KeyCode.S)) {
-            return;
-        }
-
         FxDocument selectedDocument = documentTableView.getSelectionModel().getSelectedItem();
         int selectedIndex = documentTableView.getSelectionModel().getSelectedIndex();
-        selectedDocument.setContent(document.getContent());
 
+        //验证能否保存
+        Document document;
+        if (keyEvent.isControlDown()&&keyEvent.getCode()==KeyCode.S){
+            document = selectedDocument.toNormalDocument();
+            document.setContent(content);
+        }else{
+             document = validate(content);
+        }
+        if (document == null) return;
+        if (StringUtils.isBlank(document.getContent())) {
+            return;
+        }
+        selectedDocument.setContent(document.getContent());
         mainService.update(selectedDocument.toNormalDocument());
 
         //changeView
