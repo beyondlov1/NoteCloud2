@@ -184,14 +184,9 @@ public class MainApplication extends Application {
         ConfigController controller = fxmlLoader.getController();
         controller.setApplication(this);
 
-        primaryStage.setOnCloseRequest(new EventHandler<WindowEvent>() {
-            @Override
-            public void handle(WindowEvent event) {
-                syncService.stopSynchronize();
-            }
-        });
-
-        primaryStage.setScene(configScene);
+        Stage stage = new Stage();
+        stage.setScene(configScene);
+        stage.show();
         return configScene;
     }
 
