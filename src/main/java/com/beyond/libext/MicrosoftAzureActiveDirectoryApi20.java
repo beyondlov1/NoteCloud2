@@ -1,4 +1,5 @@
-import com.github.scribejava.apis.service.MicrosoftAzureActiveDirectoryService;
+package com.beyond.libext;
+
 import com.github.scribejava.core.builder.api.DefaultApi20;
 import com.github.scribejava.core.extractors.OAuth2AccessTokenJsonExtractor;
 import com.github.scribejava.core.extractors.TokenExtractor;
@@ -7,6 +8,7 @@ import com.github.scribejava.core.httpclient.HttpClientConfig;
 import com.github.scribejava.core.model.OAuth2AccessToken;
 import com.github.scribejava.core.oauth2.clientauthentication.ClientAuthentication;
 import com.github.scribejava.core.oauth2.clientauthentication.RequestBodyAuthenticationScheme;
+
 import java.io.OutputStream;
 
 public class MicrosoftAzureActiveDirectoryApi20 extends DefaultApi20 {
@@ -38,10 +40,10 @@ public class MicrosoftAzureActiveDirectoryApi20 extends DefaultApi20 {
     }
 
     @Override
-    public MicrosoftAzureActiveDirectoryService createService(String apiKey, String apiSecret, String callback,
+    public MicrosoftAzureActiveDirectoryService20 createService(String apiKey, String apiSecret, String callback,
                                                               String scope, OutputStream debugStream, String state, String responseType, String userAgent,
                                                               HttpClientConfig httpClientConfig, HttpClient httpClient) {
-        return new MicrosoftAzureActiveDirectoryService(this, apiKey, apiSecret, callback, scope, state, responseType,
+        return new MicrosoftAzureActiveDirectoryService20(this, apiKey, apiSecret, callback, scope, state, responseType,
                 userAgent, httpClientConfig, httpClient);
     }
 

@@ -1,3 +1,4 @@
+import com.beyond.libext.MicrosoftAzureActiveDirectoryApi20;
 import com.fasterxml.jackson.core.JsonFactory;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.util.JsonParserDelegate;
@@ -33,8 +34,7 @@ public class MSALTest {
         final String clientId = "b1c8c70e-daf3-4bc9-ae1e-50b0f348dd58";
         MicrosoftAzureActiveDirectoryApi20 api = MicrosoftAzureActiveDirectoryApi20.instance();
         final OAuth20Service service = new ServiceBuilder(clientId)
-                .scope("openid")
-                .scope("Calendars.ReadWrite")
+                .scope("openid Calendars.ReadWrite offline_access")
 //                .apiSecret(clientSecret)
                 .callback("https://login.microsoftonline.com/common/oauth2/nativeclient")
                 .build(api);
@@ -65,22 +65,22 @@ public class MSALTest {
         System.out.println("Now we're going to access a protected resource...");
         final OAuthRequest request = new OAuthRequest(Verb.POST, PROTECTED_RESOURCE_URL);
         String load = "{" +
-                "  \"Subject\": \"Discuss the Calendar REST API\"," +
-                "  \"Body\": {" +
-                "    \"ContentType\": \"HTML\"," +
-                "    \"Content\": \"I think it will meet our requirements!hahahah2\"" +
+                "  Subject: \"Discuss the Calendar REST API\"," +
+                "  Body: {" +
+                "    ContentType: \"HTML\"," +
+                "    Content: \"I think it will meet our requirements!333\"" +
                 "  }," +
-                "  \"Start\": {" +
-                "      \"DateTime\": \"2018-10-05T18:00:00\"," +
-                "      \"TimeZone\": \"Pacific Standard Time\"" +
+                "  Start: {" +
+                "      DateTime: \"2018-10-05T18:00:00\"," +
+                "      TimeZone: \"Pacific Standard Time\"" +
                 "  }," +
-                "  \"End\": {" +
-                "      \"DateTime\": \"2018-10-05T19:00:00\"," +
-                "      \"TimeZone\": \"Pacific Standard Time\"" +
+                "  End: {" +
+                "      DateTime: \"2018-10-05T19:00:00\"," +
+                "      TimeZone: \"Pacific Standard Time\"" +
                 "  }"+
                 "}";
 
-        request.addHeader("Content-Type","application/json;charset=UTF-8");
+        request.addHeader("Content-Type","application/json");
         request.setPayload(load);
         service.signRequest(accessToken, request);
         final Response response = service.execute(request);

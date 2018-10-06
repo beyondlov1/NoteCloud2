@@ -1,9 +1,11 @@
 package com.beyond;
 
 import com.beyond.entity.Document;
+import com.beyond.entity.MicrosoftReminder;
 import com.beyond.entity.Note;
 import com.beyond.entity.Todo;
 import com.beyond.f.F;
+import com.beyond.libext.MicrosoftAzureActiveDirectoryService20;
 import com.beyond.service.*;
 import com.beyond.utils.ListUtils;
 import com.beyond.utils.SortUtils;
@@ -27,10 +29,9 @@ import javafx.util.Duration;
 import org.apache.commons.lang3.StringUtils;
 
 import java.io.IOException;
-import java.util.Date;
-import java.util.Timer;
-import java.util.TimerTask;
-import java.util.UUID;
+import java.sql.Time;
+import java.text.SimpleDateFormat;
+import java.util.*;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -86,6 +87,7 @@ public class MainController {
     private MainService mainService;
     private BindService bindService;
     private ConfigService configService;
+    private RemindService remindService;
 
     private MainApplication application;
 
@@ -100,6 +102,7 @@ public class MainController {
         bindService = new BindService(mainService.getFxDocuments());
         bindService.init(this);
         configService = new ConfigService(F.CONFIG_PATH);
+        remindService = new RemindService(new AuthService());
     }
 
     @FXML
@@ -148,9 +151,32 @@ public class MainController {
             }
             if (length > TODO.getType().length() + 1 && content.endsWith(TODO.getType() + "\n")) {
                 String validContent = content.substring(0, length - TODO.getType().length() - 1);
+
                 Todo todo = new Todo();
+                Date remindTime = TimeUtils.parse(validContent);
+                if (remindTime!=null){
+                    todo.setRemindTime(remindTime);
+                    validContent += "  \n\n\n***\n提醒时间:"+TimeUtils.getTimeNorm(validContent);
+                }
                 todo.setContent(validContent);
-                todo.setRemindTime(TimeUtils.parse(validContent));
+
+                //设置提醒
+                Thread thread = new Thread(new Runnable() {
+                    @Override
+                    public void run() {
+                        if (todo.getRemindTime()==null) return;
+                        MicrosoftReminder reminder = new MicrosoftReminder();
+                        reminder.setSubject(StringUtils.isBlank(todo.getTitle())?todo.getContent():todo.getTitle());
+                        reminder.getBody().setContentType("HTML");
+                        reminder.getBody().setContent(todo.getContent());
+                        reminder.getStart().setDateTime(TimeUtils.getDateStringForMicrosoftEvent(todo.getRemindTime(),"GMT+8:00"));
+                        reminder.getStart().setTimeZone("China Standard Time");
+                        reminder.getEnd().setDateTime(TimeUtils.getDateStringForMicrosoftEvent(new Date(todo.getRemindTime().getTime()+1000*60*60),"GMT+8:00"));
+                        reminder.getEnd().setTimeZone("China Standard Time");
+                        remindService.remind(reminder);
+                    }
+                });
+                thread.start();
                 return todo;
             }
             if (length > DOC.getType().length() + 1 && content.endsWith(DOC.getType() + "\n")) {

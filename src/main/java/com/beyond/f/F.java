@@ -1,7 +1,11 @@
 package com.beyond.f;
 
+import com.beyond.service.ConfigService;
+import com.github.scribejava.core.model.OAuth2AccessToken;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+
+import java.util.Date;
 
 public class F {
     public final static Logger logger = LogManager.getLogger();
@@ -23,5 +27,18 @@ public class F {
     public static long VIEW_REFRESH_PERIOD = 5 * 1000;
 
     public static final String CONFIG_PATH ="config/config.properties";
+
+    //microsoft api access
+    public static final String CLIENT_ID = "b1c8c70e-daf3-4bc9-ae1e-50b0f348dd58";
+    public static final String SCOPE = "openid Calendars.ReadWrite offline_access";
+
+    public static final String MICROSOFT_EVENT_URL = "https://graph.microsoft.com/v1.0/me/events";
+    public static String REFRESH_TOKEN = "";
+    public static String EXPIRE_DATE = "";
+    public static String ACCESS_TOKEN = "";
+
+    public static final ConfigService configService = new ConfigService(F.CONFIG_PATH);
+
+
 
 }

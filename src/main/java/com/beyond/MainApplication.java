@@ -4,7 +4,6 @@ import com.beyond.entity.User;
 import com.beyond.f.F;
 import com.beyond.service.ConfigService;
 import com.beyond.service.LoginService;
-import com.beyond.service.MergeService;
 import com.beyond.service.SyncService;
 import javafx.application.Application;
 import javafx.event.EventHandler;
@@ -17,7 +16,6 @@ import org.apache.commons.lang3.StringUtils;
 
 import java.io.IOException;
 import java.net.URL;
-import java.util.TimerTask;
 
 public class MainApplication extends Application {
 
@@ -29,7 +27,9 @@ public class MainApplication extends Application {
 
     private Scene configScene;
 
-    private ConfigService configService;
+    private Scene authScene;
+
+    private Stage authStage;
 
     private LoginService loginService;
 
@@ -41,7 +41,6 @@ public class MainApplication extends Application {
     }
 
     public void init() {
-        this.configService = new ConfigService(F.CONFIG_PATH);
         this.loginService = new LoginService();
         this.syncService = new SyncService();
     }
@@ -50,38 +49,47 @@ public class MainApplication extends Application {
     public void start(Stage primaryStage) throws Exception {
         this.primaryStage = primaryStage;
         //加载配置文件
-        if (StringUtils.isNotBlank(configService.getProperty("path.defaultLocalPath"))) {
-            F.DEFAULT_LOCAL_PATH = configService.getProperty("path.defaultLocalPath");
+        if (StringUtils.isNotBlank(F.configService.getProperty("path.defaultLocalPath"))) {
+            F.DEFAULT_LOCAL_PATH = F.configService.getProperty("path.defaultLocalPath");
         }
-        if (StringUtils.isNotBlank(configService.getProperty("path.defaultDeletedPath"))) {
-            F.DEFAULT_DELETE_PATH = configService.getProperty("path.defaultDeletedPath");
+        if (StringUtils.isNotBlank(F.configService.getProperty("path.defaultDeletedPath"))) {
+            F.DEFAULT_DELETE_PATH = F.configService.getProperty("path.defaultDeletedPath");
         }
-        if (StringUtils.isNotBlank(configService.getProperty("path.defaultTmpPath"))) {
-            F.DEFAULT_TMP_PATH = configService.getProperty("path.defaultTmpPath");
+        if (StringUtils.isNotBlank(F.configService.getProperty("path.defaultTmpPath"))) {
+            F.DEFAULT_TMP_PATH = F.configService.getProperty("path.defaultTmpPath");
         }
-        if (StringUtils.isNotBlank(configService.getProperty("path.defaultRemotePath"))) {
-            F.DEFAULT_REMOTE_PATH = configService.getProperty("path.defaultRemotePath");
+        if (StringUtils.isNotBlank(F.configService.getProperty("path.defaultRemotePath"))) {
+            F.DEFAULT_REMOTE_PATH = F.configService.getProperty("path.defaultRemotePath");
         }
-        if (StringUtils.isNotBlank(configService.getProperty("period.syncPeriod"))) {
-            F.SYNC_PERIOD = Long.valueOf(configService.getProperty("period.syncPeriod"));
+        if (StringUtils.isNotBlank(F.configService.getProperty("period.syncPeriod"))) {
+            F.SYNC_PERIOD = Long.valueOf(F.configService.getProperty("period.syncPeriod"));
         }
-        if (StringUtils.isNotBlank(configService.getProperty("period.viewRefreshPeriod"))) {
-            F.VIEW_REFRESH_PERIOD = Long.valueOf(configService.getProperty("period.viewRefreshPeriod"));
+        if (StringUtils.isNotBlank(F.configService.getProperty("period.viewRefreshPeriod"))) {
+            F.VIEW_REFRESH_PERIOD = Long.valueOf(F.configService.getProperty("period.viewRefreshPeriod"));
         }
-        if (StringUtils.isNotBlank(configService.getProperty("noteSuffix"))) {
-            F.NOTE_SUFFIX = configService.getProperty("noteSuffix");
+        if (StringUtils.isNotBlank(F.configService.getProperty("noteSuffix"))) {
+            F.NOTE_SUFFIX = F.configService.getProperty("noteSuffix");
         }
-        if (StringUtils.isNotBlank(configService.getProperty("todoSuffix"))) {
-            F.TODO_SUFFIX = configService.getProperty("todoSuffix");
+        if (StringUtils.isNotBlank(F.configService.getProperty("todoSuffix"))) {
+            F.TODO_SUFFIX = F.configService.getProperty("todoSuffix");
         }
-        if (StringUtils.isNotBlank(configService.getProperty("docSuffix"))) {
-            F.DOC_SUFFIX = configService.getProperty("docSuffix");
+        if (StringUtils.isNotBlank(F.configService.getProperty("docSuffix"))) {
+            F.DOC_SUFFIX = F.configService.getProperty("docSuffix");
+        }
+        if (StringUtils.isNotBlank(F.configService.getProperty("ACCESS_TOKEN"))) {
+            F.ACCESS_TOKEN = F.configService.getProperty("ACCESS_TOKEN");
+        }
+        if (StringUtils.isNotBlank(F.configService.getProperty("EXPIRE_DATE"))) {
+            F.EXPIRE_DATE = F.configService.getProperty("EXPIRE_DATE");
+        }
+        if (StringUtils.isNotBlank(F.configService.getProperty("REFRESH_TOKEN"))) {
+            F.REFRESH_TOKEN = F.configService.getProperty("REFRESH_TOKEN");
         }
 
         //判斷能否登陸
-        if (StringUtils.isNotBlank(configService.getProperty("username")) && StringUtils.isNotBlank(configService.getProperty("password"))) {
-            F.USERNAME = configService.getProperty("username");
-            F.PASSWORD = configService.getProperty("password");
+        if (StringUtils.isNotBlank(F.configService.getProperty("username")) && StringUtils.isNotBlank(F.configService.getProperty("password"))) {
+            F.USERNAME = F.configService.getProperty("username");
+            F.PASSWORD = F.configService.getProperty("password");
             User user = new User(F.USERNAME, F.PASSWORD);
             User login = loginService.login(user);
             if (login != null) {
@@ -191,4 +199,28 @@ public class MainApplication extends Application {
     }
 
 
+    public Scene loadMicrosoftAuth() throws IOException {
+
+        URL authResource = MainApplication.class.getClassLoader().getResource("views/auth.fxml");
+        FXMLLoader authFxmlLoader = new FXMLLoader();
+        authFxmlLoader.setLocation(authResource);
+        authFxmlLoader.setController(new AuthController());
+        Parent authParent = authFxmlLoader.load();
+
+        AuthController authController = authFxmlLoader.getController();
+        authController.setApplication(this);
+
+        Stage stage = new Stage();
+        stage.setTitle("NoteCloud");
+        authScene = new Scene(authParent);
+        stage.setScene(authScene);
+        stage.show();
+        this.authStage = stage;
+        return authScene;
+    }
+
+
+    public Stage getAuthStage() {
+        return authStage;
+    }
 }

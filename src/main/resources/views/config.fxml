@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <?import javafx.scene.control.Button?>
+<?import javafx.scene.control.CheckBox?>
 <?import javafx.scene.control.TextField?>
 <?import javafx.scene.layout.AnchorPane?>
 <?import javafx.scene.layout.VBox?>
@@ -30,6 +31,11 @@
                <children>
                   <Button layoutX="220.0" layoutY="15.0" mnemonicParsing="false" onAction="#save" text="保存并返回" />
                   <Button layoutX="330.0" layoutY="15.0" mnemonicParsing="false" onAction="#cancel" text="取消" />
+               </children>
+            </AnchorPane>
+            <AnchorPane layoutX="10.0" layoutY="283.0" prefHeight="200.0" prefWidth="200.0">
+               <children>
+                  <CheckBox fx:id="microsoftEventSwitch" layoutX="251.0" layoutY="14.0" mnemonicParsing="false" onAction="#accessMicrosoftEvent" text="开启事件同步" />
                </children>
             </AnchorPane>
          </children>

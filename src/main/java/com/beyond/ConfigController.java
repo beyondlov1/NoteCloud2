@@ -4,6 +4,7 @@ package com.beyond;
 import com.beyond.f.F;
 import com.beyond.service.ConfigService;
 import javafx.fxml.FXML;
+import javafx.scene.control.CheckBox;
 import javafx.scene.control.TextField;
 import org.apache.commons.lang3.StringUtils;
 
@@ -22,6 +23,8 @@ public class ConfigController {
     private TextField todoSuffix;
     @FXML
     private TextField docSuffix;
+    @FXML
+    private CheckBox microsoftEventSwitch;
 
     private ConfigService configService;
 
@@ -71,6 +74,17 @@ public class ConfigController {
             application.loadMainView();
         } catch (IOException e) {
             e.printStackTrace();
+        }
+    }
+
+    public void accessMicrosoftEvent(){
+        boolean isSelected = microsoftEventSwitch.isSelected();
+        if (isSelected){
+            try {
+                application.loadMicrosoftAuth();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
         }
     }
 
