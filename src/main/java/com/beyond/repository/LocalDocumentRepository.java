@@ -110,12 +110,13 @@ public class LocalDocumentRepository implements Repository<Document> {
         }
 
         if (index != -1) {
-            foundDocument.setTitle(StringUtils.isNotBlank(document.getTitle())?document.getTitle():foundDocument.getTitle());
-            foundDocument.setContent(StringUtils.isNotBlank(document.getContent())?document.getContent():foundDocument.getContent());
-            foundDocument.setVersion(foundDocument.getVersion()+1);
-            foundDocument.setCreateTime(foundDocument.getCreateTime());
-            foundDocument.setLastModifyTime(new Date());
-            foundDocument.setType(StringUtils.isNotBlank(document.getType())?document.getType():foundDocument.getType());
+            document.setTitle(StringUtils.isNotBlank(document.getTitle())?document.getTitle():foundDocument.getTitle());
+            document.setContent(StringUtils.isNotBlank(document.getContent())?document.getContent():foundDocument.getContent());
+            document.setVersion(foundDocument.getVersion()+1);
+            document.setCreateTime(foundDocument.getCreateTime());
+            document.setLastModifyTime(new Date());
+            document.setType(StringUtils.isNotBlank(document.getType())?document.getType():foundDocument.getType());
+            list.set(index,document);
             return document.getId();
         } else {
             return null;

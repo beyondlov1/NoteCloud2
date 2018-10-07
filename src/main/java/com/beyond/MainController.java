@@ -5,7 +5,6 @@ import com.beyond.entity.MicrosoftReminder;
 import com.beyond.entity.Note;
 import com.beyond.entity.Todo;
 import com.beyond.f.F;
-import com.beyond.libext.MicrosoftAzureActiveDirectoryService20;
 import com.beyond.service.*;
 import com.beyond.utils.ListUtils;
 import com.beyond.utils.SortUtils;
@@ -29,11 +28,7 @@ import javafx.util.Duration;
 import org.apache.commons.lang3.StringUtils;
 
 import java.io.IOException;
-import java.sql.Time;
-import java.text.SimpleDateFormat;
 import java.util.*;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 
 import static com.beyond.DocumentType.DOC;
 import static com.beyond.DocumentType.NOTE;
@@ -102,7 +97,7 @@ public class MainController {
         bindService = new BindService(mainService.getFxDocuments());
         bindService.init(this);
         configService = new ConfigService(F.CONFIG_PATH);
-        remindService = new RemindService(new AuthService());
+        remindService = new RemindService(new AuthService(),mainService);
     }
 
     @FXML
@@ -131,6 +126,19 @@ public class MainController {
 
         mainService.add(document);
 
+        //设置提醒
+        Thread thread = new Thread(new Runnable() {
+            @Override
+            public void run() {
+                Todo todo = null;
+                if (document instanceof Todo) todo = (Todo) document;
+                if (todo == null) return;
+                remindService.addEvent(todo,new MicrosoftReminder(todo));
+                refreshTable();
+            }
+        });
+        thread.start();
+
         //changeView
         if (source instanceof TextArea) {
             TextArea textArea = (TextArea) source;
@@ -156,27 +164,8 @@ public class MainController {
                 Date remindTime = TimeUtils.parse(validContent);
                 if (remindTime!=null){
                     todo.setRemindTime(remindTime);
-                    validContent += "  \n\n\n***\n提醒时间:"+TimeUtils.getTimeNorm(validContent);
                 }
                 todo.setContent(validContent);
-
-                //设置提醒
-                Thread thread = new Thread(new Runnable() {
-                    @Override
-                    public void run() {
-                        if (todo.getRemindTime()==null) return;
-                        MicrosoftReminder reminder = new MicrosoftReminder();
-                        reminder.setSubject(StringUtils.isBlank(todo.getTitle())?todo.getContent():todo.getTitle());
-                        reminder.getBody().setContentType("HTML");
-                        reminder.getBody().setContent(todo.getContent());
-                        reminder.getStart().setDateTime(TimeUtils.getDateStringForMicrosoftEvent(todo.getRemindTime(),"GMT+8:00"));
-                        reminder.getStart().setTimeZone("China Standard Time");
-                        reminder.getEnd().setDateTime(TimeUtils.getDateStringForMicrosoftEvent(new Date(todo.getRemindTime().getTime()+1000*60*60),"GMT+8:00"));
-                        reminder.getEnd().setTimeZone("China Standard Time");
-                        remindService.remind(reminder);
-                    }
-                });
-                thread.start();
                 return todo;
             }
             if (length > DOC.getType().length() + 1 && content.endsWith(DOC.getType() + "\n")) {
@@ -212,6 +201,18 @@ public class MainController {
         selectedDocument.setContent(document.getContent());
         mainService.update(selectedDocument.toNormalDocument());
 
+        //更新事件
+        Thread thread = new Thread(new Runnable() {
+            @Override
+            public void run() {
+                Todo todo = null;
+                if (selectedDocument.toNormalDocument() instanceof Todo) todo = (Todo) selectedDocument.toNormalDocument();
+                if (todo == null||todo.getRemindId()==null) return;
+                remindService.updateEvent(todo);
+            }
+        });
+        thread.start();
+
         //changeView
         if (source instanceof TextArea) {
             TextArea textArea = (TextArea) source;
@@ -223,8 +224,21 @@ public class MainController {
 
     @FXML
     public void delete() {
-        String selectedId = documentTableView.getSelectionModel().getSelectedItem().getId();
+        FxDocument selectedItem = documentTableView.getSelectionModel().getSelectedItem();
+        String selectedId = selectedItem.getId();
         mainService.deleteById(selectedId);
+
+        //删除提醒
+        Thread thread = new Thread(new Runnable() {
+            @Override
+            public void run() {
+                Todo todo = null;
+                if (selectedItem.toNormalDocument() instanceof Todo) todo = (Todo) selectedItem.toNormalDocument();
+                if (todo == null||todo.getRemindId()==null) return;
+                remindService.deleteEvent(todo.getRemindId());
+            }
+        });
+        thread.start();
     }
 
     @FXML
@@ -251,22 +265,7 @@ public class MainController {
             public void handle(ActionEvent event) {
                 int mergeFlag = mergeService.getMergeFlag();
                 if (mergeFlag == 1) {
-                    FxDocument selectedItem = documentTableView.getSelectionModel().getSelectedItem();
-                    //从文件获取文档
-                    mainService.pull();
-                    mainService.setFxDocuments();
-                    ObservableList<FxDocument> fxDocuments = mainService.getFxDocuments();
-
-                    //order
-                    SortUtils.sort(fxDocuments, FxDocument.class, "lastModifyTime", SortUtils.SortType.DESC);
-
-                    //刷新
-                    documentTableView.setItems(fxDocuments);
-                    if (selectedItem != null) {
-                        documentTableView.getSelectionModel().select(ListUtils.getFxDocumentIndexById(fxDocuments, selectedItem.getId()));
-                    }
-                    documentTableView.refresh();
-                    F.logger.info("refresh");
+                    refreshTable();
                     mergeService.setMergeFlag(0);
                 }
             }
@@ -278,6 +277,29 @@ public class MainController {
 
     public void stopRefresh() {
         timeline.stop();
+    }
+
+    public void refreshTable(){
+        FxDocument selectedItem = documentTableView.getSelectionModel().getSelectedItem();
+        //从文件获取文档
+        mainService.pull();
+        mainService.setFxDocuments();
+        ObservableList<FxDocument> fxDocuments = mainService.getFxDocuments();
+
+        //order
+        SortUtils.sort(fxDocuments, FxDocument.class, "lastModifyTime", SortUtils.SortType.DESC);
+
+        //刷新
+        documentTableView.setItems(fxDocuments);
+        documentTableView.refresh();
+        if (selectedItem != null) {
+            documentTableView.getSelectionModel().select(ListUtils.getFxDocumentIndexById(fxDocuments, selectedItem.getId()));
+        }else {
+            if (!documentTableView.getItems().isEmpty()){
+                documentTableView.getSelectionModel().select(0);
+            }
+        }
+        F.logger.info("refresh");
     }
 
     public Text getMessage() {

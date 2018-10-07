@@ -116,6 +116,8 @@ public class MainService {
         Serializable id = defaultLocalRepository.update(document);
         defaultLocalRepository.save();
 
+        if (!"JavaFX Application Thread".equals(Thread.currentThread().getName())) return (String)id;//防止其他线程刷新
+
         //同步fxDocument
         int index = -1;
         for (int i = 0; i < fxDocuments.size(); i++) {

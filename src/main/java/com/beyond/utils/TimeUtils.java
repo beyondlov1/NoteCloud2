@@ -48,6 +48,7 @@ public class TimeUtils {
     }
 
     public static String getDateStringForMicrosoftEvent(Date date, String timeZoneId){
+        if (date==null) return null;
         SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss");
         simpleDateFormat.setTimeZone(TimeZone.getTimeZone(timeZoneId));
         return simpleDateFormat.format(date);

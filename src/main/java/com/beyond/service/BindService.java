@@ -2,10 +2,8 @@ package com.beyond.service;
 
 import com.beyond.FxDocument;
 import com.beyond.MainController;
-import com.beyond.utils.HtmlUtils;
-import com.beyond.utils.MarkDownUtils;
-import com.beyond.utils.ReflectUtils;
-import com.beyond.utils.SortUtils;
+import com.beyond.entity.Todo;
+import com.beyond.utils.*;
 import javafx.beans.property.Property;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
@@ -195,7 +193,14 @@ public class BindService {
     }
 
     private void initWebView(WebView webView, FxDocument fxDocument) {
-        webView.getEngine().loadContent(MarkDownUtils.convertMarkDownToHtml(fxDocument.getContent()));
+        //添加事件戳
+        String timeStamp = "";
+        if (fxDocument.toNormalDocument() instanceof Todo&&StringUtils.isNotBlank(timeStamp=TimeUtils.getTimeNorm(fxDocument.getContent()))){
+            timeStamp = "  \n\n\n***\n提醒时间:"+ timeStamp;
+        }
+
+        //webview加载内容
+        webView.getEngine().loadContent(MarkDownUtils.convertMarkDownToHtml(fxDocument.getContent()+timeStamp));
     }
 
     private <S, T> Callback<TableColumn<S, T>, TableCell<S, T>> getCellFactory() {
