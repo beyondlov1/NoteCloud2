@@ -105,12 +105,8 @@
                   </AnchorPane>
                   <AnchorPane prefHeight="661.0" prefWidth="600.0" HBox.hgrow="ALWAYS">
                            <children>
-                              <WebView fx:id="webView" onKeyReleased="#save" prefHeight="661.0" prefWidth="600.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" HBox.hgrow="ALWAYS" />
-                        <AnchorPane layoutX="388.0" layoutY="587.0" prefHeight="661.0" prefWidth="600.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
-                           <children>
-                                    <Button alignment="BOTTOM_RIGHT" mnemonicParsing="false" onAction="#delete" text="delete" AnchorPane.bottomAnchor="40.0" AnchorPane.rightAnchor="50.0" />
-                           </children>
-                        </AnchorPane>
+                              <WebView fx:id="webView" prefHeight="661.0" prefWidth="600.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" HBox.hgrow="ALWAYS" />
+                              <Button alignment="BOTTOM_RIGHT" mnemonicParsing="false" onAction="#delete" text="delete" AnchorPane.bottomAnchor="40.0" AnchorPane.rightAnchor="50.0" />
                            </children>
                   </AnchorPane>
                </children>

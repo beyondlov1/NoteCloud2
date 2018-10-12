@@ -123,6 +123,7 @@ public class MainController {
         document.setCreateTime(curr);
         document.setLastModifyTime(curr);
         document.setVersion(1);
+        document.setContent(F.CONTENT_PREFIX+document.getContent());
 
         mainService.add(document);
 
@@ -134,7 +135,6 @@ public class MainController {
                 if (document instanceof Todo) todo = (Todo) document;
                 if (todo == null) return;
                 remindService.addEvent(todo,new MicrosoftReminder(todo));
-                refreshTable();
             }
         });
         thread.start();

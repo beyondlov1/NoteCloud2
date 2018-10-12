@@ -1,28 +1,4 @@
 <documents>
-  <todo id="b7b2c9ba5ca847b48d39473bd20973ad">
-    <content>明天上午9点  
-
-
-***
-提醒时间:2018年10月8日9时</content>
-    <createTime>2018-10-07 13:39:31.972 UTC</createTime>
-    <lastModifyTime>2018-10-07 13:39:59.293 UTC</lastModifyTime>
-    <version>2</version>
-    <remindTime>2018-10-08 01:00:00.0 UTC</remindTime>
-    <remindId>AQMkADAwATYwMAItYzA0OS00NjE1LTAwAi0wMAoARgAAA3ReKIZ-w-ZKgMurvBMuDeAHAEaZl6wLYyVFhABtfIbsR3cAAAIBDQAAAEaZl6wLYyVFhABtfIbsR3cAAikLJXcAAAA=</remindId>
-  </todo>
-  <todo id="e41fc8cfdc954ed7b423b807c9ebb57b">
-    <content>明天下午3点  
-
-
-***
-提醒时间:2018年10月8日15时</content>
-    <createTime>2018-10-07 13:35:36.479 UTC</createTime>
-    <lastModifyTime>2018-10-07 13:35:38.169 UTC</lastModifyTime>
-    <version>2</version>
-    <remindTime>2018-10-08 07:00:00.0 UTC</remindTime>
-    <remindId>AQMkADAwATYwMAItYzA0OS00NjE1LTAwAi0wMAoARgAAA3ReKIZ-w-ZKgMurvBMuDeAHAEaZl6wLYyVFhABtfIbsR3cAAAIBDQAAAEaZl6wLYyVFhABtfIbsR3cAAikLJXUAAAA=</remindId>
-  </todo>
   <todo id="3be928314d804153b123965db1bc8c7a">
     <content># TODO
 1. 选择网盘(tera, 坚果云)
@@ -48,35 +24,19 @@
     <lastModifyTime>2018-10-04 11:56:57.779 UTC</lastModifyTime>
     <version>5</version>
   </document>
-  <todo id="72c4d4f965e941e8bcd030bd22efce00">
-    <content>研究一下单点登陆吧哈</content>
-    <createTime>2018-10-06 09:03:47.177 UTC</createTime>
-    <lastModifyTime>2018-10-07 13:50:43.222 UTC</lastModifyTime>
-    <version>3</version>
-    <remindTime>2018-10-07 10:00:00.0 UTC</remindTime>
-  </todo>
-  <todo id="e5bc73a9cced478dbee09c474bf0aaab">
-    <content>我们明天下午5点  
-
-
-***
-提醒时间:2018年10月8日17时</content>
-    <createTime>2018-10-07 13:32:37.62 UTC</createTime>
-    <lastModifyTime>2018-10-07 13:33:14.633 UTC</lastModifyTime>
+  <document id="a92c7ea9084440e8b969f8073f789da8">
+    <content>微软app开发网址
+https://apps.dev.microsoft.com/</content>
+    <createTime>2018-10-10 04:35:14.798 UTC</createTime>
+    <lastModifyTime reference="../createTime"/>
+    <version>1</version>
+  </document>
+  <todo id="afa9f0840cb94fc38299c2c2ab31c269">
+    <content>明天下午三点</content>
+    <createTime>2018-10-12 09:51:52.996 UTC</createTime>
+    <lastModifyTime>2018-10-12 09:51:53.915 UTC</lastModifyTime>
     <version>2</version>
-    <remindTime>2018-10-08 09:00:00.0 UTC</remindTime>
-    <remindId>AQMkADAwATYwMAItYzA0OS00NjE1LTAwAi0wMAoARgAAA3ReKIZ-w-ZKgMurvBMuDeAHAEaZl6wLYyVFhABtfIbsR3cAAAIBDQAAAEaZl6wLYyVFhABtfIbsR3cAAikLJXQAAAA=</remindId>
-  </todo>
-  <todo id="9d238bc665cc49dd893e86fe4e324573">
-    <content>明天下午4点  
-
-
-***
-提醒时间:2018年10月8日16时</content>
-    <createTime>2018-10-07 13:37:01.82 UTC</createTime>
-    <lastModifyTime>2018-10-07 13:37:26.653 UTC</lastModifyTime>
-    <version>2</version>
-    <remindTime>2018-10-08 08:00:00.0 UTC</remindTime>
-    <remindId>AQMkADAwATYwMAItYzA0OS00NjE1LTAwAi0wMAoARgAAA3ReKIZ-w-ZKgMurvBMuDeAHAEaZl6wLYyVFhABtfIbsR3cAAAIBDQAAAEaZl6wLYyVFhABtfIbsR3cAAikLJXYAAAA=</remindId>
+    <remindTime>2018-10-13 07:00:00.0 UTC</remindTime>
+    <remindId>AQMkADAwATYwMAItYzA0OS00NjE1LTAwAi0wMAoARgAAA3ReKIZ-w-ZKgMurvBMuDeAHAEaZl6wLYyVFhABtfIbsR3cAAAIBDQAAAEaZl6wLYyVFhABtfIbsR3cAAixppY4AAAA=</remindId>
   </todo>
 </documents>

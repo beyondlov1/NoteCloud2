@@ -24,11 +24,19 @@
     <lastModifyTime>2018-10-04 11:56:57.779 UTC</lastModifyTime>
     <version>5</version>
   </document>
-  <todo id="72c4d4f965e941e8bcd030bd22efce00">
-    <content>研究一下单点登陆吧哈</content>
-    <createTime>2018-10-06 09:03:47.177 UTC</createTime>
-    <lastModifyTime>2018-10-07 13:53:12.352 UTC</lastModifyTime>
-    <version>5</version>
-    <remindTime>2018-10-07 10:00:00.0 UTC</remindTime>
+  <document id="a92c7ea9084440e8b969f8073f789da8">
+    <content>微软app开发网址
+https://apps.dev.microsoft.com/</content>
+    <createTime>2018-10-10 04:35:14.798 UTC</createTime>
+    <lastModifyTime reference="../createTime"/>
+    <version>1</version>
+  </document>
+  <todo id="afa9f0840cb94fc38299c2c2ab31c269">
+    <content>明天下午三点</content>
+    <createTime>2018-10-12 09:51:52.996 UTC</createTime>
+    <lastModifyTime>2018-10-12 09:51:53.915 UTC</lastModifyTime>
+    <version>2</version>
+    <remindTime>2018-10-13 07:00:00.0 UTC</remindTime>
+    <remindId>AQMkADAwATYwMAItYzA0OS00NjE1LTAwAi0wMAoARgAAA3ReKIZ-w-ZKgMurvBMuDeAHAEaZl6wLYyVFhABtfIbsR3cAAAIBDQAAAEaZl6wLYyVFhABtfIbsR3cAAixppY4AAAA=</remindId>
   </todo>
 </documents>

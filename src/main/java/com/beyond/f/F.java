@@ -9,6 +9,7 @@ import java.util.Date;
 
 public class F {
     public final static Logger logger = LogManager.getLogger();
+    public static final String CONTENT_PREFIX = "";
 
     public static String NOTE_SUFFIX = "";
     public static String TODO_SUFFIX = "";

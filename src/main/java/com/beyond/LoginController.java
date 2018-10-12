@@ -97,6 +97,7 @@ public class LoginController {
         User login = loginService.login(user);
         if (login!=null){
             application.loadMainView();
+            application.getPrimaryStage().close();
             if (rememberUsername.isSelected()){
                 configService.setProperty("username",username);
                 configService.storeProperties();

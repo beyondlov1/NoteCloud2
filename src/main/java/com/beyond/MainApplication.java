@@ -19,21 +19,23 @@ import java.net.URL;
 
 public class MainApplication extends Application {
 
-    private Stage primaryStage;
 
     private Scene mainScene;
-
     private Scene loginScene;
-
     private Scene configScene;
-
     private Scene authScene;
 
+    private Stage primaryStage;
+    private Stage mainStage;
+    private Stage loginStage;
+    private Stage configStage;
     private Stage authStage;
 
     private LoginService loginService;
 
     private SyncService syncService;
+
+    private ConfigService configService;
 
 
     public static void main(String[] args) {
@@ -43,48 +45,14 @@ public class MainApplication extends Application {
     public void init() {
         this.loginService = new LoginService();
         this.syncService = new SyncService();
+        this.configService = new ConfigService(F.CONFIG_PATH);
     }
 
     @Override
     public void start(Stage primaryStage) throws Exception {
         this.primaryStage = primaryStage;
         //加载配置文件
-        if (StringUtils.isNotBlank(F.configService.getProperty("path.defaultLocalPath"))) {
-            F.DEFAULT_LOCAL_PATH = F.configService.getProperty("path.defaultLocalPath");
-        }
-        if (StringUtils.isNotBlank(F.configService.getProperty("path.defaultDeletedPath"))) {
-            F.DEFAULT_DELETE_PATH = F.configService.getProperty("path.defaultDeletedPath");
-        }
-        if (StringUtils.isNotBlank(F.configService.getProperty("path.defaultTmpPath"))) {
-            F.DEFAULT_TMP_PATH = F.configService.getProperty("path.defaultTmpPath");
-        }
-        if (StringUtils.isNotBlank(F.configService.getProperty("path.defaultRemotePath"))) {
-            F.DEFAULT_REMOTE_PATH = F.configService.getProperty("path.defaultRemotePath");
-        }
-        if (StringUtils.isNotBlank(F.configService.getProperty("period.syncPeriod"))) {
-            F.SYNC_PERIOD = Long.valueOf(F.configService.getProperty("period.syncPeriod"));
-        }
-        if (StringUtils.isNotBlank(F.configService.getProperty("period.viewRefreshPeriod"))) {
-            F.VIEW_REFRESH_PERIOD = Long.valueOf(F.configService.getProperty("period.viewRefreshPeriod"));
-        }
-        if (StringUtils.isNotBlank(F.configService.getProperty("noteSuffix"))) {
-            F.NOTE_SUFFIX = F.configService.getProperty("noteSuffix");
-        }
-        if (StringUtils.isNotBlank(F.configService.getProperty("todoSuffix"))) {
-            F.TODO_SUFFIX = F.configService.getProperty("todoSuffix");
-        }
-        if (StringUtils.isNotBlank(F.configService.getProperty("docSuffix"))) {
-            F.DOC_SUFFIX = F.configService.getProperty("docSuffix");
-        }
-        if (StringUtils.isNotBlank(F.configService.getProperty("ACCESS_TOKEN"))) {
-            F.ACCESS_TOKEN = F.configService.getProperty("ACCESS_TOKEN");
-        }
-        if (StringUtils.isNotBlank(F.configService.getProperty("EXPIRE_DATE"))) {
-            F.EXPIRE_DATE = F.configService.getProperty("EXPIRE_DATE");
-        }
-        if (StringUtils.isNotBlank(F.configService.getProperty("REFRESH_TOKEN"))) {
-            F.REFRESH_TOKEN = F.configService.getProperty("REFRESH_TOKEN");
-        }
+        configService.loadConfig(F.class);
 
         //判斷能否登陸
         if (StringUtils.isNotBlank(F.configService.getProperty("username")) && StringUtils.isNotBlank(F.configService.getProperty("password"))) {
@@ -136,7 +104,10 @@ public class MainApplication extends Application {
     public Scene loadMainView() throws IOException {
 
         if (mainScene != null) {
-            primaryStage.setScene(mainScene);
+            if (mainStage==null){
+                mainStage = new Stage();
+            }
+            mainStage.setScene(mainScene);
             return mainScene;
         }
 
@@ -148,16 +119,19 @@ public class MainApplication extends Application {
         fxmlLoader.setController(new MainController());
         Parent parent = fxmlLoader.load();
         //Parent parent = FXMLLoader.load(Objects.requireNonNull(mainResource)); //这种方法不能获取到controller
-
-        primaryStage.setTitle("NoteCloud");
         mainScene = new Scene(parent);
+
+        //创建stage
+        mainStage = new Stage();
+        mainStage.setTitle("NoteCloud");
+        mainStage.setScene(mainScene);
 
         MainController controller = fxmlLoader.getController();
         controller.setApplication(this);
         controller.startRefresh(syncService.getMergeService());
         syncService.startSynchronize();
 
-        primaryStage.setOnCloseRequest(new EventHandler<WindowEvent>() {
+        mainStage.setOnCloseRequest(new EventHandler<WindowEvent>() {
             @Override
             public void handle(WindowEvent event) {
                 controller.stopRefresh();
@@ -165,7 +139,7 @@ public class MainApplication extends Application {
             }
         });
 
-        primaryStage.setScene(mainScene);
+        mainStage.show();
         return mainScene;
     }
 
@@ -173,7 +147,10 @@ public class MainApplication extends Application {
     public Scene loadConfigView() throws IOException {
 
         if (configScene != null) {
-            primaryStage.setScene(configScene);
+            if (configStage == null){
+                configStage = new Stage();
+            }
+            configStage.setScene(configScene);
             return configScene;
         }
 
@@ -185,16 +162,15 @@ public class MainApplication extends Application {
         fxmlLoader.setController(new ConfigController());
         Parent parent = fxmlLoader.load();
         //Parent parent = FXMLLoader.load(Objects.requireNonNull(mainResource)); //这种方法不能获取到controller
-
-        primaryStage.setTitle("NoteCloud");
         configScene = new Scene(parent);
 
         ConfigController controller = fxmlLoader.getController();
         controller.setApplication(this);
 
-        Stage stage = new Stage();
-        stage.setScene(configScene);
-        stage.show();
+        configStage = new Stage();
+        configStage.setTitle("NoteCloud");
+        configStage.setScene(configScene);
+        configStage.show();
         return configScene;
     }
 
@@ -222,5 +198,21 @@ public class MainApplication extends Application {
 
     public Stage getAuthStage() {
         return authStage;
+    }
+
+    public Stage getPrimaryStage() {
+        return primaryStage;
+    }
+
+    public Stage getMainStage() {
+        return mainStage;
+    }
+
+    public Stage getLoginStage() {
+        return loginStage;
+    }
+
+    public Stage getConfigStage() {
+        return configStage;
     }
 }
