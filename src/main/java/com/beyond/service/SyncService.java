@@ -22,7 +22,11 @@ public class SyncService {
         TimerTask timerTask = new TimerTask() {
             @Override
             public void run() {
-                mergeService.handle();
+                try {
+                    mergeService.handle();
+                }catch (Exception e){
+                    F.logger.info(e.getMessage());
+                }
             }
         };
         timer.schedule(timerTask, 0, F.SYNC_PERIOD);

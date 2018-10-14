@@ -7,8 +7,26 @@ import java.util.Date;
 
 public class Todo extends Document {
     private Date remindTime;
-
+    private Date remoteRemindTime;
     private String remindId;
+    private Reminder reminder;
+
+    public Reminder getReminder() {
+        return reminder;
+    }
+
+    public void setReminder(Reminder reminder) {
+        this.reminder = reminder;
+    }
+
+
+    public Date getRemoteRemindTime() {
+        return remoteRemindTime;
+    }
+
+    public void setRemoteRemindTime(Date remoteRemindTime) {
+        this.remoteRemindTime = remoteRemindTime;
+    }
 
     public String getRemindId() {
         return remindId;

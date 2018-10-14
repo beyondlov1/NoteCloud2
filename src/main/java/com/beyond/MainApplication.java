@@ -75,6 +75,7 @@ public class MainApplication extends Application {
 
         if (loginScene != null) {
             primaryStage.setScene(loginScene);
+            primaryStage.show();
             return loginScene;
         }
 
@@ -108,6 +109,7 @@ public class MainApplication extends Application {
                 mainStage = new Stage();
             }
             mainStage.setScene(mainScene);
+            mainStage.show();
             return mainScene;
         }
 
@@ -128,13 +130,12 @@ public class MainApplication extends Application {
 
         MainController controller = fxmlLoader.getController();
         controller.setApplication(this);
-        controller.startRefresh(syncService.getMergeService());
+        controller.startObserve(syncService.getMergeService());
         syncService.startSynchronize();
 
         mainStage.setOnCloseRequest(new EventHandler<WindowEvent>() {
             @Override
             public void handle(WindowEvent event) {
-                controller.stopRefresh();
                 syncService.stopSynchronize();
             }
         });
@@ -151,6 +152,7 @@ public class MainApplication extends Application {
                 configStage = new Stage();
             }
             configStage.setScene(configScene);
+            configStage.show();
             return configScene;
         }
 

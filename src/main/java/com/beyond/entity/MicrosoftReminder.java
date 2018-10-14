@@ -1,18 +1,59 @@
 package com.beyond.entity;
 
 import com.beyond.utils.TimeUtils;
+import com.fasterxml.jackson.annotation.JsonAlias;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import org.apache.commons.lang3.StringUtils;
 
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.SimpleTimeZone;
+import java.util.TimeZone;
 
-public class MicrosoftReminder {
+public class MicrosoftReminder implements Reminder{
     private String subject;
     private ContentBody body = new ContentBody();
     private TimeUnit start = new TimeUnit();
     private TimeUnit end = new TimeUnit();
     @JsonIgnore
     private String id;
+
+    @JsonProperty("@odata.context")
+    private String context;
+
+    @JsonProperty("@odata.id")
+    private String idz;
+
+    @JsonProperty("@odata.etag")
+    private String etag;
+
+
+    @JsonIgnore
+    public String getContext() {
+        return context;
+    }
+
+    public void setContext(String context) {
+        this.context = context;
+    }
+    @JsonIgnore
+    public String getIdz() {
+        return idz;
+    }
+
+    public void setIdz(String idz) {
+        this.idz = idz;
+    }
+    @JsonIgnore
+    public String getEtag() {
+        return etag;
+    }
+
+    public void setEtag(String etag) {
+        this.etag = etag;
+    }
 
     public MicrosoftReminder() {
 
@@ -76,6 +117,12 @@ public class MicrosoftReminder {
 
         public void setTimeZone(String timeZone) {
             this.timeZone = timeZone;
+        }
+
+        public Date toDate() throws ParseException {
+            SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss");
+            simpleDateFormat.setTimeZone(TimeZone.getTimeZone(timeZone));
+            return simpleDateFormat.parse(dateTime);
         }
     }
 

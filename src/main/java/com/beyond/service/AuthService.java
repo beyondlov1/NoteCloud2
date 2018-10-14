@@ -36,7 +36,7 @@ public class AuthService {
                 String newAccessToken = refreshAccessToken(F.REFRESH_TOKEN);
                 if (StringUtils.isNotBlank(newAccessToken)) {
                     F.ACCESS_TOKEN = newAccessToken;
-                    F.configService.setProperty("ACCESS_TOKEN",F.ACCESS_TOKEN);
+                    F.configService.setProperty("accessToken",F.ACCESS_TOKEN);
                     F.configService.storeProperties();
                     return newAccessToken;
                 }
@@ -60,9 +60,9 @@ public class AuthService {
             F.ACCESS_TOKEN = accessToken.getAccessToken();
             F.REFRESH_TOKEN = accessToken.getRefreshToken();
 
-            F.configService.setProperty("EXPIRE_DATE",F.EXPIRE_DATE);
-            F.configService.setProperty("ACCESS_TOKEN",F.ACCESS_TOKEN);
-            F.configService.setProperty("REFRESH_TOKEN",F.REFRESH_TOKEN);
+            F.configService.setProperty("expireDate",F.EXPIRE_DATE);
+            F.configService.setProperty("accessToken",F.ACCESS_TOKEN);
+            F.configService.setProperty("refreshToken",F.REFRESH_TOKEN);
             F.configService.storeProperties();
 
             return F.ACCESS_TOKEN;

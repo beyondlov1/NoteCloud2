@@ -34,7 +34,7 @@
                         <CheckBox fx:id="rememberPass" layoutX="126.0" layoutY="1.0" mnemonicParsing="false" onAction="#rememberPass" text="记住密码" />
                      </children>
                   </Group>
-                  <Button fx:id="login" mnemonicParsing="false" onAction="#login" prefHeight="30.0" prefWidth="202.0" text="登陆">
+                  <Button fx:id="loginButton" mnemonicParsing="false" onAction="#login" prefHeight="30.0" prefWidth="202.0" text="登陆">
                      <VBox.margin>
                         <Insets bottom="5.0" top="5.0" />
                      </VBox.margin>

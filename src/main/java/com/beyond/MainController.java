@@ -9,12 +9,9 @@ import com.beyond.service.*;
 import com.beyond.utils.ListUtils;
 import com.beyond.utils.SortUtils;
 import com.beyond.utils.TimeUtils;
-import javafx.animation.Animation;
-import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;
+import javafx.application.Platform;
 import javafx.collections.ObservableList;
-import javafx.event.ActionEvent;
-import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
 import javafx.scene.control.TextArea;
@@ -24,7 +21,6 @@ import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.HBox;
 import javafx.scene.text.Text;
 import javafx.scene.web.WebView;
-import javafx.util.Duration;
 import org.apache.commons.lang3.StringUtils;
 
 import java.io.IOException;
@@ -35,7 +31,7 @@ import static com.beyond.DocumentType.NOTE;
 import static com.beyond.DocumentType.TODO;
 
 
-public class MainController {
+public class MainController implements Observer{
 
     //添加组件
     @FXML
@@ -82,7 +78,8 @@ public class MainController {
     private MainService mainService;
     private BindService bindService;
     private ConfigService configService;
-    private RemindService remindService;
+    private RemindServiceImpl remindService;
+    private RemindServiceAsyn remindServiceAsyn;
 
     private MainApplication application;
 
@@ -97,7 +94,8 @@ public class MainController {
         bindService = new BindService(mainService.getFxDocuments());
         bindService.init(this);
         configService = new ConfigService(F.CONFIG_PATH);
-        remindService = new RemindService(new AuthService(),mainService);
+        remindService = new RemindServiceImpl(new AuthService(),mainService);
+        remindServiceAsyn = new RemindServiceAsynImpl(new RemindServiceRemote(new AuthService()));
     }
 
     @FXML
@@ -127,18 +125,6 @@ public class MainController {
 
         mainService.add(document);
 
-        //设置提醒
-        Thread thread = new Thread(new Runnable() {
-            @Override
-            public void run() {
-                Todo todo = null;
-                if (document instanceof Todo) todo = (Todo) document;
-                if (todo == null) return;
-                remindService.addEvent(todo,new MicrosoftReminder(todo));
-            }
-        });
-        thread.start();
-
         //changeView
         if (source instanceof TextArea) {
             TextArea textArea = (TextArea) source;
@@ -146,6 +132,57 @@ public class MainController {
         }
         documentTableView.requestFocus();
         documentTableView.getSelectionModel().select(0);
+
+        //设置提醒
+//        if (document instanceof Todo) {
+//            Todo todo = (Todo) document;
+//            remindServiceAsyn.addEvent(new MicrosoftReminder(todo), new Callback<String>() {
+//                @Override
+//                public String call(Object object) {
+//                    String remindId = object.toString();
+//                    todo.setRemindId(remindId);
+//                    todo.setRemindTime(TimeUtils.parse(todo.getContent()));
+//                    mainService.update(todo);
+//                    refreshTable();
+//                    remindServiceAsyn.readEvent(remindId, new Callback() {
+//                        @Override
+//                        public Object call(Object object)  {
+//                            try {
+//                                MicrosoftReminder reminder = (MicrosoftReminder) object;
+//                                todo.setRemoteRemindTime(reminder.getStart().toDate());
+//                                mainService.update(todo);
+//                                refreshTable();
+//                                refreshWebView();
+//                            } catch (ParseException e) {
+//                                e.printStackTrace();
+//                            }
+//                            return null;
+//                        }
+//                    });
+//                    return null;
+//                }
+//            });
+//        }
+
+        Thread thread = new Thread(new Runnable() {
+            @Override
+            public void run() {
+                Todo todo = null;
+                if (document instanceof Todo) todo = (Todo) document;
+                if (todo == null) return;
+                remindService.addEvent(todo,new MicrosoftReminder(todo));
+                remindService.readEvent(todo);
+
+                Platform.runLater(new Runnable() {
+                    @Override
+                    public void run() {
+                        refreshTable();
+                        refreshWebView();
+                    }
+                });
+            }
+        });
+        thread.start();
     }
 
     private Document validate(String content) {
@@ -209,6 +246,14 @@ public class MainController {
                 if (selectedDocument.toNormalDocument() instanceof Todo) todo = (Todo) selectedDocument.toNormalDocument();
                 if (todo == null||todo.getRemindId()==null) return;
                 remindService.updateEvent(todo);
+
+                Platform.runLater(new Runnable() {
+                    @Override
+                    public void run() {
+                        refreshTable();
+                        refreshWebView();
+                    }
+                });
             }
         });
         thread.start();
@@ -236,6 +281,14 @@ public class MainController {
                 if (selectedItem.toNormalDocument() instanceof Todo) todo = (Todo) selectedItem.toNormalDocument();
                 if (todo == null||todo.getRemindId()==null) return;
                 remindService.deleteEvent(todo.getRemindId());
+
+                Platform.runLater(new Runnable() {
+                    @Override
+                    public void run() {
+                        refreshTable();
+                        refreshWebView();
+                    }
+                });
             }
         });
         thread.start();
@@ -244,7 +297,6 @@ public class MainController {
     @FXML
     public void openConfig() throws IOException {
         F.logger.info("open config");
-        this.stopRefresh();
         application.loadConfigView();
     }
 
@@ -259,24 +311,8 @@ public class MainController {
         application.loadLoginView();
     }
 
-    public void startRefresh(MergeService mergeService) {
-        timeline = new Timeline(new KeyFrame(Duration.millis(F.VIEW_REFRESH_PERIOD), new EventHandler<ActionEvent>() {
-            @Override
-            public void handle(ActionEvent event) {
-                int mergeFlag = mergeService.getMergeFlag();
-                if (mergeFlag == 1) {
-                    refreshTable();
-                    mergeService.setMergeFlag(0);
-                }
-            }
-        }));
-        timeline.setDelay(new Duration(0));
-        timeline.setCycleCount(Animation.INDEFINITE);
-        timeline.play();
-    }
-
-    public void stopRefresh() {
-        timeline.stop();
+    public void startObserve(Observable observable) {
+        observable.addObserver(this);
     }
 
     public void refreshTable(){
@@ -299,7 +335,24 @@ public class MainController {
                 documentTableView.getSelectionModel().select(0);
             }
         }
-        F.logger.info("refresh");
+        F.logger.info("refreshTable");
+    }
+
+    public void refreshWebView(){
+        FxDocument selectedItem = documentTableView.getSelectionModel().getSelectedItem();
+        bindService.initWebView(webView,selectedItem);
+        F.logger.info("refreshWebView");
+    }
+
+    /**
+     * 监控刷新
+     * @param o
+     * @param arg
+     */
+    @Override
+    public void update(Observable o, Object arg) {
+        refreshTable();
+        refreshWebView();
     }
 
     public Text getMessage() {
@@ -361,7 +414,6 @@ public class MainController {
     public MainApplication getApplication() {
         return application;
     }
-
 
 }
 

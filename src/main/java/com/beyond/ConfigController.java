@@ -30,56 +30,50 @@ public class ConfigController {
 
     private MainApplication application;
 
-    public void initialize(){
+    public void initialize() {
         configService = new ConfigService(F.CONFIG_PATH);
 
         //获取设置值
-        if (StringUtils.isNotBlank(F.NOTE_SUFFIX)){
+        if (StringUtils.isNotBlank(F.NOTE_SUFFIX)) {
             noteSuffix.setText(F.NOTE_SUFFIX);
         }
-        if (StringUtils.isNotBlank(F.TODO_SUFFIX)){
+        if (StringUtils.isNotBlank(F.TODO_SUFFIX)) {
             todoSuffix.setText(F.TODO_SUFFIX);
         }
-        if (StringUtils.isNotBlank(F.DOC_SUFFIX)){
+        if (StringUtils.isNotBlank(F.DOC_SUFFIX)) {
             docSuffix.setText(F.DOC_SUFFIX);
+        }
+        if (StringUtils.isNotBlank(F.ACCESS_TOKEN)) {
+            microsoftEventSwitch.setSelected(true);
         }
     }
 
     public void save() {
-        if (StringUtils.isNotBlank(noteSuffix.getText())){
+        if (StringUtils.isNotBlank(noteSuffix.getText())) {
             F.NOTE_SUFFIX = noteSuffix.getText();
             configService.setProperty("noteSuffix", F.NOTE_SUFFIX);
         }
-        if (StringUtils.isNotBlank(todoSuffix.getText())){
+        if (StringUtils.isNotBlank(todoSuffix.getText())) {
             F.TODO_SUFFIX = todoSuffix.getText();
             configService.setProperty("todoSuffix", F.TODO_SUFFIX);
         }
-        if (StringUtils.isNotBlank(docSuffix.getText())){
+        if (StringUtils.isNotBlank(docSuffix.getText())) {
             F.DOC_SUFFIX = docSuffix.getText();
             configService.setProperty("docSuffix", F.DOC_SUFFIX);
         }
         configService.storeProperties();
 
         //跳转
-        try {
-            application.loadMainView();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        application.getConfigStage().close();
     }
 
     public void cancel() {
-        //跳转
-        try {
-            application.loadMainView();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        application.getConfigStage().close();
     }
 
-    public void accessMicrosoftEvent(){
+    public void accessMicrosoftEvent() {
         boolean isSelected = microsoftEventSwitch.isSelected();
-        if (isSelected){
+        if (isSelected) {
             try {
                 application.loadMicrosoftAuth();
             } catch (IOException e) {

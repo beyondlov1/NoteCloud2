@@ -29,20 +29,22 @@ public class RemoteBase {
         credentialsProvider.setCredentials(AuthScope.ANY, credentials);
         return credentialsProvider;
     }
-    protected CloseableHttpClient getClient(){
+
+    protected CloseableHttpClient getClient() {
         //initClient
         HttpClientBuilder builder = HttpClientBuilder.create();
-        builder.setDefaultCredentialsProvider(getCredentialsProvider(new User(F.USERNAME,F.PASSWORD)));
+        builder.setDefaultCredentialsProvider(getCredentialsProvider(new User(F.USERNAME, F.PASSWORD)));
         return builder.build();
     }
 
-    protected CloseableHttpClient getClient(CredentialsProvider credentialsProvider){
+    protected CloseableHttpClient getClient(CredentialsProvider credentialsProvider) {
         //initClient
         HttpClientBuilder builder = HttpClientBuilder.create();
         builder.setDefaultCredentialsProvider(credentialsProvider);
         return builder.build();
     }
-    protected CloseableHttpClient getClient(User user){
+
+    protected CloseableHttpClient getClient(User user) {
         //initClient
         HttpClientBuilder builder = HttpClientBuilder.create();
         builder.setDefaultCredentialsProvider(getCredentialsProvider(user));
@@ -61,7 +63,7 @@ public class RemoteBase {
         return response;
     }
 
-    protected void release(CloseableHttpClient client){
+    protected void release(CloseableHttpClient client) {
         if (client != null) {
             try {
                 client.close();
@@ -72,6 +74,9 @@ public class RemoteBase {
     }
 
     protected String getContentFromResponse(CloseableHttpResponse response) {
+        if (response == null) {
+            return "";
+        }
         StringBuilder stringBuilder = new StringBuilder();
         HttpEntity entity = response.getEntity();
         try {

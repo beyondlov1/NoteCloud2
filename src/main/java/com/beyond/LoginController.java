@@ -4,6 +4,8 @@ import com.beyond.entity.User;
 import com.beyond.f.F;
 import com.beyond.service.ConfigService;
 import com.beyond.service.LoginService;
+import javafx.concurrent.Service;
+import javafx.concurrent.Task;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
@@ -29,7 +31,7 @@ public class LoginController {
     @FXML
     private CheckBox rememberPass;
     @FXML
-    private Button login;
+    private Button loginButton;
 
     private LoginService loginService;
     private ConfigService configService;
@@ -37,7 +39,7 @@ public class LoginController {
     private MainApplication application;
 
     @FXML
-    private void initialize(){
+    private void initialize() {
         this.loginService = new LoginService();
         this.configService = new ConfigService(F.CONFIG_PATH);
         initViews();
@@ -47,22 +49,22 @@ public class LoginController {
     private void initViews() {
         String username = configService.getProperty("username");
         String password = configService.getProperty("password");
-        if (StringUtils.isNotBlank(username)){
+        if (StringUtils.isNotBlank(username)) {
             usernameText.setText(username);
             usernameText.setFocusTraversable(false);
             rememberUsername.setSelected(true);
         }
-        if (StringUtils.isNotBlank(password)){
+        if (StringUtils.isNotBlank(password)) {
             passwordText.setText(password);
             rememberPass.setSelected(true);
         }
     }
 
-    private void initListeners(){
+    private void initListeners() {
         usernameText.setOnKeyReleased(new EventHandler<KeyEvent>() {
             @Override
             public void handle(KeyEvent event) {
-                if (event.getCode()== KeyCode.ENTER){
+                if (event.getCode() == KeyCode.ENTER) {
                     usernameText.setFocusTraversable(false);
                     passwordText.requestFocus();
                 }
@@ -71,7 +73,7 @@ public class LoginController {
         passwordText.setOnKeyReleased(new EventHandler<KeyEvent>() {
             @Override
             public void handle(KeyEvent event) {
-                if (event.getCode()== KeyCode.ENTER){
+                if (event.getCode() == KeyCode.ENTER) {
                     try {
                         login();
                     } catch (IOException e) {
@@ -84,37 +86,59 @@ public class LoginController {
     }
 
     @FXML
-    public User login() throws IOException {
+    public void login() throws IOException {
         msg.setText("登陆中...");
+        loginButton.setDisable(true);
         String username = usernameText.getText();
         String password = passwordText.getText();
-        if (StringUtils.isBlank(username)||StringUtils.isBlank(password)){
+        if (StringUtils.isBlank(username) || StringUtils.isBlank(password)) {
             msg.setText("用户名或密码为空");
-            return null;
+            loginButton.setDisable(false);
+            return;
         }
 
-        User user = new User(username,password);
-        User login = loginService.login(user);
-        if (login!=null){
-            application.loadMainView();
-            application.getPrimaryStage().close();
-            if (rememberUsername.isSelected()){
-                configService.setProperty("username",username);
-                configService.storeProperties();
+        User user = new User(username, password);
+        Service<User> service = new Service<User>() {
+            @Override
+            protected Task<User> createTask() {
+                return new Task<User>() {
+                    @Override
+                    protected User call() throws Exception {
+                        return loginService.login(user);
+                    }
+                };
             }
-            if (rememberPass.isSelected()){
-                configService.setProperty("username",username);
-                configService.setProperty("password",password);
-                configService.storeProperties();
+
+            @Override
+            protected void succeeded() {
+                super.succeeded();
+                try {
+                    if (getValue() != null) {
+                        application.loadMainView();
+                        application.getPrimaryStage().close();
+                        if (rememberUsername.isSelected()) {
+                            configService.setProperty("username", username);
+                            configService.storeProperties();
+                        }
+                        if (rememberPass.isSelected()) {
+                            configService.setProperty("username", username);
+                            configService.setProperty("password", password);
+                            configService.storeProperties();
+                        }
+                    } else {
+                        msg.setText("用户名或密码错误");
+                        loginButton.setDisable(false);
+                    }
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
             }
-        }else {
-            msg.setText("用户名或密码错误");
-        }
-        return login;
+        };
+        service.start();
     }
 
     @FXML
-    public void rememberPass(){
+    public void rememberPass() {
         rememberUsername.setSelected(true);
     }
 

@@ -1,5 +1,6 @@
 package com.beyond.service;
 
+import com.beyond.callback.Callback;
 import com.beyond.entity.Document;
 import com.beyond.f.F;
 import com.beyond.property.LocalPropertyManager;
@@ -18,7 +19,7 @@ import java.util.concurrent.Executors;
 /**
  * 同步服务
  */
-public class MergeService {
+public class MergeService extends Observable {
     private Repository<Document> localRepository;
     private Repository<Document> remoteRepository;
     private PropertyManager localPropertyManager;
@@ -48,20 +49,20 @@ public class MergeService {
     /**
      * 同步
      */
-    public synchronized void handle(){
-        Map<String ,String> localPropertiesMap = localPropertyManager.getAllProperties();
+    public synchronized void handle() {
+        Map<String, String> localPropertiesMap = localPropertyManager.getAllProperties();
         Map<String, String> remotePropertiesMap = remotePropertyManager.getAllProperties();
-        String localLastModifyTime = localPropertiesMap.getOrDefault("_lastModifyTime","0");
-        String remoteLastModifyTime = remotePropertiesMap.getOrDefault("_lastModifyTime","0");
-        if (!StringUtils.equals(localLastModifyTime,"")
-                && !StringUtils.equals(localLastModifyTime,"0")
-                &&StringUtils.equals(localLastModifyTime, remoteLastModifyTime)) {
+        String localLastModifyTime = localPropertiesMap.getOrDefault("_lastModifyTime", "0");
+        String remoteLastModifyTime = remotePropertiesMap.getOrDefault("_lastModifyTime", "0");
+        if (!StringUtils.equals(localLastModifyTime, "")
+                && !StringUtils.equals(localLastModifyTime, "0")
+                && StringUtils.equals(localLastModifyTime, remoteLastModifyTime)) {
             return;
         }
 
-        if (!remoteRepository.isAvailable()){
+        if (!remoteRepository.isAvailable()) {
             failCount++;
-            if (failCount>20){//连接20次失败, 强制解锁
+            if (failCount > 20) {//连接20次失败, 强制解锁
                 remoteRepository.unlock();
                 failCount = 0;
             }
@@ -74,22 +75,22 @@ public class MergeService {
         List<Document> merge = merge();
 
         //设置属性
-        String localVersion =localPropertiesMap.getOrDefault("_version","0");
-        String remoteVersion =  remotePropertiesMap.getOrDefault("_version","0");
-        String currentTime = System.currentTimeMillis()+"";
-        if (StringUtils.isNotBlank(localPropertiesMap.getOrDefault("_modifyIds",""))){
-            localPropertyManager.set("_lastModifyTime",currentTime);
+        String localVersion = localPropertiesMap.getOrDefault("_version", "0");
+        String remoteVersion = remotePropertiesMap.getOrDefault("_version", "0");
+        String currentTime = System.currentTimeMillis() + "";
+        if (StringUtils.isNotBlank(localPropertiesMap.getOrDefault("_modifyIds", ""))) {
+            localPropertyManager.set("_lastModifyTime", currentTime);
             remoteLocalPropertyManager.set("_lastModifyTime", currentTime);
-        }else {
-            String remoteTime = remotePropertiesMap.getOrDefault("_lastModifyTime","");
-            localPropertyManager.set("_lastModifyTime",remoteTime);
+        } else {
+            String remoteTime = remotePropertiesMap.getOrDefault("_lastModifyTime", "");
+            localPropertyManager.set("_lastModifyTime", remoteTime);
             remoteLocalPropertyManager.set("_lastModifyTime", remoteTime);
         }
-        localPropertyManager.set("_version",localVersion.compareTo(remoteVersion)<0?remoteVersion:localVersion);
-        remoteLocalPropertyManager.set("_version",localVersion.compareTo(remoteVersion)<0?remoteVersion:localVersion);
+        localPropertyManager.set("_version", localVersion.compareTo(remoteVersion) < 0 ? remoteVersion : localVersion);
+        remoteLocalPropertyManager.set("_version", localVersion.compareTo(remoteVersion) < 0 ? remoteVersion : localVersion);
         //清空modifyIds
-        localPropertyManager.set("_modifyIds","");
-        remoteLocalPropertyManager.set("_modifyIds","");
+        localPropertyManager.set("_modifyIds", "");
+        remoteLocalPropertyManager.set("_modifyIds", "");
 
         //持久化
         localRepository.save(merge);
@@ -103,6 +104,7 @@ public class MergeService {
 
     /**
      * 合并本地与远程
+     *
      * @return 合并后列表
      */
     private List<Document> merge() {
@@ -174,6 +176,11 @@ public class MergeService {
         }
 
         return result;
+    }
+
+    @Override
+    public synchronized boolean hasChanged() {
+        return mergeFlag == 1;
     }
 
     public int getMergeFlag() {

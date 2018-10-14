@@ -24,6 +24,9 @@ import javafx.scene.web.WebView;
 import javafx.util.Callback;
 import org.apache.commons.lang3.StringUtils;
 
+import java.text.SimpleDateFormat;
+import java.util.Date;
+
 import static org.apache.http.client.methods.RequestBuilder.delete;
 
 /**
@@ -192,11 +195,18 @@ public class BindService {
         updateTextArea.setText(fxDocument.getContent());
     }
 
-    private void initWebView(WebView webView, FxDocument fxDocument) {
+    public void initWebView(WebView webView, FxDocument fxDocument) {
         //添加事件戳
         String timeStamp = "";
-        if (fxDocument.toNormalDocument() instanceof Todo&&StringUtils.isNotBlank(timeStamp=TimeUtils.getTimeNorm(fxDocument.getContent()))){
-            timeStamp = "  \n\n\n***\n提醒时间:"+ timeStamp;
+        if (fxDocument.toNormalDocument() instanceof Todo
+                && ((Todo)fxDocument.toNormalDocument()).getRemindTime()!=null
+                && StringUtils.isNotBlank(TimeUtils.getTimeNorm(fxDocument.getContent()))){
+            Todo todo = (Todo)fxDocument.toNormalDocument();
+            Date remoteRemindTime = todo.getRemoteRemindTime();
+            if (remoteRemindTime !=null){
+                SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+                timeStamp = "  \n\n\n***\n提醒时间:"+ simpleDateFormat.format(remoteRemindTime);
+            }
         }
 
         //webview加载内容
