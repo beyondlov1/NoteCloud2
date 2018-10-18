@@ -1,17 +1,11 @@
 <documents>
-  <todo id="3be928314d804153b123965db1bc8c7a">
-    <content># TODO
-1. 选择网盘(tera, 坚果云)
-2. 设置提醒方式(参考windows10)
-3. 解决非命令启动中文乱码的问题
-4. 用spring框架?
-5. 设置的快捷键设置
-6. 回收站
-7. 调用outlook接口, 创建event</content>
-    <createTime>2018-10-04 11:23:55.595 UTC</createTime>
-    <lastModifyTime>2018-10-04 15:09:03.148 UTC</lastModifyTime>
-    <version>4</version>
-  </todo>
+  <document id="a92c7ea9084440e8b969f8073f789da8">
+    <content>微软app开发网址
+https://apps.dev.microsoft.com/</content>
+    <createTime>2018-10-10 04:35:14.798 UTC</createTime>
+    <lastModifyTime reference="../createTime"/>
+    <version>1</version>
+  </document>
   <document id="22653f7a2d15484993a31d341b636d98">
     <content># Created By beyondlov1
 1. lalala
@@ -24,20 +18,17 @@
     <lastModifyTime>2018-10-04 11:56:57.779 UTC</lastModifyTime>
     <version>5</version>
   </document>
-  <document id="a92c7ea9084440e8b969f8073f789da8">
-    <content>微软app开发网址
-https://apps.dev.microsoft.com/</content>
-    <createTime>2018-10-10 04:35:14.798 UTC</createTime>
-    <lastModifyTime reference="../createTime"/>
-    <version>1</version>
-  </document>
-  <todo id="6cb54cc7290247a9bd37749339862442">
-    <content>测试5分钟后</content>
-    <createTime>2018-10-14 14:12:47.722 UTC</createTime>
-    <lastModifyTime>2018-10-14 14:12:56.330 UTC</lastModifyTime>
-    <version>3</version>
-    <remindTime>2018-10-14 14:17:00.0 UTC</remindTime>
-    <remoteRemindTime>2018-10-14 14:17:00.0 UTC</remoteRemindTime>
-    <remindId>AQMkADAwATYwMAItYzA0OS00NjE1LTAwAi0wMAoARgAAA3ReKIZ-w-ZKgMurvBMuDeAHAEaZl6wLYyVFhABtfIbsR3cAAAIBDQAAAEaZl6wLYyVFhABtfIbsR3cAAi3zQXEAAAA=</remindId>
+  <todo id="3be928314d804153b123965db1bc8c7a">
+    <content># TODO
+1. 选择网盘(tera, 坚果云)
+2. 设置提醒方式(参考windows10)
+3. 解决非命令启动中文乱码的问题
+4. 用spring框架?
+5. 设置的快捷键设置
+6. 回收站
+7. 调用outlook接口, 创建event</content>
+    <createTime>2018-10-04 11:23:55.595 UTC</createTime>
+    <lastModifyTime>2018-10-04 15:09:03.148 UTC</lastModifyTime>
+    <version>4</version>
   </todo>
 </documents>

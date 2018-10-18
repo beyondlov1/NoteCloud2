@@ -1,20 +1,15 @@
 package com.beyond.service;
 
-import com.beyond.entity.MicrosoftReminder;
-import com.beyond.entity.Todo;
+import com.beyond.entity.Reminder;
 
-/**
- * 未使用
- */
-public interface RemindService {
+import java.io.Serializable;
+import java.util.Collection;
 
-    String addEvent(MicrosoftReminder reminder);
-
-    String deleteEvent(MicrosoftReminder reminder);
-
-    String deleteEvent(String remindId);
-
-    String updateEvent(MicrosoftReminder reminder);
-
-    MicrosoftReminder readEvent(String remindId);
+public interface RemindService<T> {
+    Serializable addEvent(T reminder);
+    Serializable modifyEvent(T reminder);
+    Serializable removeEvent(T reminder);
+    Serializable removeEvent(Serializable id);
+    T readEvent(Serializable id);
+    Collection<T> readAllEvent();
 }

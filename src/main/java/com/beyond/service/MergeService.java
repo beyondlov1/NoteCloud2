@@ -1,20 +1,16 @@
 package com.beyond.service;
 
-import com.beyond.callback.Callback;
 import com.beyond.entity.Document;
-import com.beyond.f.F;
 import com.beyond.property.LocalPropertyManager;
 import com.beyond.property.PropertyManager;
 import com.beyond.property.RemotePropertyManager;
-import com.beyond.repository.LocalDocumentRepository;
-import com.beyond.repository.RemoteDocumentRepository;
+import com.beyond.repository.impl.LocalDocumentRepository;
+import com.beyond.repository.impl.RemoteDocumentRepository;
 import com.beyond.repository.Repository;
 import com.beyond.utils.ListUtils;
 import org.apache.commons.lang3.StringUtils;
 
 import java.util.*;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 
 /**
  * 同步服务
@@ -38,6 +34,7 @@ public class MergeService extends Observable {
 //    }
 
     public MergeService(String path, String url, String tmpPath) {
+        super();
         this.localRepository = new LocalDocumentRepository(path);
         this.localPropertyManager = new LocalPropertyManager(path);
         this.remoteLocalPropertyManager = new LocalPropertyManager(tmpPath);

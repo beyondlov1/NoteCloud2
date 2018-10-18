@@ -11,11 +11,19 @@ public class SyncService {
 
     private Timer timer;
 
+    private Thread thread;
+
     public SyncService(){
         this.mergeService = new MergeService(F.DEFAULT_LOCAL_PATH,
                 F.DEFAULT_REMOTE_PATH,
                 F.DEFAULT_TMP_PATH);
         this.timer = new Timer();
+        this.thread = new Thread(new Runnable() {
+            @Override
+            public void run() {
+                mergeService.handle();
+            }
+        });
     }
 
     public void startSynchronize() {
@@ -34,6 +42,10 @@ public class SyncService {
 
     public void stopSynchronize() {
         timer.cancel();
+    }
+
+    public void synchronizeImmediately(){
+        thread.start();
     }
 
     public Timer getTimer() {

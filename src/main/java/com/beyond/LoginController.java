@@ -4,17 +4,21 @@ import com.beyond.entity.User;
 import com.beyond.f.F;
 import com.beyond.service.ConfigService;
 import com.beyond.service.LoginService;
+import javafx.animation.Animation;
+import javafx.animation.KeyFrame;
+import javafx.animation.KeyValue;
+import javafx.animation.Timeline;
+import javafx.application.Platform;
 import javafx.concurrent.Service;
 import javafx.concurrent.Task;
+import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
-import javafx.scene.control.Button;
-import javafx.scene.control.CheckBox;
-import javafx.scene.control.PasswordField;
-import javafx.scene.control.TextField;
+import javafx.scene.control.*;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.text.Text;
+import javafx.util.Duration;
 import org.apache.commons.lang3.StringUtils;
 
 import java.io.IOException;
@@ -32,6 +36,8 @@ public class LoginController {
     private CheckBox rememberPass;
     @FXML
     private Button loginButton;
+    @FXML
+    private ProgressIndicator progressIndicator;
 
     private LoginService loginService;
     private ConfigService configService;
@@ -64,6 +70,7 @@ public class LoginController {
         usernameText.setOnKeyReleased(new EventHandler<KeyEvent>() {
             @Override
             public void handle(KeyEvent event) {
+                msg.setText(null);
                 if (event.getCode() == KeyCode.ENTER) {
                     usernameText.setFocusTraversable(false);
                     passwordText.requestFocus();
@@ -73,6 +80,7 @@ public class LoginController {
         passwordText.setOnKeyReleased(new EventHandler<KeyEvent>() {
             @Override
             public void handle(KeyEvent event) {
+                msg.setText(null);
                 if (event.getCode() == KeyCode.ENTER) {
                     try {
                         login();
@@ -128,6 +136,8 @@ public class LoginController {
                     } else {
                         msg.setText("用户名或密码错误");
                         loginButton.setDisable(false);
+                        passwordText.setText(null);
+                        passwordText.requestFocus();
                     }
                 } catch (IOException e) {
                     e.printStackTrace();

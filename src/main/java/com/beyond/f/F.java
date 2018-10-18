@@ -24,6 +24,7 @@ public class F {
     public static String DEFAULT_REMOTE_PATH = "https://yura.teracloud.jp/dav/NoteCloud/repository/documents.xml";
     public static String DEFAULT_REMOTE_ROOT_PATH = "https://yura.teracloud.jp/dav/";
 
+    public static SyncType SYNC_TYPE = SyncType.LAZY;
     public static long SYNC_PERIOD = 10 * 1000;
     public static long VIEW_REFRESH_PERIOD = 5 * 1000;
 

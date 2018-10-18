@@ -1,10 +1,9 @@
 package com.beyond;
 
-import com.beyond.entity.Document;
-import com.beyond.entity.MicrosoftReminder;
-import com.beyond.entity.Note;
-import com.beyond.entity.Todo;
+import com.beyond.callback.Callback;
+import com.beyond.entity.*;
 import com.beyond.f.F;
+import com.beyond.repository.impl.RemoteReminderDao;
 import com.beyond.service.*;
 import com.beyond.utils.ListUtils;
 import com.beyond.utils.SortUtils;
@@ -12,6 +11,8 @@ import com.beyond.utils.TimeUtils;
 import javafx.animation.Timeline;
 import javafx.application.Platform;
 import javafx.collections.ObservableList;
+import javafx.concurrent.WorkerStateEvent;
+import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
 import javafx.scene.control.TextArea;
@@ -24,6 +25,8 @@ import javafx.scene.web.WebView;
 import org.apache.commons.lang3.StringUtils;
 
 import java.io.IOException;
+import java.io.Serializable;
+import java.text.ParseException;
 import java.util.*;
 
 import static com.beyond.DocumentType.DOC;
@@ -31,7 +34,7 @@ import static com.beyond.DocumentType.NOTE;
 import static com.beyond.DocumentType.TODO;
 
 
-public class MainController implements Observer{
+public class MainController implements Observer {
 
     //添加组件
     @FXML
@@ -78,8 +81,8 @@ public class MainController implements Observer{
     private MainService mainService;
     private BindService bindService;
     private ConfigService configService;
-    private RemindServiceImpl remindService;
-    private RemindServiceAsyn remindServiceAsyn;
+    private RemindServiceMix remindServiceMix;
+    private AsynRemindService<Reminder> asynRemindService;
 
     private MainApplication application;
 
@@ -94,21 +97,22 @@ public class MainController implements Observer{
         bindService = new BindService(mainService.getFxDocuments());
         bindService.init(this);
         configService = new ConfigService(F.CONFIG_PATH);
-        remindService = new RemindServiceImpl(new AuthService(),mainService);
-        remindServiceAsyn = new RemindServiceAsynImpl(new RemindServiceRemote(new AuthService()));
+        remindServiceMix = new RemindServiceMix(new AuthService(), mainService);
+        SyncRemindService<Reminder> syncRemindService = new SyncRemindServiceImpl();
+        asynRemindService = new AsynRemindServiceImpl(syncRemindService);
     }
 
     @FXML
-    private void save(KeyEvent keyEvent) {
+    public void save(KeyEvent keyEvent) {
         String content = contentTextAreaSave.getText();
         Object source = keyEvent.getSource();
 
         //验证能否保存
         Document document;
-        if (keyEvent.isControlDown()&&keyEvent.getCode()==KeyCode.S){
+        if (keyEvent.isControlDown() && keyEvent.getCode() == KeyCode.S) {
             document = new Document();
             document.setContent(content);
-        }else{
+        } else {
             document = validate(content);
         }
         if (document == null) return;
@@ -121,7 +125,7 @@ public class MainController implements Observer{
         document.setCreateTime(curr);
         document.setLastModifyTime(curr);
         document.setVersion(1);
-        document.setContent(F.CONTENT_PREFIX+document.getContent());
+        document.setContent(F.CONTENT_PREFIX + document.getContent());
 
         mainService.add(document);
 
@@ -134,55 +138,52 @@ public class MainController implements Observer{
         documentTableView.getSelectionModel().select(0);
 
         //设置提醒
-//        if (document instanceof Todo) {
-//            Todo todo = (Todo) document;
-//            remindServiceAsyn.addEvent(new MicrosoftReminder(todo), new Callback<String>() {
-//                @Override
-//                public String call(Object object) {
-//                    String remindId = object.toString();
-//                    todo.setRemindId(remindId);
-//                    todo.setRemindTime(TimeUtils.parse(todo.getContent()));
-//                    mainService.update(todo);
-//                    refreshTable();
-//                    remindServiceAsyn.readEvent(remindId, new Callback() {
-//                        @Override
-//                        public Object call(Object object)  {
-//                            try {
-//                                MicrosoftReminder reminder = (MicrosoftReminder) object;
-//                                todo.setRemoteRemindTime(reminder.getStart().toDate());
-//                                mainService.update(todo);
-//                                refreshTable();
-//                                refreshWebView();
-//                            } catch (ParseException e) {
-//                                e.printStackTrace();
-//                            }
-//                            return null;
-//                        }
-//                    });
-//                    return null;
-//                }
-//            });
-//        }
-
-        Thread thread = new Thread(new Runnable() {
+        Todo todo = null;
+        if (document instanceof Todo) todo = (Todo) document;
+        if (todo == null) return;
+        Todo finalTodo = todo;
+        asynRemindService.addEvent(new MicrosoftReminder(todo), new EventHandler<WorkerStateEvent>() {
             @Override
-            public void run() {
-                Todo todo = null;
-                if (document instanceof Todo) todo = (Todo) document;
-                if (todo == null) return;
-                remindService.addEvent(todo,new MicrosoftReminder(todo));
-                remindService.readEvent(todo);
-
-                Platform.runLater(new Runnable() {
+            public void handle(WorkerStateEvent event) {
+                Serializable id = (Serializable) event.getSource().getValue();
+                finalTodo.setRemindId((String) id);
+                asynRemindService.readEvent(id, new EventHandler<WorkerStateEvent>() {
                     @Override
-                    public void run() {
-                        refreshTable();
-                        refreshWebView();
+                    public void handle(WorkerStateEvent event) {
+                        MicrosoftReminder microsoftReminder = (MicrosoftReminder) event.getSource().getValue();
+                        try {
+                            finalTodo.setRemoteRemindTime(microsoftReminder.getStart().toDate());
+                            mainService.update(finalTodo);
+                            refreshTable();
+                            refreshWebView();
+                        } catch (ParseException e) {
+                            F.logger.info(e.getMessage());
+                        }
                     }
                 });
             }
         });
-        thread.start();
+
+        //设置提醒
+//        Thread thread = new Thread(new Runnable() {
+//            @Override
+//            public void run() {
+//                Todo todo = null;
+//                if (document instanceof Todo) todo = (Todo) document;
+//                if (todo == null) return;
+//                remindServiceMix.addEvent(todo,new MicrosoftReminder(todo));
+//                remindServiceMix.readEvent(todo);
+//
+//                Platform.runLater(new Runnable() {
+//                    @Override
+//                    public void run() {
+//                        refreshTable();
+//                        refreshWebView();
+//                    }
+//                });
+//            }
+//        });
+//        thread.start();
     }
 
     private Document validate(String content) {
@@ -199,7 +200,7 @@ public class MainController implements Observer{
 
                 Todo todo = new Todo();
                 Date remindTime = TimeUtils.parse(validContent);
-                if (remindTime!=null){
+                if (remindTime != null) {
                     todo.setRemindTime(remindTime);
                 }
                 todo.setContent(validContent);
@@ -216,7 +217,7 @@ public class MainController implements Observer{
     }
 
     @FXML
-    private void update(KeyEvent keyEvent) {
+    public void modify(KeyEvent keyEvent) {
         String content = contentTextAreaUpdate.getText();
         Object source = keyEvent.getSource();
 
@@ -225,38 +226,94 @@ public class MainController implements Observer{
 
         //验证能否保存
         Document document;
-        if (keyEvent.isControlDown()&&keyEvent.getCode()==KeyCode.S){
+        if (keyEvent.isControlDown() && keyEvent.getCode() == KeyCode.S) {
             document = selectedDocument.toNormalDocument();
             document.setContent(content);
-        }else{
-             document = validate(content);
+        } else {
+            document = validate(content);
         }
         if (document == null) return;
         if (StringUtils.isBlank(document.getContent())) {
             return;
         }
-        selectedDocument.setContent(document.getContent());
-        mainService.update(selectedDocument.toNormalDocument());
+        //更新时会根据后缀重新定义类型
+        document.setId(selectedDocument.getId());
+        mainService.update(document);
 
         //更新事件
-        Thread thread = new Thread(new Runnable() {
-            @Override
-            public void run() {
-                Todo todo = null;
-                if (selectedDocument.toNormalDocument() instanceof Todo) todo = (Todo) selectedDocument.toNormalDocument();
-                if (todo == null||todo.getRemindId()==null) return;
-                remindService.updateEvent(todo);
+        Todo todo = null;
+        if (document instanceof Todo) todo = (Todo) document;
+        if (todo == null) return;
+        Todo finalTodo = todo;
+        if (StringUtils.isBlank(todo.getRemindId())) {
+            asynRemindService.addEvent(new MicrosoftReminder(todo), new EventHandler<WorkerStateEvent>() {
+                @Override
+                public void handle(WorkerStateEvent event) {
+                    Serializable id = (Serializable) event.getSource().getValue();
+                    finalTodo.setRemindId((String) id);
+                    asynRemindService.readEvent(id, new EventHandler<WorkerStateEvent>() {
+                        @Override
+                        public void handle(WorkerStateEvent event) {
+                            MicrosoftReminder microsoftReminder = (MicrosoftReminder) event.getSource().getValue();
+                            try {
+                                finalTodo.setRemoteRemindTime(microsoftReminder.getStart().toDate());
+                                mainService.update(finalTodo);
+                                refreshTable();
+                                refreshWebView();
+                            } catch (ParseException e) {
+                                F.logger.info(e.getMessage());
+                            }
+                        }
+                    });
+                }
+            });
+        } else {
+            asynRemindService.modifyEvent(new MicrosoftReminder(todo), new EventHandler<WorkerStateEvent>() {
+                @Override
+                public void handle(WorkerStateEvent event) {
+                    Serializable id = (Serializable) event.getSource().getValue();
+                    asynRemindService.readEvent(id, new EventHandler<WorkerStateEvent>() {
+                        @Override
+                        public void handle(WorkerStateEvent event) {
+                            MicrosoftReminder microsoftReminder = (MicrosoftReminder) event.getSource().getValue();
+                            try {
+                                finalTodo.setRemoteRemindTime(microsoftReminder.getStart().toDate());
+                                mainService.update(finalTodo);
+                                refreshTable();
+                                refreshWebView();
+                            } catch (ParseException e) {
+                                F.logger.info(e.getMessage());
+                            }
+                        }
+                    });
+                }
+            });
+        }
 
-                Platform.runLater(new Runnable() {
-                    @Override
-                    public void run() {
-                        refreshTable();
-                        refreshWebView();
-                    }
-                });
-            }
-        });
-        thread.start();
+        //更新事件
+//        Thread thread = new Thread(new Runnable() {
+//            @Override
+//            public void run() {
+//                Todo todo = null;
+//                if (document instanceof Todo) todo = (Todo) document;
+//                if (todo == null) return;
+//                if (StringUtils.isBlank(todo.getRemindId())) {
+//                    remindServiceMix.addEvent(todo, new MicrosoftReminder(todo));
+//                } else {
+//                    remindServiceMix.updateEvent(todo);
+//                }
+//                remindServiceMix.readEvent(todo);
+//
+//                Platform.runLater(new Runnable() {
+//                    @Override
+//                    public void run() {
+//                        refreshTable();
+//                        refreshWebView();
+//                    }
+//                });
+//            }
+//        });
+//        thread.start();
 
         //changeView
         if (source instanceof TextArea) {
@@ -274,24 +331,36 @@ public class MainController implements Observer{
         mainService.deleteById(selectedId);
 
         //删除提醒
-        Thread thread = new Thread(new Runnable() {
+        Todo todo = null;
+        if (selectedItem.toNormalDocument() instanceof Todo) todo = (Todo) selectedItem.toNormalDocument();
+        if (todo == null || todo.getRemindId() == null) return;
+        asynRemindService.removeEvent(todo.getRemindId(), new EventHandler<WorkerStateEvent>() {
             @Override
-            public void run() {
-                Todo todo = null;
-                if (selectedItem.toNormalDocument() instanceof Todo) todo = (Todo) selectedItem.toNormalDocument();
-                if (todo == null||todo.getRemindId()==null) return;
-                remindService.deleteEvent(todo.getRemindId());
-
-                Platform.runLater(new Runnable() {
-                    @Override
-                    public void run() {
-                        refreshTable();
-                        refreshWebView();
-                    }
-                });
+            public void handle(WorkerStateEvent event) {
+                refreshTable();
+                refreshWebView();
             }
         });
-        thread.start();
+
+        //删除提醒
+//        Thread thread = new Thread(new Runnable() {
+//            @Override
+//            public void run() {
+//                Todo todo = null;
+//                if (selectedItem.toNormalDocument() instanceof Todo) todo = (Todo) selectedItem.toNormalDocument();
+//                if (todo == null || todo.getRemindId() == null) return;
+//                remindServiceMix.deleteEvent(todo.getRemindId());
+//
+//                Platform.runLater(new Runnable() {
+//                    @Override
+//                    public void run() {
+//                        refreshTable();
+//                        refreshWebView();
+//                    }
+//                });
+//            }
+//        });
+//        thread.start();
     }
 
     @FXML
@@ -304,8 +373,11 @@ public class MainController implements Observer{
     public void logout() throws IOException {
         F.logger.info("logout");
         //注销
-        configService.setProperty("password","");
+        configService.setProperty("password", "");
         configService.storeProperties();
+
+        //关闭当前页面
+        application.getMainStage().close();
 
         //转到登录页面
         application.loadLoginView();
@@ -315,7 +387,7 @@ public class MainController implements Observer{
         observable.addObserver(this);
     }
 
-    public void refreshTable(){
+    public void refreshTable() {
         FxDocument selectedItem = documentTableView.getSelectionModel().getSelectedItem();
         //从文件获取文档
         mainService.pull();
@@ -330,22 +402,23 @@ public class MainController implements Observer{
         documentTableView.refresh();
         if (selectedItem != null) {
             documentTableView.getSelectionModel().select(ListUtils.getFxDocumentIndexById(fxDocuments, selectedItem.getId()));
-        }else {
-            if (!documentTableView.getItems().isEmpty()){
+        } else {
+            if (!documentTableView.getItems().isEmpty()) {
                 documentTableView.getSelectionModel().select(0);
             }
         }
         F.logger.info("refreshTable");
     }
 
-    public void refreshWebView(){
+    public void refreshWebView() {
         FxDocument selectedItem = documentTableView.getSelectionModel().getSelectedItem();
-        bindService.initWebView(webView,selectedItem);
+        bindService.initWebView(webView, selectedItem);
         F.logger.info("refreshWebView");
     }
 
     /**
      * 监控刷新
+     *
      * @param o
      * @param arg
      */

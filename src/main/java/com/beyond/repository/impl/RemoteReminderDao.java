@@ -1,44 +1,35 @@
-package com.beyond.service;
+package com.beyond.repository.impl;
 
 import com.beyond.entity.MicrosoftReminder;
-import com.beyond.entity.Todo;
+import com.beyond.entity.Reminder;
 import com.beyond.f.F;
-import com.beyond.utils.TimeUtils;
+import com.beyond.repository.ReminderDao;
+import com.beyond.service.AuthService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.scribejava.core.model.OAuthRequest;
 import com.github.scribejava.core.model.Response;
 import com.github.scribejava.core.model.Verb;
 import com.github.scribejava.core.oauth.OAuth20Service;
 
+import java.io.Serializable;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 import java.net.HttpURLConnection;
-import java.text.ParseException;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.LinkedHashSet;
-import java.util.Set;
-import java.util.concurrent.ExecutorService;
+import java.util.*;
 
-public class RemindServiceImpl {
+/**
+ * 未使用
+ */
+public class RemoteReminderDao implements ReminderDao<Reminder> {
 
     private AuthService authService;
 
-    private MainService mainService;
-
-    public RemindServiceImpl(AuthService authService, MainService mainService) {
+    public RemoteReminderDao(AuthService authService) {
         this.authService = authService;
-        this.mainService = mainService;
     }
 
-    public String addEvent(Todo todo, MicrosoftReminder reminder) {
-        String remindId = addRemoteEvent(reminder);
-        String documentId =  addEventToDocument(todo,remindId);
-        F.logger.info(documentId);
-        return documentId;
-    }
-
-    private String addRemoteEvent(MicrosoftReminder reminder){
+    @Override
+    public String add(Reminder reminder) {
         OAuth20Service oAuth20Service = authService.getoAuth20Service();
         String id = null;
         try {
@@ -56,56 +47,51 @@ public class RemindServiceImpl {
             }
             HashMap hashMap = objectMapper.readValue(response.getBody(), HashMap.class);
             id = (String) hashMap.get("id");
+            return id;
         }catch (Exception e){
             F.logger.info(e.getMessage());
         }
-        return id;
+        return null;
     }
 
-    private String addEventToDocument(Todo todo, String remindId){
-        todo.setRemindId(remindId);
-        return mainService.update(todo);
-    }
-
-    public String deleteEvent(Todo todo, String remindId){
-        deleteRemoteEvent(remindId);
-        todo.setRemindTime(null);
-        todo.setRemindId(null);
-        return mainService.update(todo);
-    }
-
-    public String deleteEvent(String remindId){
-        return deleteRemoteEvent(remindId);
-    }
-
-    private String deleteRemoteEvent(String remindId){
+    @Override
+    public String delete(Reminder reminder) {
         OAuth20Service oAuth20Service = authService.getoAuth20Service();
         try {
-            final OAuthRequest request = new OAuthRequest(Verb.DELETE, F.MICROSOFT_EVENT_URL+"/"+remindId);
+            final OAuthRequest request = new OAuthRequest(Verb.DELETE, F.MICROSOFT_EVENT_URL+"/"+reminder.getId());
             oAuth20Service.signRequest(authService.getAccessToken(), request);
             final Response response = oAuth20Service.execute(request);
             if (!response.isSuccessful()){
                 F.logger.info(response.getCode());
                 F.logger.info(response.getBody());
             }
+            return (String) reminder.getId();
         }catch (Exception e){
             F.logger.info(e.getMessage());
         }
-        return remindId;
+        return null;
     }
 
-    public String updateEvent(Todo todo){
-        updateEventToDocument(todo);
-        updateRemoteEvent(new MicrosoftReminder(todo));
-        return todo.getId();
-    }
-    private String updateEvent(Todo todo, MicrosoftReminder reminder){
-        updateEventToDocument(todo);
-        updateRemoteEvent(reminder);
-        return todo.getId();
+    @Override
+    public Serializable delete(Serializable id) {
+        OAuth20Service oAuth20Service = authService.getoAuth20Service();
+        try {
+            final OAuthRequest request = new OAuthRequest(Verb.DELETE, F.MICROSOFT_EVENT_URL+"/"+id);
+            oAuth20Service.signRequest(authService.getAccessToken(), request);
+            final Response response = oAuth20Service.execute(request);
+            if (!response.isSuccessful()){
+                F.logger.info(response.getCode());
+                F.logger.info(response.getBody());
+            }
+            return id;
+        }catch (Exception e){
+            F.logger.info(e.getMessage());
+        }
+        return null;
     }
 
-    private String updateRemoteEvent(MicrosoftReminder reminder){
+    @Override
+    public String update(Reminder reminder) {
         allowMethods("PATCH");
         OAuth20Service oAuth20Service = authService.getoAuth20Service();
         try {
@@ -120,31 +106,25 @@ public class RemindServiceImpl {
                 F.logger.info(response.getCode());
                 F.logger.info(response.getBody());
             }
+            return (String)reminder.getId();
         }catch (Exception e){
             e.printStackTrace();
             F.logger.info(e.getMessage());
         }
-        return reminder.getId();
+        return null;
     }
 
-    private String updateEventToDocument(Todo todo){
-        todo.setRemindTime(TimeUtils.parse(todo.getContent()));
-        return mainService.update(todo);
+
+    @Deprecated
+    @Override
+    public List<Reminder> selectAll() {
+        return null;
     }
 
-    public void readEvent(Todo todo){
-        MicrosoftReminder reminder = readRemoteEvent(todo.getRemindId());
-        try {
-            todo.setRemoteRemindTime(reminder.getStart().toDate());
-        } catch (ParseException e) {
-            e.printStackTrace();
-        }
-        mainService.update(todo);
-    }
-
-    private MicrosoftReminder readRemoteEvent(String eventId){
+    @Override
+    public Reminder select(Serializable eventId) {
         OAuth20Service oAuth20Service = authService.getoAuth20Service();
-        MicrosoftReminder reminder = null;
+        Reminder reminder = null;
         try {
             ObjectMapper objectMapper = new ObjectMapper();
             final OAuthRequest request = new OAuthRequest(Verb.GET, F.MICROSOFT_EVENT_URL+"/"+eventId+"?$select=subject,start,end");
@@ -182,6 +162,4 @@ public class RemindServiceImpl {
             throw new IllegalStateException(e);
         }
     }
-
-
 }

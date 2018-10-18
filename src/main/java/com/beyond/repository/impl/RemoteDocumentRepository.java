@@ -1,10 +1,11 @@
-package com.beyond.repository;
+package com.beyond.repository.impl;
 
 import com.beyond.RemoteBase;
 import com.beyond.entity.Document;
 import com.beyond.property.LocalPropertyManager;
 import com.beyond.property.PropertyManager;
 import com.beyond.property.RemotePropertyManager;
+import com.beyond.repository.Repository;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.http.HttpEntity;
 import org.apache.http.client.methods.CloseableHttpResponse;
@@ -55,6 +56,11 @@ public class RemoteDocumentRepository extends RemoteBase implements Repository<D
 
     public Serializable delete(Document document) {
         return localDocumentRepository.delete(document);
+    }
+
+    @Override
+    public Serializable delete(Serializable id) {
+        return localDocumentRepository.delete(id);
     }
 
     public Serializable update(Document document) {

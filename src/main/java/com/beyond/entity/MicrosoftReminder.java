@@ -6,6 +6,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import org.apache.commons.lang3.StringUtils;
 
+import java.io.Serializable;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -74,8 +75,9 @@ public class MicrosoftReminder implements Reminder{
         return id;
     }
 
-    public void setId(String id) {
-        this.id = id;
+    @Override
+    public void setId(Serializable id) {
+        this.id = (String) id;
     }
 
     public class ContentBody {

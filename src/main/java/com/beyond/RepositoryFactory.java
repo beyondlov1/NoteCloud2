@@ -2,15 +2,14 @@ package com.beyond;
 
 import com.beyond.entity.Document;
 import com.beyond.f.F;
+import com.beyond.f.SyncType;
 import com.beyond.property.LocalPropertyManager;
-import com.beyond.repository.LocalDocumentRepository;
-import com.beyond.repository.RemoteDocumentRepository;
+import com.beyond.repository.impl.LocalDocumentRepository;
+import com.beyond.repository.impl.RemoteDocumentRepository;
 import com.beyond.repository.Repository;
 import org.apache.commons.lang3.StringUtils;
 
-import javax.print.Doc;
 import java.lang.reflect.InvocationHandler;
-import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
 import java.util.Date;
@@ -28,7 +27,7 @@ public class RepositoryFactory {
         return (Repository)Proxy.newProxyInstance(localDocumentRepository.getClass().getClassLoader(), localDocumentRepository.getClass().getInterfaces(), new InvocationHandler() {
             @Override
             public synchronized Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
-                if (method.getName().startsWith("add")||method.getName().startsWith("delete")||method.getName().startsWith("update")){
+                if (method.getName().startsWith("add")||method.getName().startsWith("delete")||method.getName().startsWith("modify")){
 
                     Object invoke = method.invoke(localDocumentRepository, args);
 
@@ -44,7 +43,7 @@ public class RepositoryFactory {
                     if (method.getName().startsWith("add")){
                         document.setCreateTime(currentTime);
                         document.setLastModifyTime(currentTime);
-                    }else if (method.getName().startsWith("update")){
+                    }else if (method.getName().startsWith("modify")){
                         document.setLastModifyTime(currentTime);
                     }
 

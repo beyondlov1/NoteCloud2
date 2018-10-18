@@ -1,28 +1,27 @@
-package com.beyond.repository;
+package com.beyond.repository.impl;
 
 import com.beyond.RepositoryFactory;
 import com.beyond.property.LocalPropertyManager;
 import com.beyond.property.PropertyManager;
+import com.beyond.repository.Repository;
 import com.thoughtworks.xstream.XStream;
 import com.thoughtworks.xstream.io.StreamException;
 import com.beyond.entity.Document;
 import com.beyond.entity.Note;
 import com.beyond.entity.Todo;
 import com.beyond.f.F;
+import javafx.beans.InvalidationListener;
 import org.apache.commons.lang3.StringUtils;
 
 import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
-public class LocalDocumentRepository implements Repository<Document> {
+public class LocalDocumentRepository extends Observable implements Repository<Document> {
 
     private XStream xStream;
 
@@ -35,6 +34,7 @@ public class LocalDocumentRepository implements Repository<Document> {
     private LocalPropertyManager localPropertyManager;
 
     public LocalDocumentRepository(String path) {
+        super();
         this.path = path;
         localPropertyManager = new LocalPropertyManager(getPath());
         init();
@@ -82,9 +82,14 @@ public class LocalDocumentRepository implements Repository<Document> {
     }
 
     public synchronized Serializable delete(Document document) {
+        return delete(document.getId());
+    }
+
+    @Override
+    public Serializable delete(Serializable id) {
         Document foundDocument = null;
         for (Document doc : list) {
-            if (StringUtils.equals(document.getId(), doc.getId())) {
+            if (StringUtils.equals((String)id, doc.getId())) {
                 foundDocument = doc;
                 break;
             }
