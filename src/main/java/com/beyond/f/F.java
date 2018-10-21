@@ -21,14 +21,16 @@ public class F {
     public static String DEFAULT_LOCAL_PATH = "./repository/documents.xml";
     public static String DEFAULT_DELETE_PATH = "./repository/deletedDocuments.xml";
     public static String DEFAULT_TMP_PATH = "./repository/tmpDocuments.xml";
-    public static String DEFAULT_REMOTE_PATH = "https://yura.teracloud.jp/dav/NoteCloud/repository/documents.xml";
-    public static String DEFAULT_REMOTE_ROOT_PATH = "https://yura.teracloud.jp/dav/";
+//    public static String DEFAULT_REMOTE_ROOT_PATH = "https://yura.teracloud.jp/dav/";
+    public static String DEFAULT_REMOTE_ROOT_PATH = "https://dav.jianguoyun.com/dav/NoteCloud/test.xml";
+//    public static String DEFAULT_REMOTE_PATH = "https://yura.teracloud.jp/dav/NoteCloud/repository/documents.xml";
+    public static String DEFAULT_REMOTE_PATH = "https://dav.jianguoyun.com/dav/NoteCloud/repository/documents.xml";
 
-    public static SyncType SYNC_TYPE = SyncType.LAZY;
+    public static SyncType SYNC_TYPE = SyncType.LOOP;
     public static long SYNC_PERIOD = 10 * 1000;
     public static long VIEW_REFRESH_PERIOD = 5 * 1000;
 
-    public static final String CONFIG_PATH ="config/config.properties";
+    public static final String CONFIG_PATH = "config/config.properties";
 
     //microsoft api access
     public static final String CLIENT_ID = "b1c8c70e-daf3-4bc9-ae1e-50b0f348dd58";
@@ -41,6 +43,8 @@ public class F {
 
     public static final ConfigService configService = new ConfigService(F.CONFIG_PATH);
 
+    public static String DEFAULT_REMOTE_PROPERTY_LOCAL_PATH = "./repository/remoteProperty.obj";
+    public static String DEFAULT_REMOTE_FILE_INFO_PATH = "https://dav.jianguoyun.com/dav/NoteCloud/repository/remoteProperty.obj";
 
-
+    public static String NUTSTORE_LOGIN_PATH = "https://dav.jianguoyun.com/dav/NoteCloud";
 }

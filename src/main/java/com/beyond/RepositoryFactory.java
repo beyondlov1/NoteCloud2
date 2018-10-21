@@ -2,8 +2,8 @@ package com.beyond;
 
 import com.beyond.entity.Document;
 import com.beyond.f.F;
-import com.beyond.f.SyncType;
 import com.beyond.property.LocalPropertyManager;
+import com.beyond.repository.impl.LocalDocumentRepositoryProxy;
 import com.beyond.repository.impl.LocalDocumentRepository;
 import com.beyond.repository.impl.RemoteDocumentRepository;
 import com.beyond.repository.Repository;
@@ -12,7 +12,6 @@ import org.apache.commons.lang3.StringUtils;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
-import java.util.Date;
 import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -24,42 +23,8 @@ public class RepositoryFactory {
 
     public static Repository getLocalRepository(String path) {
         final LocalDocumentRepository localDocumentRepository = new LocalDocumentRepository(path);
-        return (Repository)Proxy.newProxyInstance(localDocumentRepository.getClass().getClassLoader(), localDocumentRepository.getClass().getInterfaces(), new InvocationHandler() {
-            @Override
-            public synchronized Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
-                if (method.getName().startsWith("add")||method.getName().startsWith("delete")||method.getName().startsWith("modify")){
-
-                    Object invoke = method.invoke(localDocumentRepository, args);
-
-                    //添加每个document的版本信息
-                    Document document = null;
-                    if (args[0] instanceof Document){
-                        document = (Document)args[0];
-                    }
-
-                    if (document==null) return null;
-
-                    Date currentTime = new Date();
-                    if (method.getName().startsWith("add")){
-                        document.setCreateTime(currentTime);
-                        document.setLastModifyTime(currentTime);
-                    }else if (method.getName().startsWith("modify")){
-                        document.setLastModifyTime(currentTime);
-                    }
-
-                    //更改文件属性
-                    LocalPropertyManager localPropertyManager = new LocalPropertyManager(localDocumentRepository.getPath());
-                    Map<String, String> propertiesMap = localPropertyManager.getAllProperties();
-                    propertiesMap.put("_lastModifyTime",String.valueOf(currentTime.getTime()));
-                    propertiesMap.put("_version",String.valueOf(Integer.parseInt(propertiesMap.getOrDefault("_version","0"))+1));
-                    propertiesMap.put("_modifyIds",propertiesMap.getOrDefault("_modifyIds","")+((Document)args[0]).getId()+",");
-                    localPropertyManager.batchSet(propertiesMap);
-
-                    return invoke;
-                }
-                return method.invoke(localDocumentRepository, args);
-            }
-        });
+        return (Repository)Proxy.newProxyInstance(localDocumentRepository.getClass().getSuperclass().getClassLoader(), localDocumentRepository.getClass().getSuperclass().getInterfaces(),
+                new LocalDocumentRepositoryProxy(localDocumentRepository));
     }
 
     public static Repository getRemoteRepository(String path,LocalDocumentRepository localDocumentRepository) {
@@ -97,3 +62,4 @@ public class RepositoryFactory {
 
     }
 }
+

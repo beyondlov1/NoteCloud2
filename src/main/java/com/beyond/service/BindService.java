@@ -198,6 +198,7 @@ public class BindService {
     public void initWebView(WebView webView, FxDocument fxDocument) {
         //添加事件戳
         String timeStamp = "";
+        if (fxDocument==null) return;
         if (fxDocument.toNormalDocument() instanceof Todo
                 && ((Todo)fxDocument.toNormalDocument()).getRemindTime()!=null
                 && StringUtils.isNotBlank(TimeUtils.getTimeNorm(fxDocument.getContent()))){

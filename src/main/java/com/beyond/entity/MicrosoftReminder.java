@@ -61,6 +61,7 @@ public class MicrosoftReminder implements Reminder{
     }
 
     public MicrosoftReminder(Todo todo) {
+        if (todo.getRemindTime()==null) return;
         subject = (StringUtils.isBlank(todo.getTitle()) ? todo.getContent() : todo.getTitle());
         body.setContentType("HTML");
         body.setContent(todo.getContent());

@@ -17,9 +17,6 @@ import java.lang.reflect.Modifier;
 import java.net.HttpURLConnection;
 import java.util.*;
 
-/**
- * 未使用
- */
 public class RemoteReminderDao implements ReminderDao<Reminder> {
 
     private AuthService authService;
@@ -35,59 +32,60 @@ public class RemoteReminderDao implements ReminderDao<Reminder> {
         try {
             final OAuthRequest request = new OAuthRequest(Verb.POST, F.MICROSOFT_EVENT_URL);
             ObjectMapper objectMapper = new ObjectMapper();
-            String load =objectMapper.writeValueAsString(reminder);
-            request.addHeader("Content-Type","application/json");
+            String load = objectMapper.writeValueAsString(reminder);
+            request.addHeader("Content-Type", "application/json");
             request.setPayload(load);
 
             oAuth20Service.signRequest(authService.getAccessToken(), request);
             final Response response = oAuth20Service.execute(request);
-            if (!response.isSuccessful()){
+            if (!response.isSuccessful()) {
                 F.logger.info(response.getCode());
                 F.logger.info(response.getBody());
             }
             HashMap hashMap = objectMapper.readValue(response.getBody(), HashMap.class);
             id = (String) hashMap.get("id");
             return id;
-        }catch (Exception e){
+        } catch (Exception e) {
             F.logger.info(e.getMessage());
+            throw new RuntimeException("提醒请求未成功");
         }
-        return null;
     }
 
     @Override
     public String delete(Reminder reminder) {
         OAuth20Service oAuth20Service = authService.getoAuth20Service();
         try {
-            final OAuthRequest request = new OAuthRequest(Verb.DELETE, F.MICROSOFT_EVENT_URL+"/"+reminder.getId());
+            final OAuthRequest request = new OAuthRequest(Verb.DELETE, F.MICROSOFT_EVENT_URL + "/" + reminder.getId());
             oAuth20Service.signRequest(authService.getAccessToken(), request);
             final Response response = oAuth20Service.execute(request);
-            if (!response.isSuccessful()){
+            if (!response.isSuccessful()) {
                 F.logger.info(response.getCode());
                 F.logger.info(response.getBody());
             }
             return (String) reminder.getId();
-        }catch (Exception e){
+        } catch (Exception e) {
             F.logger.info(e.getMessage());
+            throw new RuntimeException("提醒请求未成功");
         }
-        return null;
     }
 
     @Override
     public Serializable delete(Serializable id) {
         OAuth20Service oAuth20Service = authService.getoAuth20Service();
         try {
-            final OAuthRequest request = new OAuthRequest(Verb.DELETE, F.MICROSOFT_EVENT_URL+"/"+id);
+            final OAuthRequest request = new OAuthRequest(Verb.DELETE, F.MICROSOFT_EVENT_URL + "/" + id);
             oAuth20Service.signRequest(authService.getAccessToken(), request);
             final Response response = oAuth20Service.execute(request);
-            if (!response.isSuccessful()){
+            if (!response.isSuccessful()) {
                 F.logger.info(response.getCode());
                 F.logger.info(response.getBody());
+                throw new RuntimeException("提醒请求未成功");
             }
             return id;
-        }catch (Exception e){
+        } catch (Exception e) {
             F.logger.info(e.getMessage());
+            throw new RuntimeException("提醒请求未成功");
         }
-        return null;
     }
 
     @Override
@@ -95,23 +93,22 @@ public class RemoteReminderDao implements ReminderDao<Reminder> {
         allowMethods("PATCH");
         OAuth20Service oAuth20Service = authService.getoAuth20Service();
         try {
-            final OAuthRequest request = new OAuthRequest(Verb.PATCH, F.MICROSOFT_EVENT_URL+"/"+reminder.getId());
+            final OAuthRequest request = new OAuthRequest(Verb.PATCH, F.MICROSOFT_EVENT_URL + "/" + reminder.getId());
             ObjectMapper objectMapper = new ObjectMapper();
-            String load =objectMapper.writeValueAsString(reminder);
-            request.addHeader("Content-Type","application/json");
+            String load = objectMapper.writeValueAsString(reminder);
+            request.addHeader("Content-Type", "application/json");
             request.setPayload(load);
             oAuth20Service.signRequest(authService.getAccessToken(), request);
             final Response response = oAuth20Service.execute(request);
-            if (!response.isSuccessful()){
+            if (!response.isSuccessful()) {
                 F.logger.info(response.getCode());
                 F.logger.info(response.getBody());
             }
-            return (String)reminder.getId();
-        }catch (Exception e){
-            e.printStackTrace();
+            return (String) reminder.getId();
+        } catch (Exception e) {
             F.logger.info(e.getMessage());
+            throw new RuntimeException("提醒请求未成功");
         }
-        return null;
     }
 
 
@@ -127,17 +124,17 @@ public class RemoteReminderDao implements ReminderDao<Reminder> {
         Reminder reminder = null;
         try {
             ObjectMapper objectMapper = new ObjectMapper();
-            final OAuthRequest request = new OAuthRequest(Verb.GET, F.MICROSOFT_EVENT_URL+"/"+eventId+"?$select=subject,start,end");
+            final OAuthRequest request = new OAuthRequest(Verb.GET, F.MICROSOFT_EVENT_URL + "/" + eventId + "?$select=subject,start,end");
             oAuth20Service.signRequest(authService.getAccessToken(), request);
             final Response response = oAuth20Service.execute(request);
             reminder = objectMapper.readValue(response.getBody(), MicrosoftReminder.class);
-            if (!response.isSuccessful()){
+            if (!response.isSuccessful()) {
                 F.logger.info(response.getCode());
                 F.logger.info(response.getBody());
             }
-        }catch (Exception e){
-            e.printStackTrace();
+        } catch (Exception e) {
             F.logger.info(e.getMessage());
+            throw new RuntimeException("提醒请求未成功");
         }
         return reminder;
     }

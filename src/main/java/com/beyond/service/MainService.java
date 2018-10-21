@@ -24,14 +24,9 @@ public class MainService {
     private Repository<Document> deletedLocalRepository;
 
     private ObservableList<FxDocument> fxDocuments;
-    private MainController mainController;
 
     public MainService(){
         init();
-    }
-    public MainService(MainController mainController){
-        this.init();
-        this.mainController = mainController;
     }
 
     /**
@@ -66,7 +61,6 @@ public class MainService {
         //同步fxDocument
         FxDocument fxDocument = new FxDocument(document);
         fxDocuments.add(0,fxDocument);
-        mainController.getDocumentTableView().refresh();
         return (String) id;
     }
 
@@ -102,7 +96,6 @@ public class MainService {
         if (index!=-1){
             fxDocuments.remove(index);
         }
-        mainController.getDocumentTableView().refresh();
         return (String) foundId;
     }
 
@@ -158,5 +151,9 @@ public class MainService {
 
     public void pull(){
         defaultLocalRepository.pull();
+    }
+
+    public Repository<Document> getDefaultLocalRepository() {
+        return defaultLocalRepository;
     }
 }

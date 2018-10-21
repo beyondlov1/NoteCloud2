@@ -4,21 +4,15 @@ import com.beyond.entity.User;
 import com.beyond.f.F;
 import com.beyond.service.ConfigService;
 import com.beyond.service.LoginService;
-import javafx.animation.Animation;
-import javafx.animation.KeyFrame;
-import javafx.animation.KeyValue;
-import javafx.animation.Timeline;
-import javafx.application.Platform;
+import com.beyond.service.LoginServiceImpl;
 import javafx.concurrent.Service;
 import javafx.concurrent.Task;
-import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.text.Text;
-import javafx.util.Duration;
 import org.apache.commons.lang3.StringUtils;
 
 import java.io.IOException;
@@ -41,13 +35,19 @@ public class LoginController {
 
     private LoginService loginService;
     private ConfigService configService;
-
     private MainApplication application;
+
+    private ApplicationContext context;
+
+    public LoginController(ApplicationContext context) {
+        this.context = context;
+    }
 
     @FXML
     private void initialize() {
-        this.loginService = new LoginService();
-        this.configService = new ConfigService(F.CONFIG_PATH);
+        this.loginService = context.getLoginService();
+        this.configService = context.getConfigService();
+        this.application = context.getApplication();
         initViews();
         initListeners();
     }
@@ -158,5 +158,13 @@ public class LoginController {
 
     public MainApplication getApplication() {
         return application;
+    }
+
+    public void setContext(ApplicationContext context) {
+        this.context = context;
+    }
+
+    public ApplicationContext getContext() {
+        return context;
     }
 }

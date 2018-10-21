@@ -1,13 +1,15 @@
 package com.beyond.service;
 
 import com.beyond.entity.Document;
+import com.beyond.f.F;
+import com.beyond.property.FileRemotePropertyManager;
 import com.beyond.property.LocalPropertyManager;
 import com.beyond.property.PropertyManager;
-import com.beyond.property.RemotePropertyManager;
 import com.beyond.repository.impl.LocalDocumentRepository;
 import com.beyond.repository.impl.RemoteDocumentRepository;
 import com.beyond.repository.Repository;
 import com.beyond.utils.ListUtils;
+import javafx.application.Platform;
 import org.apache.commons.lang3.StringUtils;
 
 import java.util.*;
@@ -39,8 +41,9 @@ public class MergeService extends Observable {
         this.localPropertyManager = new LocalPropertyManager(path);
         this.remoteLocalPropertyManager = new LocalPropertyManager(tmpPath);
         this.remoteLocalDocumentRepository = new LocalDocumentRepository(tmpPath);
-        this.remoteRepository = new RemoteDocumentRepository(url, remoteLocalDocumentRepository, remoteLocalPropertyManager);
-        this.remotePropertyManager = new RemotePropertyManager(url);
+//        this.remotePropertyManager = new RemotePropertyManager(url);
+        this.remotePropertyManager = new FileRemotePropertyManager(F.DEFAULT_REMOTE_FILE_INFO_PATH);
+        this.remoteRepository = new RemoteDocumentRepository(url, remoteLocalDocumentRepository, remoteLocalPropertyManager,remotePropertyManager);
     }
 
     /**
@@ -59,7 +62,7 @@ public class MergeService extends Observable {
 
         if (!remoteRepository.isAvailable()) {
             failCount++;
-            if (failCount > 20) {//连接20次失败, 强制解锁
+            if (failCount > 10) {//连接10次失败, 强制解锁
                 remoteRepository.unlock();
                 failCount = 0;
             }
@@ -80,6 +83,9 @@ public class MergeService extends Observable {
             remoteLocalPropertyManager.set("_lastModifyTime", currentTime);
         } else {
             String remoteTime = remotePropertiesMap.getOrDefault("_lastModifyTime", "");
+            if (StringUtils.isBlank(remoteTime)){
+                remoteTime = currentTime;
+            }
             localPropertyManager.set("_lastModifyTime", remoteTime);
             remoteLocalPropertyManager.set("_lastModifyTime", remoteTime);
         }
@@ -90,13 +96,22 @@ public class MergeService extends Observable {
         remoteLocalPropertyManager.set("_modifyIds", "");
 
         //持久化
-        localRepository.save(merge);
-        remoteRepository.save(merge);
+        int isRemoteSaveSuccess = remoteRepository.save(merge);
+        int isLocalSaveSuccess = localRepository.save(merge);
 
         //解锁
         remoteRepository.unlock();
 
-        mergeFlag = 1;
+        if (isLocalSaveSuccess==1&&isRemoteSaveSuccess==1){
+            mergeFlag = 1;
+            setChanged();
+            Platform.runLater(new Runnable() {
+                @Override
+                public void run() {
+                    notifyObservers();
+                }
+            });
+        }
     }
 
     /**
@@ -129,7 +144,7 @@ public class MergeService extends Observable {
         List<String> modifyDocumentIds = new ArrayList<>();
         List<String> addDocumentIds = new ArrayList<>();
         String modifyIdsStr = localPropertyManager.getProperty("_modifyIds");
-        if (StringUtils.isBlank(modifyIdsStr)) return remoteList;//如果没有修改过, 直接返回
+        if (StringUtils.isBlank(modifyIdsStr)) return remoteList;//如果没有修改过, 直接返回远程列表
         String[] modifyIds = modifyIdsStr.substring(0, modifyIdsStr.length() - 1).split(",");//获取更改过的id
         Set<String> modifyIdsSet = new HashSet<>(Arrays.asList(modifyIds));//去重
 
@@ -173,11 +188,6 @@ public class MergeService extends Observable {
         }
 
         return result;
-    }
-
-    @Override
-    public synchronized boolean hasChanged() {
-        return mergeFlag == 1;
     }
 
     public int getMergeFlag() {

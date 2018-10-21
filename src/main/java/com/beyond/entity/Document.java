@@ -2,7 +2,7 @@ package com.beyond.entity;
 
 import java.util.Date;
 
-public class Document {
+public class Document implements Element{
 
     private String id;
     private String title;

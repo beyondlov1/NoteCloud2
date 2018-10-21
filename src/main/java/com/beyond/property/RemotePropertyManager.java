@@ -42,7 +42,6 @@ public class RemotePropertyManager extends RemoteBase implements PropertyManager
             HttpProppatch httpProppatch = new HttpProppatch(path, newProps, removeProperties);
             sendRequest(client,httpProppatch);
         } catch (IOException e) {
-            e.printStackTrace();
             F.logger.info(e.getMessage());
         }finally {
             release(client);

@@ -2,9 +2,8 @@ package com.beyond;
 
 import com.beyond.entity.User;
 import com.beyond.f.F;
-import com.beyond.service.ConfigService;
-import com.beyond.service.LoginService;
-import com.beyond.service.SyncService;
+import com.beyond.f.SyncType;
+import com.beyond.service.*;
 import javafx.application.Application;
 import javafx.event.EventHandler;
 import javafx.fxml.FXMLLoader;
@@ -31,35 +30,49 @@ public class MainApplication extends Application {
     private Stage configStage;
     private Stage authStage;
 
-    private LoginService loginService;
-
-    private SyncService syncService;
-
-    private ConfigService configService;
-
+    private ApplicationContext context;
 
     public static void main(String[] args) {
         launch(args);
     }
 
-    public void init() {
-        this.loginService = new LoginService();
-        this.syncService = new SyncService();
-        this.configService = new ConfigService(F.CONFIG_PATH);
+    public void createContext() {
+        context = new ApplicationContext();
+        context.setLoginService(new LoginServiceNutStoreImpl());
+        context.setSyncService(new SyncService());
+        context.setConfigService(new ConfigService(F.CONFIG_PATH));
+        context.setApplication(this);
+        context.setMainService(new MainService());
+        context.setBindService(new BindService(context.getMainService().getFxDocuments()));
+        context.setAsynRemindService(new AsynRemindServiceImpl(new SyncRemindServiceImpl()));
+        context.setAuthService(new AuthService());
+
+        context.addObservable("onMerge", context.getSyncService().getMergeService());
+
+//        if (F.SYNC_TYPE == SyncType.LAZY) {
+//            try {
+//                Object localDocumentRepository = ReflectUtils.getSourceObjectFromProxy(context.getMainService().getDefaultLocalRepository(), LocalDocumentRepositoryProxy.class,LocalDocumentRepository.class);
+//                context.addObservable("onDefaultLocalRepositoryChanged", (LocalDocumentRepository) localDocumentRepository);
+//                context.observe(context.getSyncService(), "onDefaultLocalRepositoryChanged");
+//            } catch (NoSuchFieldException | IllegalAccessException e) {
+//                e.printStackTrace();
+//            }
+//        }
     }
 
     @Override
     public void start(Stage primaryStage) throws Exception {
+        createContext();
         this.primaryStage = primaryStage;
         //加载配置文件
-        configService.loadConfig(F.class);
+        context.getConfigService().loadConfig(F.class);
 
         //判斷能否登陸
         if (StringUtils.isNotBlank(F.configService.getProperty("username")) && StringUtils.isNotBlank(F.configService.getProperty("password"))) {
             F.USERNAME = F.configService.getProperty("username");
             F.PASSWORD = F.configService.getProperty("password");
             User user = new User(F.USERNAME, F.PASSWORD);
-            User login = loginService.login(user);
+            User login = context.getLoginService().login(user);
             if (login != null) {
                 loadMainView();
             } else {
@@ -82,11 +95,11 @@ public class MainApplication extends Application {
         URL loginResource = MainApplication.class.getClassLoader().getResource("views/login.fxml");
         FXMLLoader loginFxmlLoader = new FXMLLoader();
         loginFxmlLoader.setLocation(loginResource);
-        loginFxmlLoader.setController(new LoginController());
+        loginFxmlLoader.setController(new LoginController(context));
         Parent loginParent = loginFxmlLoader.load();
 
         LoginController loginController = loginFxmlLoader.getController();
-        loginController.setApplication(this);
+        loginController.setContext(context);
 
         primaryStage.setTitle("NoteCloud");
         loginScene = new Scene(loginParent);
@@ -94,7 +107,7 @@ public class MainApplication extends Application {
         primaryStage.setOnCloseRequest(new EventHandler<WindowEvent>() {
             @Override
             public void handle(WindowEvent event) {
-                syncService.stopSynchronize();
+                context.getSyncService().stopSynchronize();
             }
         });
 
@@ -105,7 +118,7 @@ public class MainApplication extends Application {
     public Scene loadMainView() throws IOException {
 
         if (mainScene != null) {
-            if (mainStage==null){
+            if (mainStage == null) {
                 mainStage = new Stage();
             }
             mainStage.setScene(mainScene);
@@ -118,7 +131,7 @@ public class MainApplication extends Application {
         //加载fxml
         FXMLLoader fxmlLoader = new FXMLLoader();
         fxmlLoader.setLocation(mainResource);
-        fxmlLoader.setController(new MainController());
+        fxmlLoader.setController(new MainController(context));
         Parent parent = fxmlLoader.load();
         //Parent parent = FXMLLoader.load(Objects.requireNonNull(mainResource)); //这种方法不能获取到controller
         mainScene = new Scene(parent);
@@ -128,10 +141,17 @@ public class MainApplication extends Application {
         mainStage.setTitle("NoteCloud");
         mainStage.setScene(mainScene);
 
+        final SyncService syncService = context.getSyncService();
         MainController controller = fxmlLoader.getController();
-        controller.setApplication(this);
-        controller.startObserve(syncService.getMergeService());
-        syncService.startSynchronize();
+        context.observe(controller, "onMerge");
+
+        if (F.SYNC_TYPE == SyncType.LOOP) {
+            syncService.startSynchronize();
+        }
+        if (F.SYNC_TYPE == SyncType.LAZY) {
+            context.addObservable("mainController",controller);
+            context.observe(syncService,"mainController");
+        }
 
         mainStage.setOnCloseRequest(new EventHandler<WindowEvent>() {
             @Override
@@ -148,7 +168,7 @@ public class MainApplication extends Application {
     public Scene loadConfigView() throws IOException {
 
         if (configScene != null) {
-            if (configStage == null){
+            if (configStage == null) {
                 configStage = new Stage();
             }
             configStage.setScene(configScene);
@@ -161,13 +181,10 @@ public class MainApplication extends Application {
         //加载fxml
         FXMLLoader fxmlLoader = new FXMLLoader();
         fxmlLoader.setLocation(configResource);
-        fxmlLoader.setController(new ConfigController());
+        fxmlLoader.setController(new ConfigController(context));
         Parent parent = fxmlLoader.load();
         //Parent parent = FXMLLoader.load(Objects.requireNonNull(mainResource)); //这种方法不能获取到controller
         configScene = new Scene(parent);
-
-        ConfigController controller = fxmlLoader.getController();
-        controller.setApplication(this);
 
         configStage = new Stage();
         configStage.setTitle("NoteCloud");
@@ -182,11 +199,10 @@ public class MainApplication extends Application {
         URL authResource = MainApplication.class.getClassLoader().getResource("views/auth.fxml");
         FXMLLoader authFxmlLoader = new FXMLLoader();
         authFxmlLoader.setLocation(authResource);
-        authFxmlLoader.setController(new AuthController());
+        authFxmlLoader.setController(new AuthController(context));
         Parent authParent = authFxmlLoader.load();
 
-        AuthController authController = authFxmlLoader.getController();
-        authController.setApplication(this);
+//        AuthController authController = authFxmlLoader.getController();
 
         Stage stage = new Stage();
         stage.setTitle("NoteCloud");

@@ -24,6 +24,7 @@ import java.util.LinkedHashSet;
 import java.util.Set;
 import java.util.concurrent.ExecutorService;
 
+@Deprecated
 public class RemindServiceMix {
 
     private MainService mainService;

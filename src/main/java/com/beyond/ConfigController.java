@@ -30,8 +30,15 @@ public class ConfigController {
 
     private MainApplication application;
 
+    private ApplicationContext context;
+
+    public ConfigController(ApplicationContext context) {
+        this.context = context;
+    }
+
     public void initialize() {
-        configService = new ConfigService(F.CONFIG_PATH);
+        configService = context.getConfigService();
+        application = context.getApplication();
 
         //获取设置值
         if (StringUtils.isNotBlank(F.NOTE_SUFFIX)) {
@@ -89,4 +96,5 @@ public class ConfigController {
     public void setApplication(MainApplication application) {
         this.application = application;
     }
+
 }

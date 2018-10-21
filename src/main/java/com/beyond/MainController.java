@@ -34,7 +34,7 @@ import static com.beyond.DocumentType.NOTE;
 import static com.beyond.DocumentType.TODO;
 
 
-public class MainController implements Observer {
+public class MainController extends Observable implements Observer {
 
     //添加组件
     @FXML
@@ -81,11 +81,15 @@ public class MainController implements Observer {
     private MainService mainService;
     private BindService bindService;
     private ConfigService configService;
-    private RemindServiceMix remindServiceMix;
+    //    private RemindServiceMix remindServiceMix;
     private AsynRemindService<Reminder> asynRemindService;
 
     private MainApplication application;
+    private ApplicationContext context;
 
+    public MainController(ApplicationContext context) {
+        this.context = context;
+    }
 
     @FXML
     private void initialize() {
@@ -93,13 +97,11 @@ public class MainController implements Observer {
     }
 
     private void init() {
-        mainService = new MainService(this);
-        bindService = new BindService(mainService.getFxDocuments());
+        mainService = context.getMainService();
+        bindService = context.getBindService();
         bindService.init(this);
-        configService = new ConfigService(F.CONFIG_PATH);
-        remindServiceMix = new RemindServiceMix(new AuthService(), mainService);
-        SyncRemindService<Reminder> syncRemindService = new SyncRemindServiceImpl();
-        asynRemindService = new AsynRemindServiceImpl(syncRemindService);
+        configService = context.getConfigService();
+        asynRemindService = context.getAsynRemindService();
     }
 
     @FXML
@@ -140,7 +142,13 @@ public class MainController implements Observer {
         //设置提醒
         Todo todo = null;
         if (document instanceof Todo) todo = (Todo) document;
-        if (todo == null) return;
+        if (todo == null) {
+            setChanged();
+            notifyObservers();
+            refreshTable();
+            refreshWebView();
+            return;
+        }
         Todo finalTodo = todo;
         asynRemindService.addEvent(new MicrosoftReminder(todo), new EventHandler<WorkerStateEvent>() {
             @Override
@@ -154,6 +162,8 @@ public class MainController implements Observer {
                         try {
                             finalTodo.setRemoteRemindTime(microsoftReminder.getStart().toDate());
                             mainService.update(finalTodo);
+                            setChanged();
+                            notifyObservers();
                             refreshTable();
                             refreshWebView();
                         } catch (ParseException e) {
@@ -243,7 +253,13 @@ public class MainController implements Observer {
         //更新事件
         Todo todo = null;
         if (document instanceof Todo) todo = (Todo) document;
-        if (todo == null) return;
+        if (todo == null) {
+            setChanged();
+            notifyObservers();
+            refreshTable();
+            refreshWebView();
+            return;
+        }
         Todo finalTodo = todo;
         if (StringUtils.isBlank(todo.getRemindId())) {
             asynRemindService.addEvent(new MicrosoftReminder(todo), new EventHandler<WorkerStateEvent>() {
@@ -258,6 +274,8 @@ public class MainController implements Observer {
                             try {
                                 finalTodo.setRemoteRemindTime(microsoftReminder.getStart().toDate());
                                 mainService.update(finalTodo);
+                                setChanged();
+                                notifyObservers();
                                 refreshTable();
                                 refreshWebView();
                             } catch (ParseException e) {
@@ -279,6 +297,8 @@ public class MainController implements Observer {
                             try {
                                 finalTodo.setRemoteRemindTime(microsoftReminder.getStart().toDate());
                                 mainService.update(finalTodo);
+                                setChanged();
+                                notifyObservers();
                                 refreshTable();
                                 refreshWebView();
                             } catch (ParseException e) {
@@ -333,10 +353,18 @@ public class MainController implements Observer {
         //删除提醒
         Todo todo = null;
         if (selectedItem.toNormalDocument() instanceof Todo) todo = (Todo) selectedItem.toNormalDocument();
-        if (todo == null || todo.getRemindId() == null) return;
+        if (todo == null || todo.getRemindId() == null) {
+            setChanged();
+            notifyObservers();
+            refreshTable();
+            refreshWebView();
+            return;
+        }
         asynRemindService.removeEvent(todo.getRemindId(), new EventHandler<WorkerStateEvent>() {
             @Override
             public void handle(WorkerStateEvent event) {
+                setChanged();
+                notifyObservers();
                 refreshTable();
                 refreshWebView();
             }
@@ -381,10 +409,6 @@ public class MainController implements Observer {
 
         //转到登录页面
         application.loadLoginView();
-    }
-
-    public void startObserve(Observable observable) {
-        observable.addObserver(this);
     }
 
     public void refreshTable() {

@@ -13,14 +13,20 @@ public class AuthController {
     @FXML
     private WebView webView;
 
-    private MainApplication application;
-
     private AuthService authService;
+
+    private ApplicationContext context;
+
+    public AuthController(ApplicationContext context) {
+        this.context = context;
+    }
 
     @FXML
     private void initialize(){
-        authService = new AuthService();
-        authService.setApplication(application);
+        authService = context.getAuthService();
+
+        authService.setApplication(context.getApplication());
+
         String authorizationUrl = authService.getAuthorizationUrl();
         webView.getEngine().load(authorizationUrl);
         webView.getEngine().locationProperty().addListener(new ChangeListener<String>() {
@@ -30,17 +36,9 @@ public class AuthController {
                 if (newValue.startsWith(prefix)){
                     String code = newValue.substring(prefix.length());
                     authService.getAccessToken(code);
-                    application.getAuthStage().close();
+                    context.getApplication().getAuthStage().close();
                 }
             }
         });
-    }
-
-    public void setApplication(MainApplication application) {
-        this.application = application;
-    }
-
-    public MainApplication getApplication() {
-        return application;
     }
 }

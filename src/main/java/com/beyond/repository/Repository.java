@@ -1,14 +1,15 @@
 package com.beyond.repository;
 
+import java.io.IOException;
 import java.util.List;
 
 public interface Repository<T> extends BaseDao<T>{
 
-    void save();
+    int save();
 
-    void save(List<T> list);
+    int save(List<T> list);
 
-    void pull();
+    int pull();
 
     void lock();
 
