@@ -138,6 +138,8 @@ public class MainController extends Observable implements Observer {
         }
         documentTableView.requestFocus();
         documentTableView.getSelectionModel().select(0);
+        refreshTable();
+        refreshWebView();
 
         //设置提醒
         Todo todo = null;
@@ -349,6 +351,8 @@ public class MainController extends Observable implements Observer {
         FxDocument selectedItem = documentTableView.getSelectionModel().getSelectedItem();
         String selectedId = selectedItem.getId();
         mainService.deleteById(selectedId);
+        refreshTable();
+        refreshWebView();
 
         //删除提醒
         Todo todo = null;

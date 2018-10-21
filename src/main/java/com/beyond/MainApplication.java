@@ -40,7 +40,6 @@ public class MainApplication extends Application {
         context = new ApplicationContext();
         context.setLoginService(new LoginServiceNutStoreImpl());
         context.setSyncService(new SyncService());
-        context.setConfigService(new ConfigService(F.CONFIG_PATH));
         context.setApplication(this);
         context.setMainService(new MainService());
         context.setBindService(new BindService(context.getMainService().getFxDocuments()));
@@ -62,10 +61,16 @@ public class MainApplication extends Application {
 
     @Override
     public void start(Stage primaryStage) throws Exception {
-        createContext();
-        this.primaryStage = primaryStage;
+
         //加载配置文件
-        context.getConfigService().loadConfig(F.class);
+        ConfigService configService = new ConfigService(F.CONFIG_PATH);
+        configService.loadConfig(F.class);
+
+        this.primaryStage = primaryStage;
+
+        //创建上下文
+        createContext();
+        context.setConfigService(configService);
 
         //判斷能否登陸
         if (StringUtils.isNotBlank(F.configService.getProperty("username")) && StringUtils.isNotBlank(F.configService.getProperty("password"))) {

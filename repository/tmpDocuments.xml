@@ -1,1 +1,8 @@
-<documents/>
+<documents>
+  <document id="4fdffa5d96274093be11cb3a648986f3">
+    <content>ccc</content>
+    <createTime>2018-10-21 09:43:36.164 UTC</createTime>
+    <lastModifyTime reference="../createTime"/>
+    <version>1</version>
+  </document>
+</documents>

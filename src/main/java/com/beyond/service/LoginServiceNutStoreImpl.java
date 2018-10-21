@@ -23,7 +23,7 @@ import java.util.List;
 public class LoginServiceNutStoreImpl extends RemoteBase implements LoginService {
     @Override
     public User login(User user) {
-        HttpHead httpHead = new HttpHead(F.NUTSTORE_LOGIN_PATH);
+        HttpHead httpHead = new HttpHead(F.DEFAULT_LOGIN_PATH);
         CloseableHttpClient client = getClient(user);
         CloseableHttpResponse response = null;
         try {

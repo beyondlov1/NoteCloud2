@@ -171,13 +171,13 @@ public class RemoteDocumentRepository extends RemoteBase implements Repository<D
     }
 
     public static void main(String[] args) throws IOException {
-        LocalDocumentRepository localDocumentRepository = new LocalDocumentRepository("./document/tmp.xml");
-        RemoteDocumentRepository remoteDocumentRepository = new RemoteDocumentRepository("https://yura.teracloud.jp/dav/NoteCloud/repository/documents.xml", localDocumentRepository);
-        remoteDocumentRepository.add(new Document("5", "content"));
-        remoteDocumentRepository.save();
-        System.out.println(remoteDocumentRepository.selectAll().size());
-        remoteDocumentRepository.pull();
-        List<Document> documents = remoteDocumentRepository.selectAll();
-        System.out.println(documents.size());
+//        LocalDocumentRepository localDocumentRepository = new LocalDocumentRepository("./document/tmp.xml");
+//        RemoteDocumentRepository remoteDocumentRepository = new RemoteDocumentRepository("https://yura.teracloud.jp/dav/NoteCloud/repository/documents.xml", localDocumentRepository);
+//        remoteDocumentRepository.add(new Document("5", "content"));
+//        remoteDocumentRepository.save();
+//        System.out.println(remoteDocumentRepository.selectAll().size());
+//        remoteDocumentRepository.pull();
+//        List<Document> documents = remoteDocumentRepository.selectAll();
+//        System.out.println(documents.size());
     }
 }

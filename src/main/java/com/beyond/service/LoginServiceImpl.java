@@ -8,15 +8,13 @@ import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpHead;
 import org.apache.http.impl.client.CloseableHttpClient;
 
-import java.io.IOException;
-
 /**
  * 登陆服务
  */
 public class LoginServiceImpl extends RemoteBase implements LoginService{
 
     public User login(User user) {
-        HttpHead httpHead = new HttpHead(F.DEFAULT_REMOTE_ROOT_PATH);
+        HttpHead httpHead = new HttpHead(F.DEFAULT_LOGIN_PATH);
         CloseableHttpClient client = getClient(user);
         CloseableHttpResponse response = null;
         try {
