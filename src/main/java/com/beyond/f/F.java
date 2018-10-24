@@ -21,8 +21,10 @@ public class F {
     public static String DEFAULT_LOCAL_PATH = "./repository/documents.xml";
     public static String DEFAULT_DELETE_PATH = "./repository/deletedDocuments.xml";
     public static String DEFAULT_TMP_PATH = "./repository/tmpDocuments.xml";
-    public static String DEFAULT_LOGIN_PATH = "https://yura.teracloud.jp/dav/";
-    public static String DEFAULT_REMOTE_PATH = "https://yura.teracloud.jp/dav/NoteCloud/repository/documents.xml";
+//    public static String DEFAULT_LOGIN_PATH = "https://yura.teracloud.jp/dav/";
+//    public static String DEFAULT_REMOTE_PATH = "https://yura.teracloud.jp/dav/NoteCloud/repository/documents.xml";
+    public static String DEFAULT_LOGIN_PATH = "https://dav.jianguoyun.com/dav/NoteCloud";
+    public static String DEFAULT_REMOTE_PATH = "https://dav.jianguoyun.com/dav/NoteCloud/repository/documents.xml";
 
 //    public static String NUTSTORE_LOGIN_PATH = "https://dav.jianguoyun.com/dav/NoteCloud";
 //    public static String NUTSTORE_REMOTE_PATH = "https://dav.jianguoyun.com/dav/NoteCloud/repository/documents.xml";

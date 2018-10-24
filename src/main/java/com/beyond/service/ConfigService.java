@@ -28,7 +28,7 @@ public class ConfigService {
             inputStream = new FileInputStream(configPath);
             properties.load(inputStream);
         } catch (Exception e) {
-            e.printStackTrace();
+            F.logger.info("config file may not exist, default config has been used");
         } finally {
             try {
                 if (inputStream != null) {
@@ -39,7 +39,7 @@ public class ConfigService {
             }
         }
         if (properties == null) {
-            throw new RuntimeException("配置地址不正确!");
+            properties = new Properties();
         }
     }
 
@@ -94,9 +94,7 @@ public class ConfigService {
                         }
                     }
                 }
-
             }
-
         }
     }
 }

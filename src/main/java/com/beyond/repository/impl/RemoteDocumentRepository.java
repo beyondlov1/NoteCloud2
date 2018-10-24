@@ -123,7 +123,7 @@ public class RemoteDocumentRepository extends RemoteBase implements Repository<D
         try {
             CloseableHttpResponse response = client.execute(httpGet);
             int statusCode = response.getStatusLine().getStatusCode();
-            System.out.println(statusCode);
+            F.logger.info(statusCode);
             if (statusCode > 400) {
                 upload();
                 return 0;
