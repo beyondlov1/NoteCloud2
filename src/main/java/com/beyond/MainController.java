@@ -138,8 +138,6 @@ public class MainController extends Observable implements Observer {
         }
         documentTableView.requestFocus();
         documentTableView.getSelectionModel().select(0);
-        refreshTable();
-        refreshWebView();
 
         //设置提醒
         Todo todo = null;
@@ -175,27 +173,6 @@ public class MainController extends Observable implements Observer {
                 });
             }
         });
-
-        //设置提醒
-//        Thread thread = new Thread(new Runnable() {
-//            @Override
-//            public void run() {
-//                Todo todo = null;
-//                if (document instanceof Todo) todo = (Todo) document;
-//                if (todo == null) return;
-//                remindServiceMix.addEvent(todo,new MicrosoftReminder(todo));
-//                remindServiceMix.readEvent(todo);
-//
-//                Platform.runLater(new Runnable() {
-//                    @Override
-//                    public void run() {
-//                        refreshTable();
-//                        refreshWebView();
-//                    }
-//                });
-//            }
-//        });
-//        thread.start();
     }
 
     private Document validate(String content) {
@@ -251,6 +228,14 @@ public class MainController extends Observable implements Observer {
         //更新时会根据后缀重新定义类型
         document.setId(selectedDocument.getId());
         mainService.update(document);
+
+        //changeView
+        if (source instanceof TextArea) {
+            TextArea textArea = (TextArea) source;
+            textArea.setText(selectedDocument.getContent());
+        }
+        documentTableView.getSelectionModel().select(selectedIndex);
+        documentTableView.requestFocus();
 
         //更新事件
         Todo todo = null;
@@ -312,38 +297,6 @@ public class MainController extends Observable implements Observer {
             });
         }
 
-        //更新事件
-//        Thread thread = new Thread(new Runnable() {
-//            @Override
-//            public void run() {
-//                Todo todo = null;
-//                if (document instanceof Todo) todo = (Todo) document;
-//                if (todo == null) return;
-//                if (StringUtils.isBlank(todo.getRemindId())) {
-//                    remindServiceMix.addEvent(todo, new MicrosoftReminder(todo));
-//                } else {
-//                    remindServiceMix.updateEvent(todo);
-//                }
-//                remindServiceMix.readEvent(todo);
-//
-//                Platform.runLater(new Runnable() {
-//                    @Override
-//                    public void run() {
-//                        refreshTable();
-//                        refreshWebView();
-//                    }
-//                });
-//            }
-//        });
-//        thread.start();
-
-        //changeView
-        if (source instanceof TextArea) {
-            TextArea textArea = (TextArea) source;
-            textArea.setText(selectedDocument.getContent());
-        }
-        documentTableView.getSelectionModel().select(selectedIndex);
-        documentTableView.requestFocus();
     }
 
     @FXML
@@ -351,8 +304,8 @@ public class MainController extends Observable implements Observer {
         FxDocument selectedItem = documentTableView.getSelectionModel().getSelectedItem();
         String selectedId = selectedItem.getId();
         mainService.deleteById(selectedId);
-        refreshTable();
-        refreshWebView();
+//        refreshTable();
+//        refreshWebView();
 
         //删除提醒
         Todo todo = null;
@@ -373,26 +326,6 @@ public class MainController extends Observable implements Observer {
                 refreshWebView();
             }
         });
-
-        //删除提醒
-//        Thread thread = new Thread(new Runnable() {
-//            @Override
-//            public void run() {
-//                Todo todo = null;
-//                if (selectedItem.toNormalDocument() instanceof Todo) todo = (Todo) selectedItem.toNormalDocument();
-//                if (todo == null || todo.getRemindId() == null) return;
-//                remindServiceMix.deleteEvent(todo.getRemindId());
-//
-//                Platform.runLater(new Runnable() {
-//                    @Override
-//                    public void run() {
-//                        refreshTable();
-//                        refreshWebView();
-//                    }
-//                });
-//            }
-//        });
-//        thread.start();
     }
 
     @FXML
