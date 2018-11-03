@@ -8,6 +8,8 @@ import com.beyond.service.*;
 import com.beyond.utils.ListUtils;
 import com.beyond.utils.SortUtils;
 import com.beyond.utils.TimeUtils;
+import com.beyond.viewloader.ConfigViewLoader;
+import com.beyond.viewloader.MainViewLoader;
 import javafx.animation.Timeline;
 import javafx.application.Platform;
 import javafx.collections.ObservableList;
@@ -84,7 +86,6 @@ public class MainController extends Observable implements Observer {
     //    private RemindServiceMix remindServiceMix;
     private AsynRemindService<Reminder> asynRemindService;
 
-    private MainApplication application;
     private ApplicationContext context;
 
     public MainController(ApplicationContext context) {
@@ -331,7 +332,7 @@ public class MainController extends Observable implements Observer {
     @FXML
     public void openConfig() throws IOException {
         F.logger.info("open config");
-        application.loadConfigView();
+        context.loadView(ConfigViewLoader.class);
     }
 
     @FXML
@@ -342,10 +343,10 @@ public class MainController extends Observable implements Observer {
         configService.storeProperties();
 
         //关闭当前页面
-        application.getMainStage().close();
+        context.closeView(MainViewLoader.class);
 
         //转到登录页面
-        application.loadLoginView();
+        context.loadView(ConfigViewLoader.class);
     }
 
     public void refreshTable() {
@@ -441,13 +442,6 @@ public class MainController extends Observable implements Observer {
         return deletedFxDocumentList;
     }
 
-    public void setApplication(MainApplication application) {
-        this.application = application;
-    }
-
-    public MainApplication getApplication() {
-        return application;
-    }
 
 }
 

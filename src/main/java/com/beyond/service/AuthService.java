@@ -1,8 +1,10 @@
 package com.beyond.service;
 
+import com.beyond.ApplicationContext;
 import com.beyond.MainApplication;
 import com.beyond.f.F;
 import com.beyond.libext.MicrosoftAzureActiveDirectoryApi20;
+import com.beyond.viewloader.AuthViewLoader;
 import com.github.scribejava.core.builder.ServiceBuilder;
 import com.github.scribejava.core.model.OAuth2AccessToken;
 import com.github.scribejava.core.oauth.OAuth20Service;
@@ -14,9 +16,9 @@ import java.util.concurrent.ExecutionException;
 
 public class AuthService {
 
-    private OAuth20Service oAuth20Service;
+    private ApplicationContext context;
 
-    private MainApplication application;
+    private OAuth20Service oAuth20Service;
 
     public AuthService() {
         MicrosoftAzureActiveDirectoryApi20 api = MicrosoftAzureActiveDirectoryApi20.instance();
@@ -24,6 +26,11 @@ public class AuthService {
                 .scope(F.SCOPE)
                 .callback("https://login.microsoftonline.com/common/oauth2/nativeclient")
                 .build(api);
+    }
+
+    public AuthService(ApplicationContext context){
+        this();
+        this.context = context;
     }
 
     public String getAccessToken() {
@@ -42,7 +49,7 @@ public class AuthService {
                 }
 
                 //如果refresh_token也过期了,重新获取
-                application.loadMicrosoftAuth();
+                context.loadView(AuthViewLoader.class);
                 return "";
             }
         } catch (Exception e) {
@@ -84,7 +91,4 @@ public class AuthService {
         return oAuth20Service;
     }
 
-    public void setApplication(MainApplication application) {
-        this.application = application;
-    }
 }

@@ -2,7 +2,11 @@ package com.beyond;
 
 import com.beyond.entity.Reminder;
 import com.beyond.service.*;
+import com.beyond.viewloader.LoginViewLoader;
+import com.beyond.viewloader.MainViewLoader;
+import com.beyond.viewloader.ViewLoader;
 
+import java.io.IOException;
 import java.util.*;
 
 /**
@@ -20,14 +24,16 @@ public class ApplicationContext {
     private SyncService syncService;
     private ConfigService configService;
     private AuthService authService;
+    private MainApplication application;
 
     private Map<String,Observable> observableMap;
 
-    private MainApplication application;
+    private Map<Class, ViewLoader> viewLoaderMap;
 
     public ApplicationContext() {
         this.map = new HashMap<>();
         this.observableMap = new HashMap<>();
+        this.viewLoaderMap = new HashMap<>();
     }
 
     public void addObservable(String key,Observable observable){
@@ -115,5 +121,25 @@ public class ApplicationContext {
 
     public void setAuthService(AuthService authService) {
         this.authService = authService;
+    }
+
+    public void addViewLoader(ViewLoader viewLoader){
+        viewLoaderMap.put(viewLoader.getClass(),viewLoader);
+    }
+
+    private ViewLoader getViewLoader(Class clazz) {
+        ViewLoader viewLoader = viewLoaderMap.get(clazz);
+        if (viewLoader==null) throw new RuntimeException("viewLoader not found");
+        else return viewLoader;
+    }
+
+    public void loadView(Class<? extends ViewLoader> viewLoaderClass) throws IOException {
+        ViewLoader viewLoader = getViewLoader(viewLoaderClass);
+        viewLoader.load();
+    }
+
+    public void closeView(Class<? extends ViewLoader> viewLoaderClass) {
+        ViewLoader viewLoader = getViewLoader(viewLoaderClass);
+        viewLoader.close();
     }
 }

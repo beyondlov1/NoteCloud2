@@ -4,6 +4,7 @@ import com.beyond.entity.User;
 import com.beyond.f.F;
 import com.beyond.f.SyncType;
 import com.beyond.service.*;
+import com.beyond.viewloader.*;
 import javafx.application.Application;
 import javafx.event.EventHandler;
 import javafx.fxml.FXMLLoader;
@@ -36,188 +37,88 @@ public class MainApplication extends Application {
         launch(args);
     }
 
-    public void createContext() {
+    @Override
+    public void init() throws Exception {
         context = new ApplicationContext();
+    }
+
+    @Override
+    public void start(Stage primaryStage) throws Exception {
+        setPrimaryStage(primaryStage);
+        loadConfig();
+        createContext();
+        showStage();
+    }
+
+    private void setPrimaryStage(Stage primaryStage) {
+        this.primaryStage = primaryStage;
+    }
+
+    private void createContext() {
         context.setLoginService(new LoginServiceNutStoreImpl());
         context.setSyncService(new SyncService());
         context.setApplication(this);
         context.setMainService(new MainService());
         context.setBindService(new BindService(context.getMainService().getFxDocuments()));
         context.setAsynRemindService(new AsynRemindServiceImpl(new SyncRemindServiceImpl()));
-        context.setAuthService(new AuthService());
-
+        context.setAuthService(new AuthService(context));
+        context.setApplication(this);
         context.addObservable("onMerge", context.getSyncService().getMergeService());
 
-//        if (F.SYNC_TYPE == SyncType.LAZY) {
-//            try {
-//                Object localDocumentRepository = ReflectUtils.getSourceObjectFromProxy(context.getMainService().getDefaultLocalRepository(), LocalDocumentRepositoryProxy.class,LocalDocumentRepository.class);
-//                context.addObservable("onDefaultLocalRepositoryChanged", (LocalDocumentRepository) localDocumentRepository);
-//                context.observe(context.getSyncService(), "onDefaultLocalRepositoryChanged");
-//            } catch (NoSuchFieldException | IllegalAccessException e) {
-//                e.printStackTrace();
-//            }
-//        }
+        ViewLoader mainViewLoader = new MainViewLoader(context);
+        mainViewLoader.setLocation("views/main.fxml");
+        mainViewLoader.setStage(mainStage);
+        mainViewLoader.setController(new MainController(context));
+        context.addViewLoader(mainViewLoader);
+
+        ViewLoader loginViewLoader = new LoginViewLoader(context);
+        loginViewLoader.setLocation("views/login.fxml");
+        loginViewLoader.setStage(loginStage);
+        loginViewLoader.setController(new LoginController(context));
+        context.addViewLoader(loginViewLoader);
+
+        ViewLoader configViewLoader = new ConfigViewLoader(context);
+        configViewLoader.setLocation("views/config.fxml");
+        configViewLoader.setStage(configStage);
+        configViewLoader.setController(new LoginController(context));
+        context.addViewLoader(configViewLoader);
+
+        ViewLoader authViewLoader = new AuthViewLoader(context);
+        authViewLoader.setLocation("views/auth.fxml");
+        authViewLoader.setStage(authStage);
+        authViewLoader.setController(new AuthController(context));
+        context.addViewLoader(authViewLoader);
+
     }
 
-    @Override
-    public void start(Stage primaryStage) throws Exception {
-
-        //加载配置文件
-        ConfigService configService = new ConfigService(F.CONFIG_PATH);
-        configService.loadConfig(F.class);
-
-        this.primaryStage = primaryStage;
-
-        //创建上下文
-        createContext();
-        context.setConfigService(configService);
-
-        //判斷能否登陸
-        if (StringUtils.isNotBlank(F.configService.getProperty("username")) && StringUtils.isNotBlank(F.configService.getProperty("password"))) {
-            F.USERNAME = F.configService.getProperty("username");
-            F.PASSWORD = F.configService.getProperty("password");
-            User user = new User(F.USERNAME, F.PASSWORD);
-            User login = context.getLoginService().login(user);
-            if (login != null) {
-                loadMainView();
-            } else {
-                loadLoginView();
-            }
+    private void showStage() throws Exception{
+        User user  = new User(
+                F.configService.getProperty("username"),
+                F.configService.getProperty("password"));
+        if (isLogin(user)) {
+            context.loadView(MainViewLoader.class);
+            loadConfig();
         } else {
-            loadLoginView();
+            context.loadView(LoginViewLoader.class);
         }
-        primaryStage.show();
     }
 
-    public Scene loadLoginView() throws IOException {
-
-        if (loginScene != null) {
-            primaryStage.setScene(loginScene);
-            primaryStage.show();
-            return loginScene;
+    private void loadConfig() {
+        if (context.getConfigService()==null){
+            ConfigService configService = new ConfigService(F.CONFIG_PATH);
+            context.setConfigService(configService);
         }
-
-        URL loginResource = MainApplication.class.getClassLoader().getResource("views/login.fxml");
-        FXMLLoader loginFxmlLoader = new FXMLLoader();
-        loginFxmlLoader.setLocation(loginResource);
-        loginFxmlLoader.setController(new LoginController(context));
-        Parent loginParent = loginFxmlLoader.load();
-
-        LoginController loginController = loginFxmlLoader.getController();
-        loginController.setContext(context);
-
-        primaryStage.setTitle("NoteCloud");
-        loginScene = new Scene(loginParent);
-
-        primaryStage.setOnCloseRequest(new EventHandler<WindowEvent>() {
-            @Override
-            public void handle(WindowEvent event) {
-                context.getSyncService().stopSynchronize();
-            }
-        });
-
-        primaryStage.setScene(loginScene);
-        return loginScene;
+        context.getConfigService().loadConfig(F.class);
     }
 
-    public Scene loadMainView() throws IOException {
-
-        if (mainScene != null) {
-            if (mainStage == null) {
-                mainStage = new Stage();
-            }
-            mainStage.setScene(mainScene);
-            mainStage.show();
-            return mainScene;
+    private boolean isLogin(User user){
+        if (StringUtils.isNotBlank(user.getUsername()) && StringUtils.isNotBlank(user.getPassword())) {
+            User login = context.getLoginService().login(user);
+            return login != null;
+        } else {
+            return false;
         }
-
-        URL mainResource = MainApplication.class.getClassLoader().getResource("views/main.fxml");
-
-        //加载fxml
-        FXMLLoader fxmlLoader = new FXMLLoader();
-        fxmlLoader.setLocation(mainResource);
-        fxmlLoader.setController(new MainController(context));
-        Parent parent = fxmlLoader.load();
-        //Parent parent = FXMLLoader.load(Objects.requireNonNull(mainResource)); //这种方法不能获取到controller
-        mainScene = new Scene(parent);
-
-        //创建stage
-        mainStage = new Stage();
-        mainStage.setTitle("NoteCloud");
-        mainStage.setScene(mainScene);
-
-        final SyncService syncService = context.getSyncService();
-        MainController controller = fxmlLoader.getController();
-        context.observe(controller, "onMerge");
-
-        if (F.SYNC_TYPE == SyncType.LOOP) {
-            syncService.startSynchronize();
-        }
-        if (F.SYNC_TYPE == SyncType.LAZY) {
-            context.addObservable("mainController",controller);
-            context.observe(syncService,"mainController");
-        }
-
-        mainStage.setOnCloseRequest(new EventHandler<WindowEvent>() {
-            @Override
-            public void handle(WindowEvent event) {
-                syncService.stopSynchronize();
-            }
-        });
-
-        mainStage.show();
-        return mainScene;
     }
-
-
-    public Scene loadConfigView() throws IOException {
-
-        if (configScene != null) {
-            if (configStage == null) {
-                configStage = new Stage();
-            }
-            configStage.setScene(configScene);
-            configStage.show();
-            return configScene;
-        }
-
-        URL configResource = MainApplication.class.getClassLoader().getResource("views/config.fxml");
-
-        //加载fxml
-        FXMLLoader fxmlLoader = new FXMLLoader();
-        fxmlLoader.setLocation(configResource);
-        fxmlLoader.setController(new ConfigController(context));
-        Parent parent = fxmlLoader.load();
-        //Parent parent = FXMLLoader.load(Objects.requireNonNull(mainResource)); //这种方法不能获取到controller
-        configScene = new Scene(parent);
-
-        configStage = new Stage();
-        configStage.setTitle("NoteCloud");
-        configStage.setScene(configScene);
-        configStage.show();
-        return configScene;
-    }
-
-
-    public Scene loadMicrosoftAuth() throws IOException {
-
-        URL authResource = MainApplication.class.getClassLoader().getResource("views/auth.fxml");
-        FXMLLoader authFxmlLoader = new FXMLLoader();
-        authFxmlLoader.setLocation(authResource);
-        authFxmlLoader.setController(new AuthController(context));
-        Parent authParent = authFxmlLoader.load();
-
-//        AuthController authController = authFxmlLoader.getController();
-
-        Stage stage = new Stage();
-        stage.setTitle("NoteCloud");
-        authScene = new Scene(authParent);
-        stage.setScene(authScene);
-        stage.show();
-        this.authStage = stage;
-        return authScene;
-    }
-
 
     public Stage getAuthStage() {
         return authStage;

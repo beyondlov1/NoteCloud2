@@ -25,8 +25,6 @@ public class AuthController {
     private void initialize(){
         authService = context.getAuthService();
 
-        authService.setApplication(context.getApplication());
-
         String authorizationUrl = authService.getAuthorizationUrl();
         webView.getEngine().load(authorizationUrl);
         webView.getEngine().locationProperty().addListener(new ChangeListener<String>() {

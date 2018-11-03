@@ -3,6 +3,7 @@ package com.beyond;
 
 import com.beyond.f.F;
 import com.beyond.service.ConfigService;
+import com.beyond.viewloader.AuthViewLoader;
 import javafx.fxml.FXML;
 import javafx.scene.control.CheckBox;
 import javafx.scene.control.TextField;
@@ -82,7 +83,7 @@ public class ConfigController {
         boolean isSelected = microsoftEventSwitch.isSelected();
         if (isSelected) {
             try {
-                application.loadMicrosoftAuth();
+                context.loadView(AuthViewLoader.class);
             } catch (IOException e) {
                 e.printStackTrace();
             }

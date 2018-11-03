@@ -5,6 +5,8 @@ import com.beyond.f.F;
 import com.beyond.service.ConfigService;
 import com.beyond.service.LoginService;
 import com.beyond.service.LoginServiceImpl;
+import com.beyond.viewloader.LoginViewLoader;
+import com.beyond.viewloader.MainViewLoader;
 import javafx.concurrent.Service;
 import javafx.concurrent.Task;
 import javafx.event.EventHandler;
@@ -84,7 +86,7 @@ public class LoginController {
                 if (event.getCode() == KeyCode.ENTER) {
                     try {
                         login();
-                    } catch (IOException e) {
+                    } catch (Exception e) {
                         e.printStackTrace();
                         F.logger.info(e.getMessage());
                     }
@@ -94,7 +96,7 @@ public class LoginController {
     }
 
     @FXML
-    public void login() throws IOException {
+    public void login() throws Exception {
         msg.setText("登陆中...");
         loginButton.setDisable(true);
         String username = usernameText.getText();
@@ -122,8 +124,8 @@ public class LoginController {
                 super.succeeded();
                 try {
                     if (getValue() != null) {
-                        application.loadMainView();
-                        application.getPrimaryStage().close();
+                        context.loadView(MainViewLoader.class);
+                        context.closeView(LoginViewLoader.class);
                         if (rememberUsername.isSelected()) {
                             configService.setProperty("username", username);
                             configService.storeProperties();
