@@ -91,27 +91,28 @@ public class MainApplication extends Application {
 
     }
 
-    private void showStage() throws Exception{
-        User user  = new User(
+    private void showStage() throws Exception {
+        User user = new User(
                 F.configService.getProperty("username"),
                 F.configService.getProperty("password"));
         if (isLogin(user)) {
-            context.loadView(MainViewLoader.class);
             loadConfig();
+            context.loadView(MainViewLoader.class);
         } else {
             context.loadView(LoginViewLoader.class);
         }
     }
 
     private void loadConfig() {
-        if (context.getConfigService()==null){
-            ConfigService configService = new ConfigService(F.CONFIG_PATH);
+        ConfigService configService = context.getConfigService();
+        if (configService == null) {
+            configService = new ConfigService(F.CONFIG_PATH);
             context.setConfigService(configService);
         }
-        context.getConfigService().loadConfig(F.class);
+        configService.loadConfig(F.class);
     }
 
-    private boolean isLogin(User user){
+    private boolean isLogin(User user) {
         if (StringUtils.isNotBlank(user.getUsername()) && StringUtils.isNotBlank(user.getPassword())) {
             User login = context.getLoginService().login(user);
             return login != null;

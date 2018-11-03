@@ -85,7 +85,7 @@ public class BindService {
         /*
          * container E D Listener
          */
-        mainController.getContainer().setOnKeyPressed(new EventHandler<KeyEvent>() {
+        mainController.getDocumentTableView().setOnKeyPressed(new EventHandler<KeyEvent>() {
             @Override
             public void handle(KeyEvent event) {
                 KeyCode code = event.getCode();
