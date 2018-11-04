@@ -48,6 +48,7 @@ public abstract class AbstractViewLoader implements ViewLoader{
         }
         Parent parent = fxmlLoader.load();
         stage.setScene(new Scene(parent));
+        stage.setTitle("NoteCloud");
         stage.show();
         afterLoad();
     }

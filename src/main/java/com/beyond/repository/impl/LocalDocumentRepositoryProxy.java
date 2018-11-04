@@ -23,7 +23,7 @@ public class LocalDocumentRepositoryProxy implements InvocationHandler {
 
     @Override
     public synchronized Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
-        if (method.getName().startsWith("add")||method.getName().startsWith("delete")||method.getName().startsWith("modify")){
+        if (method.getName().startsWith("add")||method.getName().startsWith("delete")||method.getName().startsWith("update")){
 
             Object invoke = method.invoke(localDocumentRepository, args);
 

@@ -1,24 +1,13 @@
 <documents>
-  <document id="3cd50093d293481fa058585e2bf74502">
-    <content>- adapter
-- TDD</content>
-    <createTime>2018-11-03 13:39:35.269 UTC</createTime>
-    <lastModifyTime>2018-11-03 13:41:54.433 UTC</lastModifyTime>
-    <version>2</version>
-  </document>
-  <document id="e40031fb890d4640a74606cd110b21e0">
-    <content>- 一个函数只做一件事</content>
-    <createTime>2018-10-30 02:18:40.342 UTC</createTime>
+  <document id="d556439da88d4f2a82aec3bf23d79f2c">
+    <content>- 继承还是合成主要看需不需要基类的所有接口</content>
+    <createTime>2018-10-30 02:20:21.6 UTC</createTime>
     <lastModifyTime reference="../createTime"/>
     <version>1</version>
   </document>
-  <document id="d88903486abd47f3becea25ac04755f7">
-    <content>TodoList：
-- 自定义页签
-- 自定义页签可变颜色
-- 回收站
-</content>
-    <createTime>2018-10-25 04:49:00.666 UTC</createTime>
+  <document id="f7ef194b124b4e0380aae998125bb91f">
+    <content>welcome</content>
+    <createTime>2018-10-21 10:18:02.570 UTC</createTime>
     <lastModifyTime reference="../createTime"/>
     <version>1</version>
   </document>
@@ -31,15 +20,34 @@ dongtaiwang.com</content>
     <lastModifyTime reference="../createTime"/>
     <version>1</version>
   </document>
-  <document id="f7ef194b124b4e0380aae998125bb91f">
-    <content>welcome</content>
-    <createTime>2018-10-21 10:18:02.570 UTC</createTime>
+  <document id="d88903486abd47f3becea25ac04755f7">
+    <content># TodoList：
+- 自定义页签
+- 自定义页签可变颜色
+- 回收站
+</content>
+    <createTime>2018-10-25 04:49:00.666 UTC</createTime>
+    <lastModifyTime>2018-11-04 03:38:26.742 UTC</lastModifyTime>
+    <version>2</version>
+  </document>
+  <document id="e40031fb890d4640a74606cd110b21e0">
+    <content>- 一个函数只做一件事</content>
+    <createTime>2018-10-30 02:18:40.342 UTC</createTime>
     <lastModifyTime reference="../createTime"/>
     <version>1</version>
   </document>
-  <document id="d556439da88d4f2a82aec3bf23d79f2c">
-    <content>- 继承还是合成主要看需不需要基类的所有接口</content>
-    <createTime>2018-10-30 02:20:21.6 UTC</createTime>
+  <document id="3cd50093d293481fa058585e2bf74502">
+    <content>- adapter
+- TDD
+- DSL
+- 内存泄露</content>
+    <createTime>2018-11-03 13:39:35.269 UTC</createTime>
+    <lastModifyTime>2018-11-04 07:23:53.363 UTC</lastModifyTime>
+    <version>4</version>
+  </document>
+  <document id="ae87dc0870254d958baa2436a0623ad7">
+    <content>- 单一权责原则</content>
+    <createTime>2018-11-03 17:02:01.973 UTC</createTime>
     <lastModifyTime reference="../createTime"/>
     <version>1</version>
   </document>

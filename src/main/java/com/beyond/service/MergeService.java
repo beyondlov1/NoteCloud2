@@ -28,13 +28,6 @@ public class MergeService extends Observable {
 
     private int mergeFlag = 0;
 
-//    public MergeService(LocalDocumentRepository localRepository, RemoteDocumentRepository remoteRepository, PropertyManager localPropertyManager, PropertyManager remotePropertyManager) {
-//        this.localRepository = localRepository;
-//        this.remoteRepository = remoteRepository;
-//        this.localPropertyManager = localPropertyManager;
-//        this.remotePropertyManager = remotePropertyManager;
-//    }
-
     public MergeService(String path, String url, String tmpPath) {
         super();
         this.localRepository = new LocalDocumentRepository(path);

@@ -1,17 +1,13 @@
 package com.beyond;
 
-import com.beyond.callback.Callback;
 import com.beyond.entity.*;
 import com.beyond.f.F;
-import com.beyond.repository.impl.RemoteReminderDao;
 import com.beyond.service.*;
 import com.beyond.utils.ListUtils;
 import com.beyond.utils.SortUtils;
 import com.beyond.utils.TimeUtils;
 import com.beyond.viewloader.ConfigViewLoader;
 import com.beyond.viewloader.MainViewLoader;
-import javafx.animation.Timeline;
-import javafx.application.Platform;
 import javafx.collections.ObservableList;
 import javafx.concurrent.WorkerStateEvent;
 import javafx.event.EventHandler;
@@ -74,16 +70,12 @@ public class MainController extends Observable implements Observer {
     @FXML
     private TableColumn<FxDocument, String> deletedContentTableColumn;
 
-
     private ObservableList<FxDocument> fxDocumentList = null;
     private ObservableList<FxDocument> deletedFxDocumentList = null;
-
-    private Timeline timeline;
 
     private MainService mainService;
     private BindService bindService;
     private ConfigService configService;
-    //    private RemindServiceMix remindServiceMix;
     private AsynRemindService<Reminder> asynRemindService;
 
     private ApplicationContext context;
@@ -92,12 +84,11 @@ public class MainController extends Observable implements Observer {
         this.context = context;
     }
 
-    @FXML
-    private void initialize() {
-        init();
+    public void initialize() {
+        initService();
     }
 
-    private void init() {
+    private void initService() {
         mainService = context.getMainService();
         bindService = context.getBindService();
         bindService.init(this);
@@ -105,22 +96,65 @@ public class MainController extends Observable implements Observer {
         asynRemindService = context.getAsynRemindService();
     }
 
-    @FXML
     public void save(KeyEvent keyEvent) {
-        String content = contentTextAreaSave.getText();
-        Object source = keyEvent.getSource();
+        String content = getSaveContent();
+        if (!isValid(content, keyEvent)) {
+            return;
+        }
+        Document document = createDocument(content);
+        mainService.add(document);
+        changeViewAfterSave(keyEvent);
 
-        //验证能否保存
+        if (document instanceof Todo) {
+            Todo todo = (Todo) document;
+            addEvent(todo);
+        }
+
+    }
+
+    private void changeViewAfterSave(KeyEvent keyEvent) {
+        Object source = keyEvent.getSource();
+        if (source instanceof TextArea) {
+            TextArea textArea = (TextArea) source;
+            textArea.setText(null);
+        }
+        documentTableView.requestFocus();
+        documentTableView.getSelectionModel().select(0);
+        refreshTable();
+        refreshWebView();
+    }
+
+    private void addEvent(Todo todo) {
+        asynRemindService.addEvent(new MicrosoftReminder(todo), new EventHandler<WorkerStateEvent>() {
+            @Override
+            public void handle(WorkerStateEvent event) {
+                Serializable id = (Serializable) event.getSource().getValue();
+                todo.setRemindId((String) id);
+                readEvent(todo);
+            }
+        });
+    }
+
+    private Document createDocument(String content) {
         Document document;
-        if (keyEvent.isControlDown() && keyEvent.getCode() == KeyCode.S) {
+        int length = content.length();
+        if (content.endsWith(NOTE.getType() + "\n")) {
+            content = content.substring(0, length - NOTE.getType().length() - 1);
+            Note note = new Note();
+            note.setContent(content);
+            document = note;
+        } else if (content.endsWith(TODO.getType() + "\n")) {
+            content = content.substring(0, length - TODO.getType().length() - 1);
+            Todo todo = new Todo();
+            todo.setContent(content);
+            document = todo;
+        } else if (content.endsWith(DOC.getType() + "\n")) {
+            content = content.substring(0, length - DOC.getType().length() - 1);
             document = new Document();
             document.setContent(content);
         } else {
-            document = validate(content);
-        }
-        if (document == null) return;
-        if (StringUtils.isBlank(document.getContent())) {
-            return;
+            document = new Document();
+            document.setContent(content);
         }
 
         Date curr = new Date();
@@ -130,50 +164,30 @@ public class MainController extends Observable implements Observer {
         document.setVersion(1);
         document.setContent(F.CONTENT_PREFIX + document.getContent());
 
-        mainService.add(document);
+        return document;
+    }
 
-        //changeView
-        if (source instanceof TextArea) {
-            TextArea textArea = (TextArea) source;
-            textArea.setText(null);
-        }
-        documentTableView.requestFocus();
-        documentTableView.getSelectionModel().select(0);
-
-        //设置提醒
-        Todo todo = null;
-        if (document instanceof Todo) todo = (Todo) document;
-        if (todo == null) {
-            setChanged();
-            notifyObservers();
-            refreshTable();
-            refreshWebView();
-            return;
-        }
-        Todo finalTodo = todo;
-        asynRemindService.addEvent(new MicrosoftReminder(todo), new EventHandler<WorkerStateEvent>() {
-            @Override
-            public void handle(WorkerStateEvent event) {
-                Serializable id = (Serializable) event.getSource().getValue();
-                finalTodo.setRemindId((String) id);
-                asynRemindService.readEvent(id, new EventHandler<WorkerStateEvent>() {
-                    @Override
-                    public void handle(WorkerStateEvent event) {
-                        MicrosoftReminder microsoftReminder = (MicrosoftReminder) event.getSource().getValue();
-                        try {
-                            finalTodo.setRemoteRemindTime(microsoftReminder.getStart().toDate());
-                            mainService.update(finalTodo);
-                            setChanged();
-                            notifyObservers();
-                            refreshTable();
-                            refreshWebView();
-                        } catch (ParseException e) {
-                            F.logger.info(e.getMessage());
-                        }
-                    }
-                });
+    private boolean isValid(String content, KeyEvent keyEvent) {
+        if (StringUtils.isNotBlank(content)) {
+            int length = content.length();
+            if (length > NOTE.getType().length() + 1 && content.endsWith(NOTE.getType() + "\n")) {
+                return true;
             }
-        });
+            if (length > TODO.getType().length() + 1 && content.endsWith(TODO.getType() + "\n")) {
+                return true;
+            }
+            if (length > DOC.getType().length() + 1 && content.endsWith(DOC.getType() + "\n")) {
+                return true;
+            }
+            if (keyEvent.isControlDown() && keyEvent.getCode() == KeyCode.S) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private String getSaveContent() {
+        return contentTextAreaSave.getText();
     }
 
     private Document validate(String content) {
@@ -206,136 +220,130 @@ public class MainController extends Observable implements Observer {
         return null;
     }
 
-    @FXML
     public void modify(KeyEvent keyEvent) {
-        String content = contentTextAreaUpdate.getText();
-        Object source = keyEvent.getSource();
 
-        FxDocument selectedDocument = documentTableView.getSelectionModel().getSelectedItem();
-        int selectedIndex = documentTableView.getSelectionModel().getSelectedIndex();
+        String content = getUpdateContent();
+        if (!isValid(content, keyEvent)) {
+            return;
+        }
 
-        //验证能否保存
-        Document document;
+        Document document = getSelectedDocument();
         if (keyEvent.isControlDown() && keyEvent.getCode() == KeyCode.S) {
-            document = selectedDocument.toNormalDocument();
             document.setContent(content);
         } else {
-            document = validate(content);
+            String id = document.getId();
+            Integer oldVersion = document.getVersion();
+            document = createDocument(content);
+            document.setId(id);
+            document.setVersion(oldVersion);
         }
-        if (document == null) return;
-        if (StringUtils.isBlank(document.getContent())) {
-            return;
-        }
-        //更新时会根据后缀重新定义类型
-        document.setId(selectedDocument.getId());
+
         mainService.update(document);
 
-        //changeView
-        if (source instanceof TextArea) {
-            TextArea textArea = (TextArea) source;
-            textArea.setText(selectedDocument.getContent());
-        }
-        documentTableView.getSelectionModel().select(selectedIndex);
-        documentTableView.requestFocus();
+        changeViewAfterUpdate(keyEvent);
 
-        //更新事件
-        Todo todo = null;
-        if (document instanceof Todo) todo = (Todo) document;
-        if (todo == null) {
-            setChanged();
-            notifyObservers();
-            refreshTable();
-            refreshWebView();
-            return;
-        }
-        Todo finalTodo = todo;
-        if (StringUtils.isBlank(todo.getRemindId())) {
-            asynRemindService.addEvent(new MicrosoftReminder(todo), new EventHandler<WorkerStateEvent>() {
-                @Override
-                public void handle(WorkerStateEvent event) {
-                    Serializable id = (Serializable) event.getSource().getValue();
-                    finalTodo.setRemindId((String) id);
-                    asynRemindService.readEvent(id, new EventHandler<WorkerStateEvent>() {
-                        @Override
-                        public void handle(WorkerStateEvent event) {
-                            MicrosoftReminder microsoftReminder = (MicrosoftReminder) event.getSource().getValue();
-                            try {
-                                finalTodo.setRemoteRemindTime(microsoftReminder.getStart().toDate());
-                                mainService.update(finalTodo);
-                                setChanged();
-                                notifyObservers();
-                                refreshTable();
-                                refreshWebView();
-                            } catch (ParseException e) {
-                                F.logger.info(e.getMessage());
-                            }
-                        }
-                    });
-                }
-            });
-        } else {
-            asynRemindService.modifyEvent(new MicrosoftReminder(todo), new EventHandler<WorkerStateEvent>() {
-                @Override
-                public void handle(WorkerStateEvent event) {
-                    Serializable id = (Serializable) event.getSource().getValue();
-                    asynRemindService.readEvent(id, new EventHandler<WorkerStateEvent>() {
-                        @Override
-                        public void handle(WorkerStateEvent event) {
-                            MicrosoftReminder microsoftReminder = (MicrosoftReminder) event.getSource().getValue();
-                            try {
-                                finalTodo.setRemoteRemindTime(microsoftReminder.getStart().toDate());
-                                mainService.update(finalTodo);
-                                setChanged();
-                                notifyObservers();
-                                refreshTable();
-                                refreshWebView();
-                            } catch (ParseException e) {
-                                F.logger.info(e.getMessage());
-                            }
-                        }
-                    });
-                }
-            });
+
+        if (document instanceof Todo) {
+            Todo todo = (Todo) document;
+            addOrUpdateEvent(todo);
         }
 
     }
 
-    @FXML
+    private void addOrUpdateEvent(Todo todo) {
+        if (StringUtils.isNotBlank(todo.getRemindId())){
+            updateEvent(todo);
+        }else {
+            addEvent(todo);
+        }
+    }
+
+    private void updateEvent(Todo todo) {
+        asynRemindService.modifyEvent(new MicrosoftReminder(todo), new EventHandler<WorkerStateEvent>() {
+            @Override
+            public void handle(WorkerStateEvent event) {
+                Serializable id = (Serializable) event.getSource().getValue();
+                todo.setRemindId((String) id);
+                readEvent(todo);
+            }
+        });
+    }
+
+    private void readEvent(Todo todo){
+        asynRemindService.readEvent(todo.getRemindId(), new EventHandler<WorkerStateEvent>() {
+            @Override
+            public void handle(WorkerStateEvent event) {
+                MicrosoftReminder microsoftReminder = (MicrosoftReminder) event.getSource().getValue();
+                try {
+                    todo.setRemoteRemindTime(microsoftReminder.getStart().toDate());
+                    mainService.update(todo);
+                    refreshTable();
+                    refreshWebView();
+                } catch (ParseException e) {
+                    F.logger.info(e.getMessage());
+                }
+            }
+        });
+    }
+
+    private void changeViewAfterUpdate(KeyEvent keyEvent) {
+        Object source = keyEvent.getSource();
+
+        documentTableView.requestFocus();
+        refreshTable();
+        refreshWebView();
+
+        if (source instanceof TextArea) {
+            TextArea textArea = (TextArea) source;
+            textArea.setText(getSelectedDocument().getContent());
+        }
+
+    }
+
+    private Document getSelectedDocument() {
+        FxDocument selectedDocument = documentTableView.getSelectionModel().getSelectedItem();
+        return selectedDocument.toNormalDocument();
+    }
+
+    private String getUpdateContent() {
+        return contentTextAreaUpdate.getText();
+    }
+
     public void delete() {
         FxDocument selectedItem = documentTableView.getSelectionModel().getSelectedItem();
         String selectedId = selectedItem.getId();
         mainService.deleteById(selectedId);
-//        refreshTable();
-//        refreshWebView();
 
-        //删除提醒
-        Todo todo = null;
-        if (selectedItem.toNormalDocument() instanceof Todo) todo = (Todo) selectedItem.toNormalDocument();
-        if (todo == null || todo.getRemindId() == null) {
-            setChanged();
-            notifyObservers();
-            refreshTable();
-            refreshWebView();
-            return;
+        changeViewAfterDelete();
+
+        Document selectedDocument = selectedItem.toNormalDocument();
+        if (selectedDocument instanceof Todo) {
+            Todo todo = (Todo) selectedDocument;
+            deleteEvent(todo);
         }
+
+    }
+
+    private void changeViewAfterDelete() {
+        refreshTable();
+        refreshWebView();
+    }
+
+    private void deleteEvent(Todo todo){
         asynRemindService.removeEvent(todo.getRemindId(), new EventHandler<WorkerStateEvent>() {
             @Override
             public void handle(WorkerStateEvent event) {
-                setChanged();
-                notifyObservers();
                 refreshTable();
                 refreshWebView();
             }
         });
     }
 
-    @FXML
     public void openConfig() throws IOException {
         F.logger.info("open config");
         context.loadView(ConfigViewLoader.class);
     }
 
-    @FXML
     public void logout() throws IOException {
         F.logger.info("logout");
         //注销
@@ -349,7 +357,7 @@ public class MainController extends Observable implements Observer {
         context.loadView(ConfigViewLoader.class);
     }
 
-    public void refreshTable() {
+    private void refreshTable() {
         FxDocument selectedItem = documentTableView.getSelectionModel().getSelectedItem();
         //从文件获取文档
         mainService.pull();
@@ -372,18 +380,12 @@ public class MainController extends Observable implements Observer {
         F.logger.info("refreshTable");
     }
 
-    public void refreshWebView() {
+    private void refreshWebView() {
         FxDocument selectedItem = documentTableView.getSelectionModel().getSelectedItem();
         bindService.initWebView(webView, selectedItem);
         F.logger.info("refreshWebView");
     }
 
-    /**
-     * 监控刷新
-     *
-     * @param o
-     * @param arg
-     */
     @Override
     public void update(Observable o, Object arg) {
         refreshTable();

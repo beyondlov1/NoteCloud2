@@ -11,6 +11,15 @@ public class Todo extends Document {
     private String remindId;
     private Reminder reminder;
 
+    @Override
+    public void setContent(String content) {
+        super.setContent(content);
+        Date remindTime = TimeUtils.parse(content);
+        if (remindTime != null) {
+            this.setRemindTime(remindTime);
+        }
+    }
+
     public Reminder getReminder() {
         return reminder;
     }
@@ -18,7 +27,6 @@ public class Todo extends Document {
     public void setReminder(Reminder reminder) {
         this.reminder = reminder;
     }
-
 
     public Date getRemoteRemindTime() {
         return remoteRemindTime;

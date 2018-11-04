@@ -1,6 +1,7 @@
 package com.beyond;
 
 import com.beyond.service.AuthService;
+import com.beyond.viewloader.AuthViewLoader;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.event.EventHandler;
@@ -34,9 +35,13 @@ public class AuthController {
                 if (newValue.startsWith(prefix)){
                     String code = newValue.substring(prefix.length());
                     authService.getAccessToken(code);
-                    context.getApplication().getAuthStage().close();
+                    close();
                 }
             }
         });
+    }
+
+    private void close(){
+        context.closeView(AuthViewLoader.class);
     }
 }

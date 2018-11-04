@@ -4,7 +4,6 @@ import com.beyond.entity.User;
 import com.beyond.f.F;
 import com.beyond.service.ConfigService;
 import com.beyond.service.LoginService;
-import com.beyond.service.LoginServiceImpl;
 import com.beyond.viewloader.LoginViewLoader;
 import com.beyond.viewloader.MainViewLoader;
 import javafx.concurrent.Service;
@@ -36,8 +35,8 @@ public class LoginController {
     private ProgressIndicator progressIndicator;
 
     private LoginService loginService;
+
     private ConfigService configService;
-    private MainApplication application;
 
     private ApplicationContext context;
 
@@ -47,11 +46,14 @@ public class LoginController {
 
     @FXML
     private void initialize() {
-        this.loginService = context.getLoginService();
-        this.configService = context.getConfigService();
-        this.application = context.getApplication();
+        initService();
         initViews();
         initListeners();
+    }
+
+    private void initService(){
+        this.loginService = context.getLoginService();
+        this.configService = context.getConfigService();
     }
 
     private void initViews() {
@@ -96,18 +98,22 @@ public class LoginController {
     }
 
     @FXML
-    public void login() throws Exception {
+    public void login() {
+        loginingView();
+        User user = getUser();
+        if (isValid(user)){
+            asynLogin(user);
+        }
+    }
+
+    private void loginingView(){
         msg.setText("登陆中...");
         loginButton.setDisable(true);
-        String username = usernameText.getText();
-        String password = passwordText.getText();
-        if (StringUtils.isBlank(username) || StringUtils.isBlank(password)) {
-            msg.setText("用户名或密码为空");
-            loginButton.setDisable(false);
-            return;
-        }
+    }
 
-        User user = new User(username, password);
+    private void asynLogin(User user) {
+        String username = user.getUsername();
+        String password = user.getPassword();
         Service<User> service = new Service<User>() {
             @Override
             protected Task<User> createTask() {
@@ -124,42 +130,69 @@ public class LoginController {
                 super.succeeded();
                 try {
                     if (getValue() != null) {
-                        context.loadView(MainViewLoader.class);
-                        context.closeView(LoginViewLoader.class);
-                        if (rememberUsername.isSelected()) {
-                            configService.setProperty("username", username);
-                            configService.storeProperties();
-                        }
-                        if (rememberPass.isSelected()) {
-                            configService.setProperty("username", username);
-                            configService.setProperty("password", password);
-                            configService.storeProperties();
-                        }
+                        loginSuccess();
                     } else {
-                        msg.setText("用户名或密码错误");
-                        loginButton.setDisable(false);
-                        passwordText.setText(null);
-                        passwordText.requestFocus();
+                        loginFail();
                     }
                 } catch (IOException e) {
-                    e.printStackTrace();
+                    F.logger.info(e.getMessage());
+                    msg.setText("登录失败");
                 }
+            }
+
+            private void loginSuccess() throws IOException {
+                switchView();
+                storeConfig();
+            }
+
+            private void storeConfig() {
+                if (rememberUsername.isSelected()) {
+                    configService.setProperty("username", username);
+                    configService.storeProperties();
+                }
+                if (rememberPass.isSelected()) {
+                    configService.setProperty("username", username);
+                    configService.setProperty("password", password);
+                    configService.storeProperties();
+                }
+            }
+
+            private void switchView() throws IOException {
+                context.loadView(MainViewLoader.class);
+                context.closeView(LoginViewLoader.class);
+            }
+
+            private void loginFail(){
+                msg.setText("用户名或密码错误");
+                loginButton.setDisable(false);
+                passwordText.setText(null);
+                passwordText.requestFocus();
             }
         };
         service.start();
     }
 
+    private User getUser() {
+        String username = usernameText.getText();
+        String password = passwordText.getText();
+        return new User(username, password);
+    }
+
+    private boolean isValid(User user) {
+        String username = user.getUsername();
+        String password = user.getPassword();
+        if (StringUtils.isBlank(username) || StringUtils.isBlank(password)) {
+            msg.setText("用户名或密码为空");
+            loginButton.setDisable(false);
+            return false;
+        }
+        return true;
+    }
+
+
     @FXML
     public void rememberPass() {
         rememberUsername.setSelected(true);
-    }
-
-    public void setApplication(MainApplication application) {
-        this.application = application;
-    }
-
-    public MainApplication getApplication() {
-        return application;
     }
 
     public void setContext(ApplicationContext context) {

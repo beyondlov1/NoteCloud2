@@ -4,6 +4,7 @@ package com.beyond;
 import com.beyond.f.F;
 import com.beyond.service.ConfigService;
 import com.beyond.viewloader.AuthViewLoader;
+import com.beyond.viewloader.ConfigViewLoader;
 import javafx.fxml.FXML;
 import javafx.scene.control.CheckBox;
 import javafx.scene.control.TextField;
@@ -29,8 +30,6 @@ public class ConfigController {
 
     private ConfigService configService;
 
-    private MainApplication application;
-
     private ApplicationContext context;
 
     public ConfigController(ApplicationContext context) {
@@ -38,9 +37,13 @@ public class ConfigController {
     }
 
     public void initialize() {
+        initService();
+        initViews();
+    }
+    private void initService() {
         configService = context.getConfigService();
-        application = context.getApplication();
-
+    }
+    private void initViews() {
         //获取设置值
         if (StringUtils.isNotBlank(F.NOTE_SUFFIX)) {
             noteSuffix.setText(F.NOTE_SUFFIX);
@@ -57,6 +60,13 @@ public class ConfigController {
     }
 
     public void save() {
+        storeConfig();
+        close();
+    }
+    public void cancel() {
+        close();
+    }
+    private void storeConfig() {
         if (StringUtils.isNotBlank(noteSuffix.getText())) {
             F.NOTE_SUFFIX = noteSuffix.getText();
             configService.setProperty("noteSuffix", F.NOTE_SUFFIX);
@@ -70,32 +80,23 @@ public class ConfigController {
             configService.setProperty("docSuffix", F.DOC_SUFFIX);
         }
         configService.storeProperties();
-
-        //跳转
-        application.getConfigStage().close();
     }
-
-    public void cancel() {
-        application.getConfigStage().close();
+    private void close(){
+        context.closeView(ConfigViewLoader.class);
     }
 
     public void accessMicrosoftEvent() {
         boolean isSelected = microsoftEventSwitch.isSelected();
         if (isSelected) {
-            try {
-                context.loadView(AuthViewLoader.class);
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
+            showAuthView();
         }
     }
-
-    public MainApplication getApplication() {
-        return application;
-    }
-
-    public void setApplication(MainApplication application) {
-        this.application = application;
+    private void showAuthView() {
+        try {
+            context.loadView(AuthViewLoader.class);
+        } catch (IOException e) {
+            F.logger.info(e.getMessage());
+        }
     }
 
 }

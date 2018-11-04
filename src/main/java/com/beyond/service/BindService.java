@@ -52,6 +52,7 @@ public class BindService {
         initListener(mainController);
 
         //init focus
+        mainController.getContentTextAreaSave().setFocusTraversable(false);
         mainController.getContentTextAreaUpdate().setFocusTraversable(false);
         mainController.getContentTextAreaSave().setFocusTraversable(false);
         mainController.getTabPane().setFocusTraversable(false);
