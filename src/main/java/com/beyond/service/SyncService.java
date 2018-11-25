@@ -24,12 +24,7 @@ public class SyncService implements Observer{
         TimerTask timerTask = new TimerTask() {
             @Override
             public void run() {
-                try {
-                    mergeService.handle();
-                }catch (Exception e){
-                    e.printStackTrace();
-                    F.logger.info(e.getMessage());
-                }
+                synchronize();
             }
         };
         timer.schedule(timerTask, 0, F.SYNC_PERIOD);
@@ -43,15 +38,28 @@ public class SyncService implements Observer{
         Thread thread = new Thread(new Runnable() {
             @Override
             public void run() {
-                try {
-                    mergeService.handle();
-                }catch (Exception e){
-                    e.printStackTrace();
-                    F.logger.info(e.getMessage());
-                }
+                synchronize();
             }
         });
         thread.start();
+    }
+
+    private void synchronize() {
+        try {
+            mergeService.handle();
+            onSuccess();
+        } catch (Exception e) {
+            e.printStackTrace();
+            F.logger.info(e.getMessage());
+            onFail();
+        }
+    }
+
+    protected void onSuccess(){
+
+    }
+    protected void onFail(){
+
     }
 
     public Timer getTimer() {
