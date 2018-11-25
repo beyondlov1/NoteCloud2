@@ -361,7 +361,7 @@ public class MainController extends Observable implements Observer {
         FxDocument selectedItem = documentTableView.getSelectionModel().getSelectedItem();
         //从文件获取文档
         mainService.pull();
-        mainService.setFxDocuments();
+        mainService.initFxDocument();
         ObservableList<FxDocument> fxDocuments = mainService.getFxDocuments();
 
         //order

@@ -1,6 +1,6 @@
 package com.beyond.service;
 
-import com.beyond.FxDocument;
+import com.beyond.entity.FxDocument;
 import com.beyond.MainController;
 import com.beyond.entity.Todo;
 import com.beyond.utils.*;

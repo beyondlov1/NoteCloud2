@@ -71,6 +71,7 @@ public class FileRemotePropertyManager extends RemoteBase implements PropertyMan
             fileInfo = (FileInfo) objectInputStream.readObject();
         } catch (IOException | ClassNotFoundException e) {
             F.logger.info(e.getMessage());
+            throw new RuntimeException("远程属性拉取失败");
         } finally {
             try {
                 if (objectInputStream != null) {

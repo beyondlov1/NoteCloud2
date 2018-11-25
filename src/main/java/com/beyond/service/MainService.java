@@ -1,7 +1,6 @@
 package com.beyond.service;
 
-import com.beyond.FxDocument;
-import com.beyond.MainController;
+import com.beyond.entity.FxDocument;
 import com.beyond.RepositoryFactory;
 import com.beyond.entity.Document;
 import com.beyond.f.F;
@@ -15,9 +14,6 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- * Main
- */
 public class MainService {
     private Repository<Document> defaultLocalRepository;
     private Repository<Document> defaultRemoteRepository;
@@ -29,17 +25,15 @@ public class MainService {
         init();
     }
 
-    /**
-     * 初始化
-     */
+    @SuppressWarnings("unchecked")
     private void  init(){
         this.defaultLocalRepository = RepositoryFactory.getLocalRepository(F.DEFAULT_LOCAL_PATH);
         this.defaultRemoteRepository = new LocalDocumentRepository(F.DEFAULT_TMP_PATH);
         this.deletedLocalRepository = RepositoryFactory.getLocalRepository(F.DEFAULT_DELETE_PATH);
-        setFxDocuments();
+        initFxDocument();
     }
 
-    public void setFxDocuments() {
+    public void initFxDocument() {
         List<FxDocument> fxDocuments = new ArrayList<>();
         List<Document> documents = findAll();
         for (Document document : documents) {
@@ -49,11 +43,6 @@ public class MainService {
         this.fxDocuments =  FXCollections.observableList(fxDocuments);
     }
 
-    /**
-     * 添加文档
-     * @param document
-     * @return
-     */
     public String add(Document document){
         Serializable id = defaultLocalRepository.add(document);
         defaultLocalRepository.save();
@@ -64,11 +53,6 @@ public class MainService {
         return (String) id;
     }
 
-    /**
-     * 删除文档
-     * @param id
-     * @return
-     */
     public String deleteById(String id){
         Document document = new Document();
         document.setId(id);
@@ -99,11 +83,6 @@ public class MainService {
         return (String) foundId;
     }
 
-    /**
-     * 更新文档
-     * @param document
-     * @return
-     */
     public String update(Document document){
         Serializable id = defaultLocalRepository.update(document);
         defaultLocalRepository.save();
@@ -124,27 +103,14 @@ public class MainService {
         return (String) id;
     }
 
-    /**
-     * 查询本地所有文档
-     * @return
-     */
     public List<Document> findAll(){
         return defaultLocalRepository.selectAll();
     }
 
-    /**
-     * 查询本地单个文档
-     * @param id
-     * @return
-     */
     public Document find(String id){
         return defaultLocalRepository.select(id);
     }
 
-    /**
-     * 获取所有FxDocument
-     * @return
-     */
     public ObservableList<FxDocument> getFxDocuments() {
         return fxDocuments;
     }

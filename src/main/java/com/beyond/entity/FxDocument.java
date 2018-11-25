@@ -1,4 +1,4 @@
-package com.beyond;
+package com.beyond.entity;
 
 
 import javafx.beans.property.*;

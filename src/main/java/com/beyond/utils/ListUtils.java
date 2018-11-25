@@ -1,11 +1,8 @@
 package com.beyond.utils;
 
-import com.beyond.FxDocument;
+import com.beyond.entity.FxDocument;
 import com.beyond.entity.Document;
-import javafx.collections.FXCollections;
-import javafx.collections.ObservableList;
 
-import java.util.ArrayList;
 import java.util.List;
 
 public class ListUtils {

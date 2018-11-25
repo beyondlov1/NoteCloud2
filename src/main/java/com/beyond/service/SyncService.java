@@ -43,7 +43,12 @@ public class SyncService implements Observer{
         Thread thread = new Thread(new Runnable() {
             @Override
             public void run() {
-                mergeService.handle();
+                try {
+                    mergeService.handle();
+                }catch (Exception e){
+                    e.printStackTrace();
+                    F.logger.info(e.getMessage());
+                }
             }
         });
         thread.start();

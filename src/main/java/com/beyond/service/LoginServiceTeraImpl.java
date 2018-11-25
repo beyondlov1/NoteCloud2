@@ -11,7 +11,7 @@ import org.apache.http.impl.client.CloseableHttpClient;
 /**
  * 登陆服务
  */
-public class LoginServiceImpl extends RemoteBase implements LoginService{
+public class LoginServiceTeraImpl extends RemoteBase implements LoginService{
 
     public User login(User user) {
         HttpHead httpHead = new HttpHead(F.DEFAULT_LOGIN_PATH);

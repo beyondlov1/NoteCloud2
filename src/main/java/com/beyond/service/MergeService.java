@@ -36,21 +36,86 @@ public class MergeService extends Observable {
         this.remoteLocalDocumentRepository = new LocalDocumentRepository(tmpPath);
 //        this.remotePropertyManager = new RemotePropertyManager(url);
         this.remotePropertyManager = new FileRemotePropertyManager(F.DEFAULT_REMOTE_FILE_INFO_PATH);
-        this.remoteRepository = new RemoteDocumentRepository(url, remoteLocalDocumentRepository, remoteLocalPropertyManager,remotePropertyManager);
+        this.remoteRepository = new RemoteDocumentRepository(url, remoteLocalDocumentRepository, remoteLocalPropertyManager, remotePropertyManager);
     }
 
     /**
      * 同步
      */
     public synchronized void handle() {
-        Map<String, String> localPropertiesMap = localPropertyManager.getAllProperties();
-        Map<String, String> remotePropertiesMap = remotePropertyManager.getAllProperties();
+        try {
+            Map<String, String> localPropertiesMap = localPropertyManager.getAllProperties();
+            Map<String, String> remotePropertiesMap = remotePropertyManager.getAllProperties();
+
+            if (!isMerge(localPropertiesMap, remotePropertiesMap)) return;
+            remoteRepository.lock();
+            List<Document> mergedList = merge();
+            updateProperty(localPropertiesMap, remotePropertiesMap);
+            updateRepository(mergedList);
+            remoteRepository.unlock();
+            onSuccess();
+
+        }catch (Exception e){
+            F.logger.info(e.getMessage());
+            onFail();
+        }
+
+    }
+
+    private void onFail() {
+
+    }
+
+    private void onSuccess() {
+        mergeFlag = 1;
+        setChanged();
+        Platform.runLater(new Runnable() {
+            @Override
+            public void run() {
+                notifyObservers();
+            }
+        });
+    }
+
+    private void updateRepository(List<Document> mergedList) {
+        remoteRepository.save(mergedList);
+        localRepository.save(mergedList);
+    }
+
+    private void updateProperty(Map<String, String> localPropertiesMap, Map<String, String> remotePropertiesMap) {
+        try {
+            //设置属性
+            String localVersion = localPropertiesMap.getOrDefault("_version", "0");
+            String remoteVersion = remotePropertiesMap.getOrDefault("_version", "0");
+            String currentTime = System.currentTimeMillis() + "";
+            if (StringUtils.isNotBlank(localPropertiesMap.getOrDefault("_modifyIds", ""))) {
+                localPropertyManager.set("_lastModifyTime", currentTime);
+                remoteLocalPropertyManager.set("_lastModifyTime", currentTime);
+            } else {
+                String remoteTime = remotePropertiesMap.getOrDefault("_lastModifyTime", "");
+                if (StringUtils.isBlank(remoteTime)) {
+                    remoteTime = currentTime;
+                }
+                localPropertyManager.set("_lastModifyTime", remoteTime);
+                remoteLocalPropertyManager.set("_lastModifyTime", remoteTime);
+            }
+            localPropertyManager.set("_version", localVersion.compareTo(remoteVersion) < 0 ? remoteVersion : localVersion);
+            remoteLocalPropertyManager.set("_version", localVersion.compareTo(remoteVersion) < 0 ? remoteVersion : localVersion);
+            //清空modifyIds
+            localPropertyManager.set("_modifyIds", "");
+            remoteLocalPropertyManager.set("_modifyIds", "");
+        } catch (Exception e) {
+            F.logger.info(e.getMessage());
+        }
+    }
+
+    private boolean isMerge(Map<String, String> localPropertiesMap, Map<String, String> remotePropertiesMap) {
         String localLastModifyTime = localPropertiesMap.getOrDefault("_lastModifyTime", "0");
         String remoteLastModifyTime = remotePropertiesMap.getOrDefault("_lastModifyTime", "0");
         if (!StringUtils.equals(localLastModifyTime, "")
                 && !StringUtils.equals(localLastModifyTime, "0")
                 && StringUtils.equals(localLastModifyTime, remoteLastModifyTime)) {
-            return;
+            return true;
         }
 
         if (!remoteRepository.isAvailable()) {
@@ -59,52 +124,9 @@ public class MergeService extends Observable {
                 remoteRepository.unlock();
                 failCount = 0;
             }
-            return;
+            return true;
         }
-
-        //锁
-        remoteRepository.lock();
-
-        List<Document> merge = merge();
-
-        //设置属性
-        String localVersion = localPropertiesMap.getOrDefault("_version", "0");
-        String remoteVersion = remotePropertiesMap.getOrDefault("_version", "0");
-        String currentTime = System.currentTimeMillis() + "";
-        if (StringUtils.isNotBlank(localPropertiesMap.getOrDefault("_modifyIds", ""))) {
-            localPropertyManager.set("_lastModifyTime", currentTime);
-            remoteLocalPropertyManager.set("_lastModifyTime", currentTime);
-        } else {
-            String remoteTime = remotePropertiesMap.getOrDefault("_lastModifyTime", "");
-            if (StringUtils.isBlank(remoteTime)){
-                remoteTime = currentTime;
-            }
-            localPropertyManager.set("_lastModifyTime", remoteTime);
-            remoteLocalPropertyManager.set("_lastModifyTime", remoteTime);
-        }
-        localPropertyManager.set("_version", localVersion.compareTo(remoteVersion) < 0 ? remoteVersion : localVersion);
-        remoteLocalPropertyManager.set("_version", localVersion.compareTo(remoteVersion) < 0 ? remoteVersion : localVersion);
-        //清空modifyIds
-        localPropertyManager.set("_modifyIds", "");
-        remoteLocalPropertyManager.set("_modifyIds", "");
-
-        //持久化
-        int isRemoteSaveSuccess = remoteRepository.save(merge);
-        int isLocalSaveSuccess = localRepository.save(merge);
-
-        //解锁
-        remoteRepository.unlock();
-
-        if (isLocalSaveSuccess==1&&isRemoteSaveSuccess==1){
-            mergeFlag = 1;
-            setChanged();
-            Platform.runLater(new Runnable() {
-                @Override
-                public void run() {
-                    notifyObservers();
-                }
-            });
-        }
+        return false;
     }
 
     /**
