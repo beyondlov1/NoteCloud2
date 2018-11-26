@@ -6,11 +6,14 @@ import com.beyond.RepositoryFactory;
 import com.beyond.f.F;
 import com.beyond.repository.impl.LocalDocumentRepository;
 import com.beyond.repository.Repository;
+import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
+import javafx.concurrent.Worker;
 import javafx.concurrent.WorkerStateEvent;
 import javafx.event.EventHandler;
 import org.apache.commons.lang3.StringUtils;
+import org.jetbrains.annotations.NotNull;
 
 import java.io.Serializable;
 import java.text.ParseException;
@@ -25,9 +28,20 @@ public class MainService {
 
     private ObservableList<FxDocument> fxDocuments;
 
+    private ApplicationContext context;
+
     @SuppressWarnings("unchecked")
-    public MainService(AsynRemindService asynRemindService){
+    public MainService(AsynRemindService asynRemindService) {
         this.asynRemindService = asynRemindService;
+        this.defaultLocalRepository = RepositoryFactory.getLocalRepository(F.DEFAULT_LOCAL_PATH);
+        this.deletedLocalRepository = RepositoryFactory.getLocalRepository(F.DEFAULT_DELETE_PATH);
+        initFxDocument();
+    }
+
+    @SuppressWarnings("unchecked")
+    public MainService(@NotNull ApplicationContext context) {
+        this.context = context;
+        this.asynRemindService = context.getAsynRemindService();
         this.defaultLocalRepository = RepositoryFactory.getLocalRepository(F.DEFAULT_LOCAL_PATH);
         this.deletedLocalRepository = RepositoryFactory.getLocalRepository(F.DEFAULT_DELETE_PATH);
         initFxDocument();
@@ -40,10 +54,10 @@ public class MainService {
             FxDocument fxDocument = new FxDocument(document);
             fxDocuments.add(fxDocument);
         }
-        this.fxDocuments =  FXCollections.observableList(fxDocuments);
+        this.fxDocuments = FXCollections.observableList(fxDocuments);
     }
 
-    public String add(Document document){
+    public String add(Document document) {
         Serializable id = addOnly(document);
         if (document instanceof Todo) {
             Todo todo = (Todo) document;
@@ -51,15 +65,17 @@ public class MainService {
         }
         return (String) id;
     }
+
     private Serializable addOnly(Document document) {
         Serializable id = defaultLocalRepository.add(document);
         defaultLocalRepository.save();
 
         //同步fxDocument
         FxDocument fxDocument = new FxDocument(document);
-        fxDocuments.add(0,fxDocument);
+        fxDocuments.add(0, fxDocument);
         return id;
     }
+
     private void addEvent(Todo todo) {
         asynRemindService.addEvent(new MicrosoftReminder(todo), new EventHandler<WorkerStateEvent>() {
             @Override
@@ -72,28 +88,35 @@ public class MainService {
         });
     }
 
-    public void delete(Document document){
+    public void delete(Document document) {
         deleteById(document.getId());
 
-        if (document instanceof Todo){
+        if (document instanceof Todo) {
             Todo todo = (Todo) document;
             deleteEvent(todo);
         }
     }
-    private void deleteEvent(Todo todo){
+
+    private void deleteEvent(@NotNull Todo todo) {
         asynRemindService.removeEvent(todo.getRemindId(), new EventHandler<WorkerStateEvent>() {
             @Override
             public void handle(WorkerStateEvent event) {
             }
+        }, new EventHandler<WorkerStateEvent>() {
+            @Override
+            public void handle(WorkerStateEvent event) {
+                throw new RuntimeException("提醒删除错误");
+            }
         });
     }
-    private void deleteById(String id){
+
+    private void deleteById(String id) {
         Document document = new Document();
         document.setId(id);
 
         Document foundDocument = defaultLocalRepository.select(id);
 
-        if (foundDocument==null){
+        if (foundDocument == null) {
             return;
         }
 
@@ -106,17 +129,17 @@ public class MainService {
         //同步fxDocument
         int index = -1;
         for (int i = 0; i < fxDocuments.size(); i++) {
-            if (StringUtils.equals(fxDocuments.get(i).getId(),id)){
+            if (StringUtils.equals(fxDocuments.get(i).getId(), id)) {
                 index = i;
                 break;
             }
         }
-        if (index!=-1){
+        if (index != -1) {
             fxDocuments.remove(index);
         }
     }
 
-    public String update(Document document){
+    public String update(Document document) {
         Serializable id = updateOnly(document);
         if (document instanceof Todo) {
             Todo todo = (Todo) document;
@@ -124,13 +147,15 @@ public class MainService {
         }
         return (String) id;
     }
-    private void addOrUpdateEvent(Todo todo) {
-        if (StringUtils.isNotBlank(todo.getRemindId())){
+
+    private void addOrUpdateEvent(@NotNull Todo todo) {
+        if (StringUtils.isNotBlank(todo.getRemindId())) {
             updateEvent(todo);
-        }else {
+        } else {
             addEvent(todo);
         }
     }
+
     private void updateEvent(Todo todo) {
         asynRemindService.modifyEvent(new MicrosoftReminder(todo), new EventHandler<WorkerStateEvent>() {
             @Override
@@ -142,11 +167,12 @@ public class MainService {
         });
     }
 
-    private List<Document> findAll(){
+    private List<Document> findAll() {
         defaultLocalRepository.pull();
         return defaultLocalRepository.selectAll();
     }
-    private void readEvent(Todo todo){
+
+    private void readEvent(@NotNull Todo todo) {
         asynRemindService.readEvent(todo.getRemindId(), new EventHandler<WorkerStateEvent>() {
             @Override
             public void handle(WorkerStateEvent event) {
@@ -161,23 +187,26 @@ public class MainService {
             }
         });
     }
+
     private Serializable updateOnly(Document document) {
         Serializable id = defaultLocalRepository.update(document);
         defaultLocalRepository.save();
 
-        if (!"JavaFX Application Thread".equals(Thread.currentThread().getName())) return (String)id;//防止其他线程刷新
+        if (!"JavaFX Application Thread".equals(Thread.currentThread().getName())) return id;//防止其他线程刷新
 
         //同步fxDocument
         int index = -1;
         for (int i = 0; i < fxDocuments.size(); i++) {
-            if (StringUtils.equals(fxDocuments.get(i).getId(),document.getId())){
+            if (StringUtils.equals(fxDocuments.get(i).getId(), document.getId())) {
                 index = i;
                 break;
             }
         }
-        if (index!=-1){
-            fxDocuments.set(index,new FxDocument(document));
+        if (index != -1) {
+            fxDocuments.set(index, new FxDocument(document));
         }
+
+        context.refresh();
         return id;
     }
 
@@ -185,7 +214,7 @@ public class MainService {
         return fxDocuments;
     }
 
-    public void pull(){
+    public void pull() {
         defaultLocalRepository.pull();
     }
 

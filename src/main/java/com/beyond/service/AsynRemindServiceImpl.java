@@ -1,6 +1,7 @@
 package com.beyond.service;
 
 import com.beyond.entity.Reminder;
+import javafx.concurrent.Service;
 import javafx.concurrent.Task;
 import javafx.concurrent.WorkerStateEvent;
 import javafx.event.EventHandler;
@@ -12,11 +13,8 @@ public class AsynRemindServiceImpl implements AsynRemindService<Reminder> {
 
     private SyncRemindService<Reminder> syncRemindService;
 
-    private TaskServiceImpl taskService;
-
     public AsynRemindServiceImpl(SyncRemindService<Reminder> syncRemindService) {
         this.syncRemindService = syncRemindService;
-        this.taskService = new TaskServiceImpl();
     }
 
     @Override
@@ -62,6 +60,7 @@ public class AsynRemindServiceImpl implements AsynRemindService<Reminder> {
 
     @Override
     public synchronized void addEvent(Reminder reminder, EventHandler<WorkerStateEvent> success, EventHandler<WorkerStateEvent> fail) {
+        TaskServiceImpl taskService = new TaskServiceImpl();
         taskService.reset();
         taskService.setTask(new Task() {
             @Override
@@ -81,6 +80,7 @@ public class AsynRemindServiceImpl implements AsynRemindService<Reminder> {
 
     @Override
     public synchronized void modifyEvent(Reminder reminder, EventHandler<WorkerStateEvent> success, EventHandler<WorkerStateEvent> fail) {
+        TaskServiceImpl taskService = new TaskServiceImpl();
         taskService.reset();
         taskService.setTask(new Task() {
             @Override
@@ -111,6 +111,7 @@ public class AsynRemindServiceImpl implements AsynRemindService<Reminder> {
 
     @Override
     public synchronized void removeEvent(Serializable id, EventHandler<WorkerStateEvent> success, EventHandler<WorkerStateEvent> fail) {
+        TaskServiceImpl taskService = new TaskServiceImpl();
         taskService.reset();
         taskService.setTask(new Task() {
             @Override
@@ -130,7 +131,9 @@ public class AsynRemindServiceImpl implements AsynRemindService<Reminder> {
 
     @Override
     public synchronized void readEvent(Serializable id, EventHandler<WorkerStateEvent> success, EventHandler<WorkerStateEvent> fail) {
-        taskService.reset();taskService.setTask(new Task() {
+        TaskServiceImpl taskService = new TaskServiceImpl();
+        taskService.reset();
+        taskService.setTask(new Task() {
             @Override
             protected Object call() throws Exception {
                 return syncRemindService.readEvent(id);
@@ -149,7 +152,9 @@ public class AsynRemindServiceImpl implements AsynRemindService<Reminder> {
 
     @Override
     public synchronized void readAllEvent(EventHandler<WorkerStateEvent> success, EventHandler<WorkerStateEvent> fail) {
-        taskService.reset();taskService.setTask(new Task() {
+        TaskServiceImpl taskService = new TaskServiceImpl();
+        taskService.reset();
+        taskService.setTask(new Task() {
             @Override
             protected Object call() throws Exception {
                 return syncRemindService.readAllEvent();

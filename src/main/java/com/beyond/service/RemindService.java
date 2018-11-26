@@ -1,7 +1,5 @@
 package com.beyond.service;
 
-import com.beyond.entity.Reminder;
-
 import java.io.Serializable;
 import java.util.Collection;
 

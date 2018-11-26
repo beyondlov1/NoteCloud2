@@ -1,5 +1,6 @@
 package com.beyond.service;
 
+import com.beyond.ApplicationContext;
 import com.beyond.entity.Document;
 import com.beyond.f.F;
 import com.beyond.property.FileRemotePropertyManager;
@@ -17,6 +18,7 @@ import java.util.*;
  * 同步服务
  */
 public class MergeService {
+    private final ApplicationContext context;
     private Repository<Document> localRepository;
     private Repository<Document> remoteRepository;
     private PropertyManager localPropertyManager;
@@ -25,8 +27,9 @@ public class MergeService {
     private LocalDocumentRepository remoteLocalDocumentRepository;
     private int failCount = 0;
 
-    public MergeService(String path, String url, String tmpPath) {
+    public MergeService(String path, String url, String tmpPath, ApplicationContext context) {
         super();
+        this.context = context;
         this.localRepository = new LocalDocumentRepository(path);
         this.localPropertyManager = new LocalPropertyManager(path);
         this.remoteLocalPropertyManager = new LocalPropertyManager(tmpPath);
@@ -52,6 +55,7 @@ public class MergeService {
         }catch (Exception e){
             F.logger.info(e.getMessage());
             onFail();
+            throw new RuntimeException("合并失败");
         }
 
     }
@@ -177,16 +181,11 @@ public class MergeService {
         }
     }
     private void onSuccess() {
+        context.refresh();
         F.logger.info("merge success");
     }
     private void onFail() {
         F.logger.info("merge fail");
     }
 
-    public static void main(String[] args) {
-        MergeService mergeService = new MergeService("./repository/documents.xml",
-                "https://yura.teracloud.jp/dav/NoteCloud/repository/documents.xml",
-                "./repository/tmp.xml");
-        mergeService.handle();
-    }
 }

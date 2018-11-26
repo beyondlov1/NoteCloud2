@@ -38,14 +38,15 @@ public class MainApplication extends Application {
     private void createContext() {
         context.setApplication(this);
         context.setLoginService(new LoginServiceNutStoreImpl());
-        context.setAsynMergeService(new AsynMergeService());
+        context.setAsynMergeService(new AsynMergeService(context));
         context.setAuthService(new AuthService(context));
         context.setAsynRemindService(new AsynRemindServiceImpl(new SyncRemindServiceImpl(context.getAuthService())));
-        context.setMainService(new MainService(context.getAsynRemindService()));
+        context.setMainService(new MainService(context));
 
         ViewLoader mainViewLoader = new MainViewLoader(context);
         mainViewLoader.setLocation("views/main.fxml");
-        mainViewLoader.setController(new MainController(context));
+        MainController mainController = new MainController(context);
+        mainViewLoader.setController(mainController);
         context.addViewLoader(mainViewLoader);
 
         ViewLoader loginViewLoader = new LoginViewLoader(context);
@@ -55,13 +56,15 @@ public class MainApplication extends Application {
 
         ViewLoader configViewLoader = new ConfigViewLoader(context);
         configViewLoader.setLocation("views/config.fxml");
-        configViewLoader.setController(new LoginController(context));
+        configViewLoader.setController(new ConfigController(context));
         context.addViewLoader(configViewLoader);
 
         ViewLoader authViewLoader = new AuthViewLoader(context);
         authViewLoader.setLocation("views/auth.fxml");
         authViewLoader.setController(new AuthController(context));
         context.addViewLoader(authViewLoader);
+
+        context.setMainController(mainController);
     }
     private void showStartStage() throws Exception {
         User user = new User(

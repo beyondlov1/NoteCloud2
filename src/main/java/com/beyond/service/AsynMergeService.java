@@ -1,5 +1,6 @@
 package com.beyond.service;
 
+import com.beyond.ApplicationContext;
 import com.beyond.f.F;
 
 import java.util.Observable;
@@ -13,10 +14,10 @@ public class AsynMergeService {
 
     private Timer timer;
 
-    public AsynMergeService(){
+    public AsynMergeService(ApplicationContext context){
         this.mergeService = new MergeService(F.DEFAULT_LOCAL_PATH,
                 F.DEFAULT_REMOTE_PATH,
-                F.DEFAULT_TMP_PATH);
+                F.DEFAULT_TMP_PATH,context);
         this.timer = new Timer();
     }
 
@@ -25,7 +26,7 @@ public class AsynMergeService {
             @Override
             public void run() {
                 F.logger.info("synchronize begin");
-                mergeService.handle();
+                    mergeService.handle();
                 F.logger.info("synchronize end");
             }
         };
@@ -47,7 +48,6 @@ public class AsynMergeService {
     }
 
     protected void onSuccess(){
-
     }
 
     protected void onFail(){

@@ -225,8 +225,13 @@ public class MainController{
             mainService.delete(selectedDocument);
             postDelete();
         }catch (Exception e){
+            e.printStackTrace();
             F.logger.info(e.getMessage());
-            message.setText("刪除出錯");
+            if ("提醒删除错误".equals(e.getMessage())){
+                message.setText("提醒删除错误");
+            }else {
+                message.setText("刪除出錯");
+            }
         }
 
     }

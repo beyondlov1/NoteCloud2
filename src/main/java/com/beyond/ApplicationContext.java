@@ -125,6 +125,10 @@ public class ApplicationContext {
         else return viewLoader;
     }
 
+    public void setMainController(MainController mainController){
+        this.mainController = mainController;
+    }
+
     public void loadView(Class<? extends ViewLoader> viewLoaderClass) throws IOException {
         ViewLoader viewLoader = getViewLoader(viewLoaderClass);
         viewLoader.load();
@@ -136,7 +140,7 @@ public class ApplicationContext {
     }
 
     public void refresh(){
-        Platform.runLater(new Runnable() {
+        Platform.runLater(new Runnable(){
             @Override
             public void run() {
                 mainController.refresh();

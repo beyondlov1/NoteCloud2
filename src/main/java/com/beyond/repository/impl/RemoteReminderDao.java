@@ -41,6 +41,7 @@ public class RemoteReminderDao implements ReminderDao<Reminder> {
             if (!response.isSuccessful()) {
                 F.logger.info(response.getCode());
                 F.logger.info(response.getBody());
+                throw new RuntimeException("提醒请求未成功");
             }
             HashMap hashMap = objectMapper.readValue(response.getBody(), HashMap.class);
             id = (String) hashMap.get("id");
@@ -61,6 +62,7 @@ public class RemoteReminderDao implements ReminderDao<Reminder> {
             if (!response.isSuccessful()) {
                 F.logger.info(response.getCode());
                 F.logger.info(response.getBody());
+                throw new RuntimeException("提醒请求未成功");
             }
             return (String) reminder.getId();
         } catch (Exception e) {
@@ -103,6 +105,7 @@ public class RemoteReminderDao implements ReminderDao<Reminder> {
             if (!response.isSuccessful()) {
                 F.logger.info(response.getCode());
                 F.logger.info(response.getBody());
+                throw new RuntimeException("提醒请求未成功");
             }
             return (String) reminder.getId();
         } catch (Exception e) {
@@ -131,6 +134,7 @@ public class RemoteReminderDao implements ReminderDao<Reminder> {
             if (!response.isSuccessful()) {
                 F.logger.info(response.getCode());
                 F.logger.info(response.getBody());
+                throw new RuntimeException("提醒请求未成功");
             }
         } catch (Exception e) {
             F.logger.info(e.getMessage());
