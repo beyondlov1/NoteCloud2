@@ -1,7 +1,5 @@
 package com.beyond.service;
 
-import com.beyond.callback.Callback;
-import com.beyond.entity.Reminder;
 import javafx.concurrent.WorkerStateEvent;
 import javafx.event.EventHandler;
 

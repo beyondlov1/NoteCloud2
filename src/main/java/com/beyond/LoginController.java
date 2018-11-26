@@ -44,18 +44,15 @@ public class LoginController {
         this.context = context;
     }
 
-    @FXML
-    private void initialize() {
+    public void initialize() {
         initService();
         initViews();
         initListeners();
     }
-
     private void initService(){
         this.loginService = context.getLoginService();
         this.configService = context.getConfigService();
     }
-
     private void initViews() {
         String username = configService.getProperty("username");
         String password = configService.getProperty("password");
@@ -69,7 +66,6 @@ public class LoginController {
             rememberPass.setSelected(true);
         }
     }
-
     private void initListeners() {
         usernameText.setOnKeyReleased(new EventHandler<KeyEvent>() {
             @Override
@@ -97,7 +93,6 @@ public class LoginController {
         });
     }
 
-    @FXML
     public void login() {
         loginingView();
         User user = getUser();
@@ -105,12 +100,10 @@ public class LoginController {
             asynLogin(user);
         }
     }
-
     private void loginingView(){
         msg.setText("登陆中...");
         loginButton.setDisable(true);
     }
-
     private void asynLogin(User user) {
         String username = user.getUsername();
         String password = user.getPassword();
@@ -135,6 +128,7 @@ public class LoginController {
                         loginFail();
                     }
                 } catch (IOException e) {
+                    e.printStackTrace();
                     F.logger.info(e.getMessage());
                     msg.setText("登录失败");
                 }
@@ -171,13 +165,11 @@ public class LoginController {
         };
         service.start();
     }
-
     private User getUser() {
         String username = usernameText.getText();
         String password = passwordText.getText();
         return new User(username, password);
     }
-
     private boolean isValid(User user) {
         String username = user.getUsername();
         String password = user.getPassword();
@@ -189,17 +181,7 @@ public class LoginController {
         return true;
     }
 
-
-    @FXML
     public void rememberPass() {
         rememberUsername.setSelected(true);
-    }
-
-    public void setContext(ApplicationContext context) {
-        this.context = context;
-    }
-
-    public ApplicationContext getContext() {
-        return context;
     }
 }

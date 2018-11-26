@@ -55,7 +55,7 @@ public abstract class AbstractLocalRepository<T extends Element> implements Repo
 
         xStream = getXStream();
 
-        //init file
+        //bind file
         Path path = Paths.get(getPath());
         if (Files.notExists(path)) {
             try {
@@ -174,13 +174,14 @@ public abstract class AbstractLocalRepository<T extends Element> implements Repo
         return save();
     }
 
+    @SuppressWarnings("unchecked")
     public synchronized int pull() {
         FileInputStream fileInputStream = null;
         try {
             fileInputStream = new FileInputStream(path);
             Object object = xStream.fromXML(fileInputStream);
             if (object instanceof List) {
-                list = (List<T>) object;
+                list = (List) object;
             }
             return 1;
         } catch (FileNotFoundException e) {

@@ -1,9 +1,6 @@
 package com.beyond.service;
 
-import com.beyond.callback.Callback;
 import com.beyond.entity.Reminder;
-import com.beyond.f.F;
-import javafx.concurrent.Service;
 import javafx.concurrent.Task;
 import javafx.concurrent.WorkerStateEvent;
 import javafx.event.EventHandler;
@@ -20,14 +17,6 @@ public class AsynRemindServiceImpl implements AsynRemindService<Reminder> {
     public AsynRemindServiceImpl(SyncRemindService<Reminder> syncRemindService) {
         this.syncRemindService = syncRemindService;
         this.taskService = new TaskServiceImpl();
-    }
-
-    public SyncRemindService<Reminder> getSyncRemindService() {
-        return syncRemindService;
-    }
-
-    public void setSyncRemindService(SyncRemindService<Reminder> syncRemindService) {
-        this.syncRemindService = syncRemindService;
     }
 
     @Override

@@ -1,10 +1,9 @@
 package com.beyond.viewloader;
 
 import com.beyond.ApplicationContext;
-import com.beyond.MainController;
 import com.beyond.f.F;
 import com.beyond.f.SyncType;
-import com.beyond.service.SyncService;
+import com.beyond.service.AsynMergeService;
 import javafx.event.EventHandler;
 import javafx.stage.Stage;
 import javafx.stage.WindowEvent;
@@ -27,28 +26,21 @@ public class MainViewLoader extends AbstractViewLoader {
 
     private void startSynchronize(){
         ApplicationContext context = this.getContext();
-        SyncService syncService = context.getSyncService();
-        MainController controller = (MainController) this.getController();
-
-        context.observe(controller, "onMerge");
+        AsynMergeService asynMergeService = context.getAsynMergeService();
 
         if (F.SYNC_TYPE == SyncType.LOOP) {
-            syncService.startSynchronize();
-        }
-        if (F.SYNC_TYPE == SyncType.LAZY) {
-            context.addObservable("mainController",controller);
-            context.observe(syncService,"mainController");
+            asynMergeService.startSynchronize();
         }
     }
 
     private void stopSynchronizeOnClose(){
         ApplicationContext context = this.getContext();
-        SyncService syncService = context.getSyncService();
+        AsynMergeService asynMergeService = context.getAsynMergeService();
         Stage stage = this.getStage();
         stage.setOnCloseRequest(new EventHandler<WindowEvent>() {
             @Override
             public void handle(WindowEvent event) {
-                syncService.stopSynchronize();
+                asynMergeService.stopSynchronize();
             }
         });
     }

@@ -25,19 +25,23 @@ public class MainApplication extends Application {
     public void start(Stage primaryStage) throws Exception {
         loadConfig();
         createContext();
-        showStage();
+        showStartStage();
     }
-
+    private void loadConfig() {
+        ConfigService configService = context.getConfigService();
+        if (configService == null) {
+            configService = new ConfigService(F.CONFIG_PATH);
+            context.setConfigService(configService);
+        }
+        configService.loadConfig(F.class);
+    }
     private void createContext() {
+        context.setApplication(this);
         context.setLoginService(new LoginServiceNutStoreImpl());
-        context.setSyncService(new SyncService());
-        context.setApplication(this);
-        context.setMainService(new MainService());
-        context.setBindService(new BindService(context.getMainService().getFxDocuments()));
-        context.setAsynRemindService(new AsynRemindServiceImpl(new SyncRemindServiceImpl()));
+        context.setAsynMergeService(new AsynMergeService());
         context.setAuthService(new AuthService(context));
-        context.setApplication(this);
-        context.addObservable("onMerge", context.getSyncService().getMergeService());
+        context.setAsynRemindService(new AsynRemindServiceImpl(new SyncRemindServiceImpl(context.getAuthService())));
+        context.setMainService(new MainService(context.getAsynRemindService()));
 
         ViewLoader mainViewLoader = new MainViewLoader(context);
         mainViewLoader.setLocation("views/main.fxml");
@@ -59,8 +63,7 @@ public class MainApplication extends Application {
         authViewLoader.setController(new AuthController(context));
         context.addViewLoader(authViewLoader);
     }
-
-    private void showStage() throws Exception {
+    private void showStartStage() throws Exception {
         User user = new User(
                 F.configService.getProperty("username"),
                 F.configService.getProperty("password"));
@@ -71,16 +74,6 @@ public class MainApplication extends Application {
             context.loadView(LoginViewLoader.class);
         }
     }
-
-    private void loadConfig() {
-        ConfigService configService = context.getConfigService();
-        if (configService == null) {
-            configService = new ConfigService(F.CONFIG_PATH);
-            context.setConfigService(configService);
-        }
-        configService.loadConfig(F.class);
-    }
-
     private boolean isLogin(User user) {
         if (StringUtils.isNotBlank(user.getUsername()) && StringUtils.isNotBlank(user.getPassword())) {
             User login = context.getLoginService().login(user);

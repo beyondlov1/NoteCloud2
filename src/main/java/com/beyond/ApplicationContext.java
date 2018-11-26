@@ -2,9 +2,8 @@ package com.beyond;
 
 import com.beyond.entity.Reminder;
 import com.beyond.service.*;
-import com.beyond.viewloader.LoginViewLoader;
-import com.beyond.viewloader.MainViewLoader;
 import com.beyond.viewloader.ViewLoader;
+import javafx.application.Platform;
 
 import java.io.IOException;
 import java.util.*;
@@ -18,13 +17,14 @@ public class ApplicationContext {
     private Map<String,Object> map;
 
     private MainService mainService;
-    private BindService bindService;
     private AsynRemindService<Reminder> asynRemindService;
     private LoginService loginService;
-    private SyncService syncService;
+    private AsynMergeService asynMergeService;
     private ConfigService configService;
     private AuthService authService;
     private MainApplication application;
+
+    private MainController mainController;
 
     private Map<String,Observable> observableMap;
 
@@ -67,14 +67,6 @@ public class ApplicationContext {
         this.mainService = mainService;
     }
 
-    public BindService getBindService() {
-        return bindService;
-    }
-
-    public void setBindService(BindService bindService) {
-        this.bindService = bindService;
-    }
-
     public AsynRemindService<Reminder> getAsynRemindService() {
         return asynRemindService;
     }
@@ -91,12 +83,12 @@ public class ApplicationContext {
         this.loginService = loginService;
     }
 
-    public SyncService getSyncService() {
-        return syncService;
+    public AsynMergeService getAsynMergeService() {
+        return asynMergeService;
     }
 
-    public void setSyncService(SyncService syncService) {
-        this.syncService = syncService;
+    public void setAsynMergeService(AsynMergeService asynMergeService) {
+        this.asynMergeService = asynMergeService;
     }
 
     public ConfigService getConfigService() {
@@ -141,5 +133,14 @@ public class ApplicationContext {
     public void closeView(Class<? extends ViewLoader> viewLoaderClass) {
         ViewLoader viewLoader = getViewLoader(viewLoaderClass);
         viewLoader.close();
+    }
+
+    public void refresh(){
+        Platform.runLater(new Runnable() {
+            @Override
+            public void run() {
+                mainController.refresh();
+            }
+        });
     }
 }

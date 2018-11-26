@@ -12,8 +12,8 @@ public class SyncRemindServiceImpl implements SyncRemindService<Reminder>{
 
     private ReminderDao<Reminder> reminderDao;
 
-    public SyncRemindServiceImpl(){
-        this.reminderDao = new RemoteReminderDao(new AuthService());
+    public SyncRemindServiceImpl(AuthService authService){
+        this.reminderDao = new RemoteReminderDao(authService);
     }
 
     public SyncRemindServiceImpl(ReminderDao<Reminder> reminderDao){

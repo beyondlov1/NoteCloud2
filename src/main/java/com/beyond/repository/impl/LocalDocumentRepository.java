@@ -21,7 +21,7 @@ public class LocalDocumentRepository extends AbstractLocalRepository<Document> {
     }
 
     public XStream getXStream() {
-        //init xStream
+        //bind xStream
         XStream xStream = new XStream();
         xStream.alias("document", Document.class);
         xStream.alias("note", Note.class);

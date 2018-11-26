@@ -1,19 +1,23 @@
 package com.beyond.repository.impl;
 
+import com.beyond.ApplicationContext;
 import com.beyond.entity.Document;
 import com.beyond.property.LocalPropertyManager;
 import com.beyond.repository.impl.LocalDocumentRepository;
+import javafx.application.Platform;
 
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 import java.util.Date;
 import java.util.Map;
+import java.util.Observable;
+import java.util.Observer;
 
 /**
  * @author beyondlov1
  * @date 2018/10/19
  */
-public class LocalDocumentRepositoryProxy implements InvocationHandler {
+public class LocalDocumentRepositoryProxy implements InvocationHandler{
 
     private LocalDocumentRepository localDocumentRepository;
 
@@ -55,4 +59,5 @@ public class LocalDocumentRepositoryProxy implements InvocationHandler {
         }
         return method.invoke(localDocumentRepository, args);
     }
+
 }

@@ -7,13 +7,13 @@ import java.util.Observer;
 import java.util.Timer;
 import java.util.TimerTask;
 
-public class SyncService implements Observer{
+public class AsynMergeService {
 
     private MergeService mergeService;
 
     private Timer timer;
 
-    public SyncService(){
+    public AsynMergeService(){
         this.mergeService = new MergeService(F.DEFAULT_LOCAL_PATH,
                 F.DEFAULT_REMOTE_PATH,
                 F.DEFAULT_TMP_PATH);
@@ -24,7 +24,9 @@ public class SyncService implements Observer{
         TimerTask timerTask = new TimerTask() {
             @Override
             public void run() {
-                synchronize();
+                F.logger.info("synchronize begin");
+                mergeService.handle();
+                F.logger.info("synchronize end");
             }
         };
         timer.schedule(timerTask, 0, F.SYNC_PERIOD);
@@ -38,26 +40,16 @@ public class SyncService implements Observer{
         Thread thread = new Thread(new Runnable() {
             @Override
             public void run() {
-                synchronize();
+                mergeService.handle();
             }
         });
         thread.start();
     }
 
-    private void synchronize() {
-        try {
-            mergeService.handle();
-            onSuccess();
-        } catch (Exception e) {
-            e.printStackTrace();
-            F.logger.info(e.getMessage());
-            onFail();
-        }
-    }
-
     protected void onSuccess(){
 
     }
+
     protected void onFail(){
 
     }
@@ -78,8 +70,4 @@ public class SyncService implements Observer{
         this.mergeService = mergeService;
     }
 
-    @Override
-    public void update(Observable o, Object arg) {
-        synchronizeImmediately();
-    }
 }

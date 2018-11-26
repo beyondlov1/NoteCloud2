@@ -1,7 +1,7 @@
 package com.beyond.viewloader;
 
 import com.beyond.ApplicationContext;
-import com.beyond.service.SyncService;
+import com.beyond.service.AsynMergeService;
 import javafx.event.EventHandler;
 import javafx.stage.Stage;
 import javafx.stage.WindowEvent;
@@ -18,11 +18,11 @@ public class LoginViewLoader extends AbstractViewLoader {
     @Override
     protected void afterLoad() {
         Stage stage = this.getStage();
-        SyncService syncService = this.getContext().getSyncService();
+        AsynMergeService asynMergeService = this.getContext().getAsynMergeService();
         stage.setOnCloseRequest(new EventHandler<WindowEvent>() {
             @Override
             public void handle(WindowEvent event) {
-                syncService .stopSynchronize();
+                asynMergeService.stopSynchronize();
             }
         });
     }

@@ -9,7 +9,6 @@ import com.beyond.repository.impl.LocalDocumentRepository;
 import com.beyond.repository.impl.RemoteDocumentRepository;
 import com.beyond.repository.Repository;
 import com.beyond.utils.ListUtils;
-import javafx.application.Platform;
 import org.apache.commons.lang3.StringUtils;
 
 import java.util.*;
@@ -17,7 +16,7 @@ import java.util.*;
 /**
  * 同步服务
  */
-public class MergeService extends Observable {
+public class MergeService {
     private Repository<Document> localRepository;
     private Repository<Document> remoteRepository;
     private PropertyManager localPropertyManager;
@@ -25,8 +24,6 @@ public class MergeService extends Observable {
     private LocalPropertyManager remoteLocalPropertyManager;
     private LocalDocumentRepository remoteLocalDocumentRepository;
     private int failCount = 0;
-
-    private int mergeFlag = 0;
 
     public MergeService(String path, String url, String tmpPath) {
         super();
@@ -39,83 +36,34 @@ public class MergeService extends Observable {
         this.remoteRepository = new RemoteDocumentRepository(url, remoteLocalDocumentRepository, remoteLocalPropertyManager, remotePropertyManager);
     }
 
-    /**
-     * 同步
-     */
     public synchronized void handle() {
         try {
             Map<String, String> localPropertiesMap = localPropertyManager.getAllProperties();
             Map<String, String> remotePropertiesMap = remotePropertyManager.getAllProperties();
 
-            if (!isMerge(localPropertiesMap, remotePropertiesMap)) return;
+            if (!isNeedMerge(localPropertiesMap, remotePropertiesMap)) return;
+            F.logger.info("merge begin");
             remoteRepository.lock();
             List<Document> mergedList = merge();
             updateProperty(localPropertiesMap, remotePropertiesMap);
             updateRepository(mergedList);
             remoteRepository.unlock();
             onSuccess();
-
         }catch (Exception e){
             F.logger.info(e.getMessage());
             onFail();
         }
 
     }
-
-    private void onFail() {
-
-    }
-
-    private void onSuccess() {
-        mergeFlag = 1;
-        setChanged();
-        Platform.runLater(new Runnable() {
-            @Override
-            public void run() {
-                notifyObservers();
-            }
-        });
-    }
-
-    private void updateRepository(List<Document> mergedList) {
-        remoteRepository.save(mergedList);
-        localRepository.save(mergedList);
-    }
-
-    private void updateProperty(Map<String, String> localPropertiesMap, Map<String, String> remotePropertiesMap) {
-        try {
-            //设置属性
-            String localVersion = localPropertiesMap.getOrDefault("_version", "0");
-            String remoteVersion = remotePropertiesMap.getOrDefault("_version", "0");
-            String currentTime = System.currentTimeMillis() + "";
-            if (StringUtils.isNotBlank(localPropertiesMap.getOrDefault("_modifyIds", ""))) {
-                localPropertyManager.set("_lastModifyTime", currentTime);
-                remoteLocalPropertyManager.set("_lastModifyTime", currentTime);
-            } else {
-                String remoteTime = remotePropertiesMap.getOrDefault("_lastModifyTime", "");
-                if (StringUtils.isBlank(remoteTime)) {
-                    remoteTime = currentTime;
-                }
-                localPropertyManager.set("_lastModifyTime", remoteTime);
-                remoteLocalPropertyManager.set("_lastModifyTime", remoteTime);
-            }
-            localPropertyManager.set("_version", localVersion.compareTo(remoteVersion) < 0 ? remoteVersion : localVersion);
-            remoteLocalPropertyManager.set("_version", localVersion.compareTo(remoteVersion) < 0 ? remoteVersion : localVersion);
-            //清空modifyIds
-            localPropertyManager.set("_modifyIds", "");
-            remoteLocalPropertyManager.set("_modifyIds", "");
-        } catch (Exception e) {
-            F.logger.info(e.getMessage());
-        }
-    }
-
-    private boolean isMerge(Map<String, String> localPropertiesMap, Map<String, String> remotePropertiesMap) {
+    private boolean isNeedMerge(Map<String, String> localPropertiesMap, Map<String, String> remotePropertiesMap) {
         String localLastModifyTime = localPropertiesMap.getOrDefault("_lastModifyTime", "0");
         String remoteLastModifyTime = remotePropertiesMap.getOrDefault("_lastModifyTime", "0");
+        F.logger.info("localLastModifyTime"+localLastModifyTime);
+        F.logger.info("remoteLastModifyTime"+remoteLastModifyTime);
         if (!StringUtils.equals(localLastModifyTime, "")
                 && !StringUtils.equals(localLastModifyTime, "0")
                 && StringUtils.equals(localLastModifyTime, remoteLastModifyTime)) {
-            return true;
+            return false;
         }
 
         if (!remoteRepository.isAvailable()) {
@@ -124,16 +72,10 @@ public class MergeService extends Observable {
                 remoteRepository.unlock();
                 failCount = 0;
             }
-            return true;
+            return false;
         }
-        return false;
+        return true;
     }
-
-    /**
-     * 合并本地与远程
-     *
-     * @return 合并后列表
-     */
     private List<Document> merge() {
         //获取本地和远程的文档
         localRepository.pull();
@@ -204,13 +146,41 @@ public class MergeService extends Observable {
 
         return result;
     }
-
-    public int getMergeFlag() {
-        return mergeFlag;
+    private void updateRepository(List<Document> mergedList) {
+        remoteRepository.save(mergedList);
+        localRepository.save(mergedList);
     }
-
-    public void setMergeFlag(int mergeFlag) {
-        this.mergeFlag = mergeFlag;
+    private void updateProperty(Map<String, String> localPropertiesMap, Map<String, String> remotePropertiesMap) {
+        try {
+            //设置属性
+            String localVersion = localPropertiesMap.getOrDefault("_version", "0");
+            String remoteVersion = remotePropertiesMap.getOrDefault("_version", "0");
+            String currentTime = System.currentTimeMillis() + "";
+            if (StringUtils.isNotBlank(localPropertiesMap.getOrDefault("_modifyIds", ""))) {
+                localPropertyManager.set("_lastModifyTime", currentTime);
+                remoteLocalPropertyManager.set("_lastModifyTime", currentTime);
+            } else {
+                String remoteTime = remotePropertiesMap.getOrDefault("_lastModifyTime", "");
+                if (StringUtils.isBlank(remoteTime)) {
+                    remoteTime = currentTime;
+                }
+                localPropertyManager.set("_lastModifyTime", remoteTime);
+                remoteLocalPropertyManager.set("_lastModifyTime", remoteTime);
+            }
+            localPropertyManager.set("_version", localVersion.compareTo(remoteVersion) < 0 ? remoteVersion : localVersion);
+            remoteLocalPropertyManager.set("_version", localVersion.compareTo(remoteVersion) < 0 ? remoteVersion : localVersion);
+            //清空modifyIds
+            localPropertyManager.set("_modifyIds", "");
+            remoteLocalPropertyManager.set("_modifyIds", "");
+        } catch (Exception e) {
+            F.logger.info(e.getMessage());
+        }
+    }
+    private void onSuccess() {
+        F.logger.info("merge success");
+    }
+    private void onFail() {
+        F.logger.info("merge fail");
     }
 
     public static void main(String[] args) {

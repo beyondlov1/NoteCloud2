@@ -56,7 +56,6 @@ public class RemoteDocumentRepository extends RemoteBase implements Repository<D
         return localDocumentRepository.delete(document);
     }
 
-    @Override
     public Serializable delete(Serializable id) {
         return localDocumentRepository.delete(id);
     }
@@ -170,14 +169,4 @@ public class RemoteDocumentRepository extends RemoteBase implements Repository<D
         return !StringUtils.equals(lock, "1");
     }
 
-    public static void main(String[] args) throws IOException {
-//        LocalDocumentRepository localDocumentRepository = new LocalDocumentRepository("./document/tmp.xml");
-//        RemoteDocumentRepository remoteDocumentRepository = new RemoteDocumentRepository("https://yura.teracloud.jp/dav/NoteCloud/repository/documents.xml", localDocumentRepository);
-//        remoteDocumentRepository.add(new Document("5", "content"));
-//        remoteDocumentRepository.save();
-//        System.out.println(remoteDocumentRepository.selectAll().size());
-//        remoteDocumentRepository.pull();
-//        List<Document> documents = remoteDocumentRepository.selectAll();
-//        System.out.println(documents.size());
-    }
 }
