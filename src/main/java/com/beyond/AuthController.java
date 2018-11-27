@@ -4,9 +4,7 @@ import com.beyond.service.AuthService;
 import com.beyond.viewloader.AuthViewLoader;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
-import javafx.event.EventHandler;
 import javafx.fxml.FXML;
-import javafx.scene.web.WebEvent;
 import javafx.scene.web.WebView;
 
 public class AuthController {
@@ -34,7 +32,7 @@ public class AuthController {
                 String prefix = "https://login.microsoftonline.com/common/oauth2/nativeclient?code=";
                 if (newValue.startsWith(prefix)){
                     String code = newValue.substring(prefix.length());
-                    authService.getAccessToken(code);
+                    authService.readAccessToken(code);
                     close();
                 }
             }

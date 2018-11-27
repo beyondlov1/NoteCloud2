@@ -33,32 +33,23 @@ public class AuthService {
         this.context = context;
     }
 
-    public String getAccessToken() {
+    public String getAccessToken() throws IOException {
         try {
             long curr = new Date().getTime();
             if (StringUtils.isNotBlank(F.EXPIRE_DATE) && Long.valueOf(F.EXPIRE_DATE) > curr && StringUtils.isNotBlank(F.ACCESS_TOKEN)) {
                 return F.ACCESS_TOKEN;
             } else {
                 //如果过期了就refresh
-                String newAccessToken = refreshAccessToken(F.REFRESH_TOKEN);
-                if (StringUtils.isNotBlank(newAccessToken)) {
-                    F.ACCESS_TOKEN = newAccessToken;
-                    F.configService.setProperty("accessToken",F.ACCESS_TOKEN);
-                    F.configService.storeProperties();
-                    return newAccessToken;
-                }
-
-                //如果refresh_token也过期了,重新获取
-                context.loadView(AuthViewLoader.class);
-                return "";
+                return refreshAccessToken(F.REFRESH_TOKEN);
             }
         } catch (Exception e) {
             F.logger.info(e.getMessage());
-            return "";
+            context.loadView(AuthViewLoader.class);
+            throw new RuntimeException("get access token fail");
         }
     }
 
-    public String getAccessToken(String code) {
+    public void readAccessToken(String code) {
         try {
             long curr = new Date().getTime();
             OAuth2AccessToken accessToken = oAuth20Service.getAccessToken(code);
@@ -72,15 +63,21 @@ public class AuthService {
             F.configService.setProperty("refreshToken",F.REFRESH_TOKEN);
             F.configService.storeProperties();
 
-            return F.ACCESS_TOKEN;
         } catch (Exception e) {
             F.logger.info(e.getMessage());
-            return "";
         }
     }
 
     private String refreshAccessToken(String refreshToken) throws InterruptedException, ExecutionException, IOException {
-        return oAuth20Service.refreshAccessToken(refreshToken).getAccessToken();
+        String newAccessToken = oAuth20Service.refreshAccessToken(refreshToken).getAccessToken();
+        if (StringUtils.isNotBlank(newAccessToken)) {
+            F.ACCESS_TOKEN = newAccessToken;
+            F.configService.setProperty("accessToken",F.ACCESS_TOKEN);
+            F.configService.storeProperties();
+        }else {
+            throw new RuntimeException("refresh access fail");
+        }
+        return newAccessToken;
     }
 
     public String getAuthorizationUrl() {

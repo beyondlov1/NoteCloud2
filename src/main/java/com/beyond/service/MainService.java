@@ -47,6 +47,15 @@ public class MainService {
         initFxDocument();
     }
 
+    @SuppressWarnings("unchecked")
+    public MainService(@NotNull ApplicationContext context,String path) {
+        this.context = context;
+        this.asynRemindService = context.getAsynRemindService();
+        this.defaultLocalRepository = RepositoryFactory.getLocalRepository(path);
+        this.deletedLocalRepository = RepositoryFactory.getLocalRepository(F.DEFAULT_DELETE_PATH);
+        initFxDocument();
+    }
+
     public void initFxDocument() {
         List<FxDocument> fxDocuments = new ArrayList<>();
         List<Document> documents = findAll();
@@ -65,7 +74,6 @@ public class MainService {
         }
         return (String) id;
     }
-
     private Serializable addOnly(Document document) {
         Serializable id = defaultLocalRepository.add(document);
         defaultLocalRepository.save();
@@ -75,15 +83,20 @@ public class MainService {
         fxDocuments.add(0, fxDocument);
         return id;
     }
-
     private void addEvent(Todo todo) {
         asynRemindService.addEvent(new MicrosoftReminder(todo), new EventHandler<WorkerStateEvent>() {
             @Override
             public void handle(WorkerStateEvent event) {
-                System.out.println("addEvent");
+                F.logger.info("add event");
                 Serializable id = (Serializable) event.getSource().getValue();
                 todo.setRemindId((String) id);
+                updateOnly(todo);
                 readEvent(todo);
+            }
+        }, new EventHandler<WorkerStateEvent>() {
+            @Override
+            public void handle(WorkerStateEvent event) {
+                F.logger.error("add event fail");
             }
         });
     }
@@ -96,20 +109,19 @@ public class MainService {
             deleteEvent(todo);
         }
     }
-
     private void deleteEvent(@NotNull Todo todo) {
         asynRemindService.removeEvent(todo.getRemindId(), new EventHandler<WorkerStateEvent>() {
             @Override
             public void handle(WorkerStateEvent event) {
+                F.logger.info("delete event");
             }
         }, new EventHandler<WorkerStateEvent>() {
             @Override
             public void handle(WorkerStateEvent event) {
-                throw new RuntimeException("提醒删除错误");
+                F.logger.error("delete event fail");
             }
         });
     }
-
     private void deleteById(String id) {
         Document document = new Document();
         document.setId(id);
@@ -147,7 +159,6 @@ public class MainService {
         }
         return (String) id;
     }
-
     private void addOrUpdateEvent(@NotNull Todo todo) {
         if (StringUtils.isNotBlank(todo.getRemindId())) {
             updateEvent(todo);
@@ -155,28 +166,31 @@ public class MainService {
             addEvent(todo);
         }
     }
-
     private void updateEvent(Todo todo) {
         asynRemindService.modifyEvent(new MicrosoftReminder(todo), new EventHandler<WorkerStateEvent>() {
             @Override
             public void handle(WorkerStateEvent event) {
+                F.logger.error("update event");
                 Serializable id = (Serializable) event.getSource().getValue();
                 todo.setRemindId((String) id);
                 readEvent(todo);
             }
+        }, new EventHandler<WorkerStateEvent>() {
+            @Override
+            public void handle(WorkerStateEvent event) {
+                F.logger.error("update event fail");
+            }
         });
     }
-
     private List<Document> findAll() {
         defaultLocalRepository.pull();
         return defaultLocalRepository.selectAll();
     }
-
     private void readEvent(@NotNull Todo todo) {
         asynRemindService.readEvent(todo.getRemindId(), new EventHandler<WorkerStateEvent>() {
             @Override
             public void handle(WorkerStateEvent event) {
-                System.out.println("readEvent");
+                F.logger.error("read event");
                 MicrosoftReminder microsoftReminder = (MicrosoftReminder) event.getSource().getValue();
                 try {
                     todo.setRemoteRemindTime(microsoftReminder.getStart().toDate());
@@ -185,9 +199,13 @@ public class MainService {
                     F.logger.info(e.getMessage());
                 }
             }
+        }, new EventHandler<WorkerStateEvent>() {
+            @Override
+            public void handle(WorkerStateEvent event) {
+                F.logger.error("read event fail");
+            }
         });
     }
-
     private Serializable updateOnly(Document document) {
         Serializable id = defaultLocalRepository.update(document);
         defaultLocalRepository.save();

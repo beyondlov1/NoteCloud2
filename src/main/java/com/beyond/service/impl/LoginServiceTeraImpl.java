@@ -1,27 +1,19 @@
-package com.beyond.service;
+package com.beyond.service.impl;
 
 import com.beyond.RemoteBase;
 import com.beyond.entity.User;
 import com.beyond.f.F;
-import org.apache.http.NameValuePair;
+import com.beyond.service.LoginService;
 import org.apache.http.StatusLine;
-import org.apache.http.client.entity.UrlEncodedFormEntity;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpHead;
-import org.apache.http.client.methods.HttpPost;
 import org.apache.http.impl.client.CloseableHttpClient;
-import org.apache.http.impl.client.HttpClientBuilder;
-import org.apache.http.message.BasicHeader;
-
-import java.util.ArrayList;
-import java.util.List;
 
 /**
- * @author beyondlov1
- * @date 2018/10/21
+ * 登陆服务
  */
-public class LoginServiceNutStoreImpl extends RemoteBase implements LoginService {
-    @Override
+public class LoginServiceTeraImpl extends RemoteBase implements LoginService {
+
     public User login(User user) {
         HttpHead httpHead = new HttpHead(F.DEFAULT_LOGIN_PATH);
         CloseableHttpClient client = getClient(user);
@@ -29,9 +21,9 @@ public class LoginServiceNutStoreImpl extends RemoteBase implements LoginService
         try {
             response = sendRequest(client, httpHead);
             StatusLine statusLine = response.getStatusLine();
-            F.logger.info(statusLine);
+             F.logger.info(statusLine);
             this.release(client);
-            if (statusLine.getStatusCode()!=403) {
+            if (statusLine.getStatusCode() >= 400 && statusLine.getStatusCode() < 600) {
                 return null;
             } else {
                 F.USERNAME = user.getUsername();

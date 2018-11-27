@@ -3,6 +3,7 @@ package com.beyond;
 
 import com.beyond.f.F;
 import com.beyond.service.ConfigService;
+import com.beyond.service.impl.ConfigServiceImpl;
 import com.beyond.viewloader.AuthViewLoader;
 import com.beyond.viewloader.ConfigViewLoader;
 import javafx.fxml.FXML;

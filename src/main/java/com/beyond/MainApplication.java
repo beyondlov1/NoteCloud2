@@ -3,6 +3,10 @@ package com.beyond;
 import com.beyond.entity.User;
 import com.beyond.f.F;
 import com.beyond.service.*;
+import com.beyond.service.impl.AsynRemindServiceImpl;
+import com.beyond.service.impl.ConfigServiceImpl;
+import com.beyond.service.impl.LoginServiceNutStoreImpl;
+import com.beyond.service.impl.SyncRemindServiceImpl;
 import com.beyond.viewloader.*;
 import javafx.application.Application;
 import javafx.stage.Stage;
@@ -30,10 +34,10 @@ public class MainApplication extends Application {
     private void loadConfig() {
         ConfigService configService = context.getConfigService();
         if (configService == null) {
-            configService = new ConfigService(F.CONFIG_PATH);
+            configService = new ConfigServiceImpl(F.CONFIG_PATH);
             context.setConfigService(configService);
         }
-        configService.loadConfig(F.class);
+        configService.loadPropertiesTo(F.class);
     }
     private void createContext() {
         context.setApplication(this);

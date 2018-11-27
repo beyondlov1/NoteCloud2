@@ -3,6 +3,7 @@ package com.beyond;
 import com.beyond.entity.*;
 import com.beyond.f.F;
 import com.beyond.service.*;
+import com.beyond.service.impl.ConfigServiceImpl;
 import com.beyond.utils.*;
 import com.beyond.viewloader.ConfigViewLoader;
 import com.beyond.viewloader.MainViewLoader;
@@ -10,7 +11,6 @@ import javafx.beans.property.Property;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.collections.ObservableList;
-import javafx.concurrent.WorkerStateEvent;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.geometry.Insets;
@@ -21,12 +21,14 @@ import javafx.scene.control.TextField;
 import javafx.scene.input.InputMethodEvent;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
+import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.HBox;
 import javafx.scene.text.Text;
 import javafx.scene.text.TextFlow;
 import javafx.scene.web.WebView;
 import javafx.util.Callback;
 import org.apache.commons.lang3.StringUtils;
+import sun.applet.Main;
 
 import java.io.IOException;
 import java.text.SimpleDateFormat;
@@ -75,8 +77,6 @@ public class MainController{
     @FXML
     private TableColumn<FxDocument, String> deletedContentTableColumn;
 
-    private ObservableList<FxDocument> deletedFxDocumentList;
-
     private MainService mainService;
     private BindService bindService;
     private ConfigService configService;
@@ -92,8 +92,12 @@ public class MainController{
         configService = context.getConfigService();
 
         ObservableList<FxDocument> fxDocumentList = mainService.getFxDocuments();
-        bindService = new BindService(fxDocumentList);
+        bindService = new BindService(documentTableView,fxDocumentList);
         bindService.bind();
+
+//        ObservableList<FxDocument> deletedFxDocumentList = deletedMainService.getFxDocuments();
+//        bindService = new BindService(deletedDocumentTableView,deletedFxDocumentList);
+//        bindService.bind();
     }
 
     public void save(KeyEvent keyEvent) {
@@ -290,9 +294,12 @@ public class MainController{
     }
 
     private class BindService{
+
+        private TableView<FxDocument> documentTableView;
         private ObservableList<FxDocument> fxDocumentList;
 
-        BindService(ObservableList<FxDocument> fxDocumentList) {
+        BindService(TableView<FxDocument> documentTableView,ObservableList<FxDocument> fxDocumentList) {
+            this.documentTableView = documentTableView;
             this.fxDocumentList = fxDocumentList;
         }
 
@@ -312,7 +319,8 @@ public class MainController{
             documentTableView.setItems(fxDocumentList);
             ObservableList<TableColumn<FxDocument, ?>> columns = documentTableView.getColumns();
             for (TableColumn<FxDocument, ?> column : columns) {
-                if (StringUtils.equals(column.getId(), "contentTableColumn")) {
+                if (StringUtils.equals(column.getId(), "contentTableColumn")||
+                        StringUtils.equals(column.getId(), "deletedContentTableColumn")) {
                     column.setCellFactory(getCellFactory());
                     column.setCellValueFactory(getCellValueFactory(FxDocument.class, "content"));
                 }

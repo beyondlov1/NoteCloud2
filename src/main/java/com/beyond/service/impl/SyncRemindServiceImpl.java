@@ -1,14 +1,16 @@
-package com.beyond.service;
+package com.beyond.service.impl;
 
 import com.beyond.entity.MicrosoftReminder;
 import com.beyond.entity.Reminder;
 import com.beyond.repository.ReminderDao;
 import com.beyond.repository.impl.RemoteReminderDao;
+import com.beyond.service.AuthService;
+import com.beyond.service.SyncRemindService;
 
 import java.io.Serializable;
 import java.util.Collection;
 
-public class SyncRemindServiceImpl implements SyncRemindService<Reminder>{
+public class SyncRemindServiceImpl implements SyncRemindService<Reminder> {
 
     private ReminderDao<Reminder> reminderDao;
 

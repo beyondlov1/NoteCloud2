@@ -46,10 +46,12 @@ public class MergeService {
 
             if (!isNeedMerge(localPropertiesMap, remotePropertiesMap)) return;
             F.logger.info("merge begin");
+            localRepository.lock();
             remoteRepository.lock();
             List<Document> mergedList = merge();
             updateProperty(localPropertiesMap, remotePropertiesMap);
             updateRepository(mergedList);
+            localRepository.unlock();
             remoteRepository.unlock();
             onSuccess();
         }catch (Exception e){

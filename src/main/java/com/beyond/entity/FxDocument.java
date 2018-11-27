@@ -6,6 +6,7 @@ import javafx.beans.property.*;
 import java.util.Date;
 
 public class FxDocument {
+
     private StringProperty id;
     private StringProperty title;
     private StringProperty content;

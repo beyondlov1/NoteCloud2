@@ -33,7 +33,6 @@ public class LocalDocumentRepository extends AbstractLocalRepository<Document> {
         return xStream;
     }
 
-
     public synchronized Serializable update(Document document) {
         int index = -1;
         Document foundDocument= null;

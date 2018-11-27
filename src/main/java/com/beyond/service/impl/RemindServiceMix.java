@@ -1,4 +1,4 @@
-package com.beyond.service;
+package com.beyond.service.impl;
 
 import com.beyond.entity.MicrosoftReminder;
 import com.beyond.entity.Reminder;
@@ -6,6 +6,8 @@ import com.beyond.entity.Todo;
 import com.beyond.f.F;
 import com.beyond.repository.ReminderDao;
 import com.beyond.repository.impl.RemoteReminderDao;
+import com.beyond.service.AuthService;
+import com.beyond.service.MainService;
 import com.beyond.utils.TimeUtils;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.scribejava.core.model.OAuthRequest;

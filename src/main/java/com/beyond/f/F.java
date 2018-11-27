@@ -1,11 +1,9 @@
 package com.beyond.f;
 
 import com.beyond.service.ConfigService;
-import com.github.scribejava.core.model.OAuth2AccessToken;
+import com.beyond.service.impl.ConfigServiceImpl;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-
-import java.util.Date;
 
 public class F {
     public final static Logger logger = LogManager.getLogger();
@@ -47,7 +45,7 @@ public class F {
 
     public static String ACCESS_TOKEN = "";
 
-    public static final ConfigService configService = new ConfigService(F.CONFIG_PATH);
+    public static final ConfigService configService = new ConfigServiceImpl(F.CONFIG_PATH);
     public static String DEFAULT_REMOTE_PROPERTY_LOCAL_PATH = "./repository/remoteProperty.obj";
 
     public static String DEFAULT_REMOTE_FILE_INFO_PATH = "https://dav.jianguoyun.com/dav/NoteCloud/repository/remoteProperty.obj";

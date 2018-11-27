@@ -2,6 +2,7 @@ package com.beyond;
 
 import com.beyond.entity.Reminder;
 import com.beyond.service.*;
+import com.beyond.service.impl.ConfigServiceImpl;
 import com.beyond.viewloader.ViewLoader;
 import javafx.application.Platform;
 

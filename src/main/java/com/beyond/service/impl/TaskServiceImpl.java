@@ -1,4 +1,4 @@
-package com.beyond.service;
+package com.beyond.service.impl;
 
 import javafx.concurrent.Service;
 import javafx.concurrent.Task;
