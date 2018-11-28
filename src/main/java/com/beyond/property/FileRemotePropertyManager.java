@@ -97,7 +97,8 @@ public class FileRemotePropertyManager extends RemoteBase implements PropertyMan
                 httpPut.setEntity(new FileEntity(new File(F.DEFAULT_REMOTE_PROPERTY_LOCAL_PATH)));
                 sendRequest(client, httpPut);
             } catch (IOException e) {
-                e.printStackTrace();
+                F.logger.error(e.getMessage());
+                throw new RuntimeException("远程属性上传失败");
             } finally {
                 try {
                     if (objectOutputStream != null) {

@@ -1,6 +1,7 @@
 package com.beyond.viewloader;
 
 import com.beyond.ApplicationContext;
+import com.beyond.FailedTodoService;
 import com.beyond.f.F;
 import com.beyond.f.SyncType;
 import com.beyond.service.AsynMergeService;
@@ -21,10 +22,23 @@ public class MainViewLoader extends AbstractViewLoader {
     @Override
     protected void afterLoad() {
         startSynchronize();
-        stopSynchronizeOnClose();
+        startFailedTodoService();
+
+        stopOnClose();
     }
 
-    private void startSynchronize(){
+    private void stopOnClose() {
+        Stage stage = this.getStage();
+        stage.setOnCloseRequest(new EventHandler<WindowEvent>() {
+            @Override
+            public void handle(WindowEvent event) {
+                stopSynchronize();
+                stopFailedTodoService();
+            }
+        });
+    }
+
+    private void startSynchronize() {
         ApplicationContext context = this.getContext();
         AsynMergeService asynMergeService = context.getAsynMergeService();
 
@@ -32,16 +46,17 @@ public class MainViewLoader extends AbstractViewLoader {
             asynMergeService.startSynchronize();
         }
     }
-
-    private void stopSynchronizeOnClose(){
-        ApplicationContext context = this.getContext();
+    private void stopSynchronize() {
         AsynMergeService asynMergeService = context.getAsynMergeService();
-        Stage stage = this.getStage();
-        stage.setOnCloseRequest(new EventHandler<WindowEvent>() {
-            @Override
-            public void handle(WindowEvent event) {
-                asynMergeService.stopSynchronize();
-            }
-        });
+        asynMergeService.stopSynchronize();
+    }
+
+    private void startFailedTodoService() {
+        FailedTodoService failedTodoService = context.getFailedTodoService();
+        failedTodoService.init();
+    }
+    private void stopFailedTodoService() {
+        FailedTodoService failedTodoService = context.getFailedTodoService();
+        failedTodoService.stop();
     }
 }

@@ -11,6 +11,7 @@ import com.github.scribejava.core.model.Response;
 import com.github.scribejava.core.model.Verb;
 import com.github.scribejava.core.oauth.OAuth20Service;
 
+import java.io.IOException;
 import java.io.Serializable;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
@@ -49,6 +50,12 @@ public class RemoteReminderDao implements ReminderDao<Reminder> {
         } catch (Exception e) {
             F.logger.info(e.getMessage());
             throw new RuntimeException("提醒请求未成功");
+        }finally {
+            try {
+                oAuth20Service.close();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
         }
     }
 
@@ -113,7 +120,6 @@ public class RemoteReminderDao implements ReminderDao<Reminder> {
             throw new RuntimeException("提醒请求未成功");
         }
     }
-
 
     @Deprecated
     @Override

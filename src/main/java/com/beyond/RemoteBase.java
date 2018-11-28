@@ -61,7 +61,6 @@ public class RemoteBase {
     }
 
     protected synchronized CloseableHttpResponse sendRequest(CloseableHttpClient client, HttpRequestBase request) throws IOException {
-
         //sendRequest
         CloseableHttpResponse response = null;
         response = client.execute(request);

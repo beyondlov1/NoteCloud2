@@ -1,6 +1,7 @@
 package com.beyond.service.impl;
 
 import com.beyond.entity.Reminder;
+import com.beyond.f.F;
 import com.beyond.service.AsynRemindService;
 import com.beyond.service.SyncRemindService;
 import javafx.concurrent.Task;
@@ -62,11 +63,13 @@ public class AsynRemindServiceImpl implements AsynRemindService<Reminder> {
     @Override
     public synchronized void addEvent(Reminder reminder, EventHandler<WorkerStateEvent> success, EventHandler<WorkerStateEvent> fail) {
         TaskServiceImpl taskService = new TaskServiceImpl();
-        taskService.reset();
         taskService.setTask(new Task() {
             @Override
             protected Object call() throws Exception {
-                return syncRemindService.addEvent(reminder);
+                F.logger.info("add event start");
+                Serializable id = syncRemindService.addEvent(reminder);
+                F.logger.info("add event end");
+                return id;
             }
         });
         taskService.setOnSucceeded(success);

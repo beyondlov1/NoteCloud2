@@ -44,8 +44,12 @@ public class MainApplication extends Application {
         context.setLoginService(new LoginServiceNutStoreImpl());
         context.setAsynMergeService(new AsynMergeService(context));
         context.setAuthService(new AuthService(context));
-        context.setAsynRemindService(new AsynRemindServiceImpl(new SyncRemindServiceImpl(context.getAuthService())));
-        context.setMainService(new MainService(context));
+        context.setSyncRemindService(new SyncRemindServiceImpl(context.getAuthService()));
+        context.setAsynRemindService(new AsynRemindServiceImpl(context.getSyncRemindService()));
+        context.setFailedTodoService(new FailedTodoService(context));
+        MainService mainService = new MainService(context);
+        context.setMainService(mainService);
+        mainService.init();
 
         ViewLoader mainViewLoader = new MainViewLoader(context);
         mainViewLoader.setLocation("views/main.fxml");
@@ -69,8 +73,10 @@ public class MainApplication extends Application {
         context.addViewLoader(authViewLoader);
 
         context.setMainController(mainController);
+
     }
     private void showStartStage() throws Exception {
+
         User user = new User(
                 F.configService.getProperty("username"),
                 F.configService.getProperty("password"));

@@ -94,10 +94,6 @@ public class MainController{
         ObservableList<FxDocument> fxDocumentList = mainService.getFxDocuments();
         bindService = new BindService(documentTableView,fxDocumentList);
         bindService.bind();
-
-//        ObservableList<FxDocument> deletedFxDocumentList = deletedMainService.getFxDocuments();
-//        bindService = new BindService(deletedDocumentTableView,deletedFxDocumentList);
-//        bindService.bind();
     }
 
     public void save(KeyEvent keyEvent) {

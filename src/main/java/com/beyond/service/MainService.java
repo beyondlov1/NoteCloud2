@@ -1,15 +1,13 @@
 package com.beyond.service;
 
 import com.beyond.ApplicationContext;
+import com.beyond.FailedTodoService;
 import com.beyond.entity.*;
 import com.beyond.RepositoryFactory;
 import com.beyond.f.F;
-import com.beyond.repository.impl.LocalDocumentRepository;
 import com.beyond.repository.Repository;
-import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
-import javafx.concurrent.Worker;
 import javafx.concurrent.WorkerStateEvent;
 import javafx.event.EventHandler;
 import org.apache.commons.lang3.StringUtils;
@@ -25,6 +23,7 @@ public class MainService {
     private Repository<Document> deletedLocalRepository;
 
     private AsynRemindService<Reminder> asynRemindService;
+    private FailedTodoService failedTodoService;
 
     private ObservableList<FxDocument> fxDocuments;
 
@@ -41,10 +40,14 @@ public class MainService {
     @SuppressWarnings("unchecked")
     public MainService(@NotNull ApplicationContext context) {
         this.context = context;
-        this.asynRemindService = context.getAsynRemindService();
         this.defaultLocalRepository = RepositoryFactory.getLocalRepository(F.DEFAULT_LOCAL_PATH);
         this.deletedLocalRepository = RepositoryFactory.getLocalRepository(F.DEFAULT_DELETE_PATH);
         initFxDocument();
+    }
+
+    public void init(){
+        this.asynRemindService = context.getAsynRemindService();
+        this.failedTodoService = context.getFailedTodoService();
     }
 
     @SuppressWarnings("unchecked")
@@ -67,14 +70,14 @@ public class MainService {
     }
 
     public String add(Document document) {
-        Serializable id = addOnly(document);
+        Serializable id = addWithoutEvent(document);
         if (document instanceof Todo) {
             Todo todo = (Todo) document;
             addEvent(todo);
         }
         return (String) id;
     }
-    private Serializable addOnly(Document document) {
+    private Serializable addWithoutEvent(Document document) {
         Serializable id = defaultLocalRepository.add(document);
         defaultLocalRepository.save();
 
@@ -90,13 +93,15 @@ public class MainService {
                 F.logger.info("add event");
                 Serializable id = (Serializable) event.getSource().getValue();
                 todo.setRemindId((String) id);
-                updateOnly(todo);
+                updateWithoutEvent(todo);
                 readEvent(todo);
             }
         }, new EventHandler<WorkerStateEvent>() {
             @Override
             public void handle(WorkerStateEvent event) {
                 F.logger.error("add event fail");
+                failedTodoService.add(todo);
+                F.logger.info("添加至队列");
             }
         });
     }
@@ -119,6 +124,8 @@ public class MainService {
             @Override
             public void handle(WorkerStateEvent event) {
                 F.logger.error("delete event fail");
+                failedTodoService.add(todo);
+                F.logger.info("添加至队列");
             }
         });
     }
@@ -152,7 +159,7 @@ public class MainService {
     }
 
     public String update(Document document) {
-        Serializable id = updateOnly(document);
+        Serializable id = updateWithoutEvent(document);
         if (document instanceof Todo) {
             Todo todo = (Todo) document;
             addOrUpdateEvent(todo);
@@ -179,34 +186,12 @@ public class MainService {
             @Override
             public void handle(WorkerStateEvent event) {
                 F.logger.error("update event fail");
+                failedTodoService.add(todo);
+                F.logger.info("添加至队列");
             }
         });
     }
-    private List<Document> findAll() {
-        defaultLocalRepository.pull();
-        return defaultLocalRepository.selectAll();
-    }
-    private void readEvent(@NotNull Todo todo) {
-        asynRemindService.readEvent(todo.getRemindId(), new EventHandler<WorkerStateEvent>() {
-            @Override
-            public void handle(WorkerStateEvent event) {
-                F.logger.error("read event");
-                MicrosoftReminder microsoftReminder = (MicrosoftReminder) event.getSource().getValue();
-                try {
-                    todo.setRemoteRemindTime(microsoftReminder.getStart().toDate());
-                    updateOnly(todo);
-                } catch (ParseException e) {
-                    F.logger.info(e.getMessage());
-                }
-            }
-        }, new EventHandler<WorkerStateEvent>() {
-            @Override
-            public void handle(WorkerStateEvent event) {
-                F.logger.error("read event fail");
-            }
-        });
-    }
-    private Serializable updateOnly(Document document) {
+    public Serializable updateWithoutEvent(Document document) {
         Serializable id = defaultLocalRepository.update(document);
         defaultLocalRepository.save();
 
@@ -226,6 +211,33 @@ public class MainService {
 
         context.refresh();
         return id;
+    }
+
+    private List<Document> findAll() {
+        defaultLocalRepository.pull();
+        return defaultLocalRepository.selectAll();
+    }
+    private void readEvent(@NotNull Todo todo) {
+        asynRemindService.readEvent(todo.getRemindId(), new EventHandler<WorkerStateEvent>() {
+            @Override
+            public void handle(WorkerStateEvent event) {
+                F.logger.error("read event");
+                MicrosoftReminder microsoftReminder = (MicrosoftReminder) event.getSource().getValue();
+                try {
+                    todo.setRemoteRemindTime(microsoftReminder.getStart().toDate());
+                    updateWithoutEvent(todo);
+                } catch (ParseException e) {
+                    F.logger.info(e.getMessage());
+                }
+            }
+        }, new EventHandler<WorkerStateEvent>() {
+            @Override
+            public void handle(WorkerStateEvent event) {
+                F.logger.error("read event fail");
+                failedTodoService.add(todo);
+                F.logger.info("添加至队列");
+            }
+        });
     }
 
     public ObservableList<FxDocument> getFxDocuments() {

@@ -22,7 +22,7 @@ public abstract class AbstractViewLoader implements ViewLoader{
 
     private Object controller;
 
-    private ApplicationContext context;
+    protected ApplicationContext context;
 
     public AbstractViewLoader(ApplicationContext context){
         this.context = context;

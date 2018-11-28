@@ -3,6 +3,7 @@ package com.beyond;
 import com.beyond.entity.Reminder;
 import com.beyond.service.*;
 import com.beyond.service.impl.ConfigServiceImpl;
+import com.beyond.service.impl.SyncRemindServiceImpl;
 import com.beyond.viewloader.ViewLoader;
 import javafx.application.Platform;
 
@@ -18,17 +19,19 @@ public class ApplicationContext {
     private Map<String,Object> map;
 
     private MainService mainService;
+    private SyncRemindService<Reminder> syncRemindService;
     private AsynRemindService<Reminder> asynRemindService;
     private LoginService loginService;
     private AsynMergeService asynMergeService;
     private ConfigService configService;
     private AuthService authService;
+    private FailedTodoService failedTodoService;
+
     private MainApplication application;
 
     private MainController mainController;
 
     private Map<String,Observable> observableMap;
-
     private Map<Class, ViewLoader> viewLoaderMap;
 
     public ApplicationContext() {
@@ -147,5 +150,21 @@ public class ApplicationContext {
                 mainController.refresh();
             }
         });
+    }
+
+    public SyncRemindService<Reminder> getSyncRemindService() {
+        return syncRemindService;
+    }
+
+    public void setSyncRemindService(SyncRemindService<Reminder> syncRemindService) {
+        this.syncRemindService = syncRemindService;
+    }
+
+    public FailedTodoService getFailedTodoService() {
+        return failedTodoService;
+    }
+
+    public void setFailedTodoService(FailedTodoService failedTodoService) {
+        this.failedTodoService = failedTodoService;
     }
 }
