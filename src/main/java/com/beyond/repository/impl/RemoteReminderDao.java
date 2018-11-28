@@ -36,7 +36,6 @@ public class RemoteReminderDao implements ReminderDao<Reminder> {
             String load = objectMapper.writeValueAsString(reminder);
             request.addHeader("Content-Type", "application/json");
             request.setPayload(load);
-
             oAuth20Service.signRequest(authService.getAccessToken(), request);
             final Response response = oAuth20Service.execute(request);
             if (!response.isSuccessful()) {

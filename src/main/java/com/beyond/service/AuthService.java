@@ -6,6 +6,9 @@ import com.beyond.f.F;
 import com.beyond.libext.MicrosoftAzureActiveDirectoryApi20;
 import com.beyond.viewloader.AuthViewLoader;
 import com.github.scribejava.core.builder.ServiceBuilder;
+import com.github.scribejava.core.httpclient.HttpClient;
+import com.github.scribejava.core.httpclient.jdk.JDKHttpClient;
+import com.github.scribejava.core.httpclient.jdk.JDKHttpClientConfig;
 import com.github.scribejava.core.model.OAuth2AccessToken;
 import com.github.scribejava.core.oauth.OAuth20Service;
 import org.apache.commons.lang3.StringUtils;
@@ -22,7 +25,13 @@ public class AuthService {
 
     public AuthService() {
         MicrosoftAzureActiveDirectoryApi20 api = MicrosoftAzureActiveDirectoryApi20.instance();
+        JDKHttpClientConfig jdkHttpClientConfig = new JDKHttpClientConfig();
+        jdkHttpClientConfig.setConnectTimeout(8);
+        jdkHttpClientConfig.setReadTimeout(8);
+        HttpClient httpClient = new JDKHttpClient();
         this.oAuth20Service = new ServiceBuilder(F.CLIENT_ID)
+                .httpClient(httpClient)
+                .httpClientConfig(jdkHttpClientConfig)
                 .scope(F.SCOPE)
                 .callback("https://login.microsoftonline.com/common/oauth2/nativeclient")
                 .build(api);
