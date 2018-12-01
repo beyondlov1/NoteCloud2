@@ -448,10 +448,10 @@ public class MainController{
             String timeStamp = "";
             if (fxDocument==null) return;
             if (fxDocument.toNormalDocument() instanceof Todo
-                    && ((Todo)fxDocument.toNormalDocument()).getRemindTime()!=null
+                    && ((Todo)fxDocument.toNormalDocument()).getReminder().getRemindTime()!=null
                     && StringUtils.isNotBlank(TimeUtils.getTimeNorm(fxDocument.getContent()))){
                 Todo todo = (Todo)fxDocument.toNormalDocument();
-                Date remoteRemindTime = todo.getRemoteRemindTime();
+                Date remoteRemindTime = todo.getReminder().getRemoteRemindTime();
                 if (remoteRemindTime !=null){
                     SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
                     timeStamp = "  \n\n\n***\n提醒时间:"+ simpleDateFormat.format(remoteRemindTime);

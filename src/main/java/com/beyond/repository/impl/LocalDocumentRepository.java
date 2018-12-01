@@ -30,6 +30,7 @@ public class LocalDocumentRepository extends AbstractLocalRepository<Document> {
         xStream.useAttributeFor(Document.class, "id");
         xStream.useAttributeFor(Note.class, "id");
         xStream.useAttributeFor(Todo.class, "id");
+        xStream.autodetectAnnotations(true);
         return xStream;
     }
 

@@ -2,6 +2,7 @@ package com.beyond.repository.impl;
 
 import com.beyond.RemoteBase;
 import com.beyond.entity.Document;
+import com.beyond.exception.RemotePullException;
 import com.beyond.f.F;
 import com.beyond.property.LocalPropertyManager;
 import com.beyond.property.PropertyManager;
@@ -112,46 +113,51 @@ public class RemoteDocumentRepository extends RemoteBase implements Repository<D
     }
 
     public synchronized int pull() {
-        String path = localDocumentRepository.getPath();
-        String url = this.getPath();
-
-        CloseableHttpClient client = getClient();
-
-        HttpGet httpGet = new HttpGet(url);
-        FileOutputStream fileOutputStream = null;
         try {
-            CloseableHttpResponse response = client.execute(httpGet);
-            int statusCode = response.getStatusLine().getStatusCode();
-            F.logger.info(statusCode);
-            if (statusCode > 400) {
-                upload();
-                return 0;
-            }
-            HttpEntity entity = response.getEntity();
-            fileOutputStream = new FileOutputStream(path);
-            fileOutputStream.write(EntityUtils.toByteArray(entity));
+            String path = localDocumentRepository.getPath();
+            String url = this.getPath();
 
-        } catch (IOException e) {
-            F.logger.info(e.getMessage());
-            return 0;
-        } finally {
+            CloseableHttpClient client = getClient();
+
+            HttpGet httpGet = new HttpGet(url);
+            FileOutputStream fileOutputStream = null;
             try {
-                if (fileOutputStream != null) {
-                    fileOutputStream.close();
+                CloseableHttpResponse response = client.execute(httpGet);
+                int statusCode = response.getStatusLine().getStatusCode();
+                F.logger.info(statusCode);
+                if (statusCode > 400) {
+                    upload();
+                    return 0;
                 }
+                HttpEntity entity = response.getEntity();
+                fileOutputStream = new FileOutputStream(path);
+                fileOutputStream.write(EntityUtils.toByteArray(entity));
+
             } catch (IOException e) {
-                e.printStackTrace();
+                F.logger.info(e.getMessage());
+                throw new RuntimeException(e);
+            } finally {
+                try {
+                    if (fileOutputStream != null) {
+                        fileOutputStream.close();
+                    }
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
             }
-        }
 
-        release(client);
+            release(client);
 
-        //刷新下载到本地的文档
-        localDocumentRepository.pull();
+            //刷新下载到本地的文档
+            localDocumentRepository.pull();
 
-        //下载属性
-        if (localPropertyManager != null && remotePropertyManager != null) {
-            localPropertyManager.batchSet(remotePropertyManager.getAllProperties());
+            //下载属性
+            if (localPropertyManager != null && remotePropertyManager != null) {
+                localPropertyManager.batchSet(remotePropertyManager.getAllProperties());
+            }
+
+        }catch (Exception e){
+            throw new RemotePullException();
         }
         return 1;
     }

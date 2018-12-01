@@ -25,9 +25,14 @@ public class AsynMergeService {
         TimerTask timerTask = new TimerTask() {
             @Override
             public void run() {
-                F.logger.info("synchronize begin");
+                try {
+                    F.logger.info("synchronize begin");
                     mergeService.handle();
-                F.logger.info("synchronize end");
+                    F.logger.info("synchronize end");
+                }catch (Exception e){
+                    F.logger.info("merge fail",e);
+                }
+
             }
         };
         timer.schedule(timerTask, 0, F.SYNC_PERIOD);

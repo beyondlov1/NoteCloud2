@@ -46,7 +46,7 @@ public class RemindServiceMix {
     }
 
     private String addEventToDocument(Todo todo, String remindId){
-        todo.setRemindId(remindId);
+        todo.getReminder().setEventId(remindId);
         return mainService.update(todo);
     }
 
@@ -62,14 +62,14 @@ public class RemindServiceMix {
 
 
     private String updateEventToDocument(Todo todo){
-        todo.setRemindTime(TimeUtils.parse(todo.getContent()));
+        todo.getReminder().setRemindTime(TimeUtils.parse(todo.getContent()));
         return mainService.update(todo);
     }
 
     public void readEvent(Todo todo){
-        MicrosoftReminder reminder = (MicrosoftReminder) reminderDao.select(todo.getRemindId());
+        MicrosoftReminder reminder = (MicrosoftReminder) reminderDao.select(todo.getReminder().getEventId());
         try {
-            todo.setRemoteRemindTime(reminder.getStart().toDate());
+            todo.getReminder().setRemoteRemindTime(reminder.getStart().toDate());
         } catch (ParseException e) {
             e.printStackTrace();
         }

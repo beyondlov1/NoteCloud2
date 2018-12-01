@@ -2,6 +2,7 @@ package com.beyond.service;
 
 import com.beyond.ApplicationContext;
 import com.beyond.entity.Document;
+import com.beyond.exception.RemotePullException;
 import com.beyond.f.F;
 import com.beyond.property.FileRemotePropertyManager;
 import com.beyond.property.LocalPropertyManager;
@@ -46,17 +47,15 @@ public class MergeService {
 
             if (!isNeedMerge(localPropertiesMap, remotePropertiesMap)) return;
             F.logger.info("merge begin");
-            localRepository.lock();
             remoteRepository.lock();
             List<Document> mergedList = merge();
             updateProperty(localPropertiesMap, remotePropertiesMap);
             updateRepository(mergedList);
-            localRepository.unlock();
             remoteRepository.unlock();
             onSuccess();
         }catch (Exception e){
             F.logger.info(e.getMessage());
-            onFail();
+            onFail(e);
             throw new RuntimeException("合并失败");
         }
 
@@ -167,7 +166,7 @@ public class MergeService {
                 remoteLocalPropertyManager.set("_lastModifyTime", currentTime);
             } else {
                 String remoteTime = remotePropertiesMap.getOrDefault("_lastModifyTime", "");
-                if (StringUtils.isBlank(remoteTime)) {
+                if (StringUtils.isBlank(remoteTime)||"0".equals(remoteTime)) {
                     remoteTime = currentTime;
                 }
                 localPropertyManager.set("_lastModifyTime", remoteTime);
@@ -186,7 +185,16 @@ public class MergeService {
         context.refresh();
         F.logger.info("merge success");
     }
-    private void onFail() {
+    private void onFail(Exception e) {
+        if (e instanceof RemotePullException){
+            localRepository.pull();
+            List<Document> localList = localRepository.selectAll();
+            updateRepository(localList);
+
+            Map<String, String> localPropertiesMap = localPropertyManager.getAllProperties();
+            Map<String, String> remotePropertiesMap = remotePropertyManager.getAllProperties();
+            updateProperty(localPropertiesMap,remotePropertiesMap);
+        }
         F.logger.info("merge fail");
     }
 

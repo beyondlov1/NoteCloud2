@@ -41,12 +41,18 @@ public class FailedTodoQueue implements Runnable {
     }
 
     public void add(Todo todo) {
+        if (!verifyFailCount(todo)) return;
         queue.add(todo);
         isNeedRun.set(true);
     }
 
-    public Todo get() {
-        return queue.remove();
+    private boolean verifyFailCount(Todo todo) {
+        Reminder reminder = todo.getReminder();
+        Integer failCount = reminder.getFailCount();
+        failCount = failCount==null?0: failCount;
+        if (failCount>5) return false;
+        reminder.setFailCount(failCount+1);
+        return true;
     }
 
     public void stop() {
@@ -69,7 +75,7 @@ public class FailedTodoQueue implements Runnable {
                     handle(todo);
                 } else {
                     try {
-                        Thread.sleep(2000);
+                        Thread.sleep(5000);
                     } catch (InterruptedException e) {
                         e.printStackTrace();
                     }
@@ -84,11 +90,11 @@ public class FailedTodoQueue implements Runnable {
     }
 
     private void handle(Todo todo){
-        Date remindTime = todo.getRemindTime();
-        String remindId = todo.getRemindId();
-        Date remoteRemindTime = todo.getRemoteRemindTime();
-
         try {
+            Date remindTime = todo.getReminder().getRemindTime();
+            String remindId = todo.getReminder().getEventId();
+            Date remoteRemindTime = todo.getReminder().getRemoteRemindTime();
+
             if (remindTime != null) {
                 if (remindId == null) {
                     addEvent(todo);
@@ -103,6 +109,7 @@ public class FailedTodoQueue implements Runnable {
                 }
             }
             deleteEvent(todo);
+
         } catch (Exception e) {
             this.add(todo);
             F.logger.info("再次失败,再次添加至队列",e);
@@ -113,23 +120,23 @@ public class FailedTodoQueue implements Runnable {
         Reminder reminder = new MicrosoftReminder(todo);
         Serializable id = remindService.modifyEvent(reminder);
         MicrosoftReminder resReminder = (MicrosoftReminder) remindService.readEvent(id);
-        todo.setRemoteRemindTime(resReminder.getStart().toDate());
+        todo.getReminder().setRemoteRemindTime(resReminder.getStart().toDate());
         mainService.updateWithoutEvent(todo);
     }
 
     private void readEvent(Todo todo) throws ParseException {
-        MicrosoftReminder resReminder = (MicrosoftReminder) remindService.readEvent(todo.getRemindId());
-        todo.setRemoteRemindTime(resReminder.getStart().toDate());
+        MicrosoftReminder resReminder = (MicrosoftReminder) remindService.readEvent(todo.getReminder().getEventId());
+        todo.getReminder().setRemoteRemindTime(resReminder.getStart().toDate());
         mainService.updateWithoutEvent(todo);
     }
 
     private void addEvent(Todo todo) throws ParseException {
         Reminder reminder = new MicrosoftReminder(todo);
         Serializable id = remindService.addEvent(reminder);
-        todo.setRemindId((String) id);
+        todo.getReminder().setEventId((String) id);
         mainService.updateWithoutEvent(todo);
         MicrosoftReminder resReminder = (MicrosoftReminder) remindService.readEvent(id);
-        todo.setRemoteRemindTime(resReminder.getStart().toDate());
+        todo.getReminder().setRemoteRemindTime(resReminder.getStart().toDate());
         mainService.updateWithoutEvent(todo);
     }
 

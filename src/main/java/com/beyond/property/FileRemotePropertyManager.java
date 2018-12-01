@@ -2,6 +2,7 @@ package com.beyond.property;
 
 import com.beyond.RemoteBase;
 import com.beyond.entity.FileInfo;
+import com.beyond.exception.RemotePullException;
 import com.beyond.f.F;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.http.HttpEntity;
@@ -71,7 +72,7 @@ public class FileRemotePropertyManager extends RemoteBase implements PropertyMan
             fileInfo = (FileInfo) objectInputStream.readObject();
         } catch (IOException | ClassNotFoundException e) {
             F.logger.info(e.getMessage());
-            throw new RuntimeException("远程属性拉取失败");
+            throw new RemotePullException();
         } finally {
             try {
                 if (objectInputStream != null) {

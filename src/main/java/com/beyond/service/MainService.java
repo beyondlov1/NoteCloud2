@@ -92,7 +92,7 @@ public class MainService {
             public void handle(WorkerStateEvent event) {
                 F.logger.info("add event");
                 Serializable id = (Serializable) event.getSource().getValue();
-                todo.setRemindId((String) id);
+                todo.getReminder().setEventId((String) id);
                 updateWithoutEvent(todo);
                 readEvent(todo);
             }
@@ -115,7 +115,7 @@ public class MainService {
         }
     }
     private void deleteEvent(@NotNull Todo todo) {
-        asynRemindService.removeEvent(todo.getRemindId(), new EventHandler<WorkerStateEvent>() {
+        asynRemindService.removeEvent(todo.getReminder().getEventId(), new EventHandler<WorkerStateEvent>() {
             @Override
             public void handle(WorkerStateEvent event) {
                 F.logger.info("delete event");
@@ -167,7 +167,7 @@ public class MainService {
         return (String) id;
     }
     private void addOrUpdateEvent(@NotNull Todo todo) {
-        if (StringUtils.isNotBlank(todo.getRemindId())) {
+        if (StringUtils.isNotBlank(todo.getReminder().getEventId())) {
             updateEvent(todo);
         } else {
             addEvent(todo);
@@ -179,7 +179,8 @@ public class MainService {
             public void handle(WorkerStateEvent event) {
                 F.logger.error("update event");
                 Serializable id = (Serializable) event.getSource().getValue();
-                todo.setRemindId((String) id);
+                todo.getReminder().setEventId((String)id);
+                updateWithoutEvent(todo);
                 readEvent(todo);
             }
         }, new EventHandler<WorkerStateEvent>() {
@@ -218,13 +219,13 @@ public class MainService {
         return defaultLocalRepository.selectAll();
     }
     private void readEvent(@NotNull Todo todo) {
-        asynRemindService.readEvent(todo.getRemindId(), new EventHandler<WorkerStateEvent>() {
+        asynRemindService.readEvent(todo.getReminder().getEventId(), new EventHandler<WorkerStateEvent>() {
             @Override
             public void handle(WorkerStateEvent event) {
-                F.logger.error("read event");
+                F.logger.info("read event");
                 MicrosoftReminder microsoftReminder = (MicrosoftReminder) event.getSource().getValue();
                 try {
-                    todo.setRemoteRemindTime(microsoftReminder.getStart().toDate());
+                    todo.getReminder().setRemoteRemindTime(microsoftReminder.getStart().toDate());
                     updateWithoutEvent(todo);
                 } catch (ParseException e) {
                     F.logger.info(e.getMessage());
