@@ -52,8 +52,11 @@ public class AuthService {
                 return refreshAccessToken(F.REFRESH_TOKEN);
             }
         } catch (Exception e) {
-            F.logger.info(e.getMessage());
-            context.loadView(AuthViewLoader.class);
+            F.logger.info(e.getMessage(),e);
+            F.logger.info("current thread:"+Thread.currentThread().getName(),e);
+            if (Thread.currentThread().getName().equals("JavaFX Application Thread")){
+                context.loadView(AuthViewLoader.class);
+            }
             throw new RuntimeException("get access token fail");
         }
     }

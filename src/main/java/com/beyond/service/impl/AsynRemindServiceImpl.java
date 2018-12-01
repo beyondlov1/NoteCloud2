@@ -62,7 +62,7 @@ public class AsynRemindServiceImpl implements AsynRemindService<Reminder> {
     }
 
     @Override
-    public synchronized void addEvent(Reminder reminder, EventHandler<WorkerStateEvent> success, EventHandler<WorkerStateEvent> fail) {
+    public void addEvent(Reminder reminder, EventHandler<WorkerStateEvent> success, EventHandler<WorkerStateEvent> fail) {
         Service taskService = new Service() {
             @Override
             protected Task createTask() {
@@ -94,7 +94,7 @@ public class AsynRemindServiceImpl implements AsynRemindService<Reminder> {
     }
 
     @Override
-    public synchronized void modifyEvent(Reminder reminder, EventHandler<WorkerStateEvent> success, EventHandler<WorkerStateEvent> fail) {
+    public void modifyEvent(Reminder reminder, EventHandler<WorkerStateEvent> success, EventHandler<WorkerStateEvent> fail) {
         Service taskService = new Service() {
             @Override
             protected Task createTask() {
@@ -128,7 +128,7 @@ public class AsynRemindServiceImpl implements AsynRemindService<Reminder> {
     }
 
     @Override
-    public synchronized void removeEvent(Serializable id, EventHandler<WorkerStateEvent> success, EventHandler<WorkerStateEvent> fail) {
+    public void removeEvent(Serializable id, EventHandler<WorkerStateEvent> success, EventHandler<WorkerStateEvent> fail) {
         Service taskService = new Service() {
             @Override
             protected Task createTask() {
@@ -151,7 +151,7 @@ public class AsynRemindServiceImpl implements AsynRemindService<Reminder> {
     }
 
     @Override
-    public synchronized void readEvent(Serializable id, EventHandler<WorkerStateEvent> success, EventHandler<WorkerStateEvent> fail) {
+    public void readEvent(Serializable id, EventHandler<WorkerStateEvent> success, EventHandler<WorkerStateEvent> fail) {
         Service taskService = new Service() {
             @Override
             protected Task createTask() {
@@ -175,7 +175,7 @@ public class AsynRemindServiceImpl implements AsynRemindService<Reminder> {
     }
 
     @Override
-    public synchronized void readAllEvent(EventHandler<WorkerStateEvent> success, EventHandler<WorkerStateEvent> fail) {
+    public void readAllEvent(EventHandler<WorkerStateEvent> success, EventHandler<WorkerStateEvent> fail) {
         Service taskService = new Service() {
             @Override
             protected Task createTask() {

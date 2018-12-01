@@ -76,12 +76,12 @@ public abstract class AbstractLocalRepository<T extends Element> implements Repo
 
     protected abstract XStream getXStream();
 
-    public synchronized Serializable add(T element) {
+    public Serializable add(T element) {
         list.add(element);
         return element.getId();
     }
 
-    public synchronized Serializable delete(T element) {
+    public Serializable delete(T element) {
         return delete(element.getId());
     }
 
@@ -103,7 +103,7 @@ public abstract class AbstractLocalRepository<T extends Element> implements Repo
         }
     }
 
-    public synchronized Serializable update(T element) {
+    public Serializable update(T element) {
         try {
             int index = -1;
             T foundElement = null;
@@ -149,7 +149,7 @@ public abstract class AbstractLocalRepository<T extends Element> implements Repo
         return list;
     }
 
-    public synchronized int save() {
+    public int save() {
         //获取属性
         Map<String, String> propertiesMap = localPropertyManager.getAllProperties();
 
@@ -169,13 +169,13 @@ public abstract class AbstractLocalRepository<T extends Element> implements Repo
         return 1;
     }
 
-    public synchronized int save(List<T> list) {
+    public int save(List<T> list) {
         this.list = list;
         return save();
     }
 
     @SuppressWarnings("unchecked")
-    public synchronized int pull() {
+    public int pull() {
         FileInputStream fileInputStream = null;
         try {
             fileInputStream = new FileInputStream(path);

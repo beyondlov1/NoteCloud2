@@ -3,7 +3,6 @@ package com.beyond;
 import com.beyond.entity.*;
 import com.beyond.f.F;
 import com.beyond.service.*;
-import com.beyond.service.impl.ConfigServiceImpl;
 import com.beyond.utils.*;
 import com.beyond.viewloader.ConfigViewLoader;
 import com.beyond.viewloader.MainViewLoader;
@@ -12,6 +11,7 @@ import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.collections.ObservableList;
 import javafx.event.EventHandler;
+import javafx.event.EventType;
 import javafx.fxml.FXML;
 import javafx.geometry.Insets;
 import javafx.scene.Node;
@@ -21,14 +21,12 @@ import javafx.scene.control.TextField;
 import javafx.scene.input.InputMethodEvent;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
-import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.HBox;
 import javafx.scene.text.Text;
 import javafx.scene.text.TextFlow;
 import javafx.scene.web.WebView;
 import javafx.util.Callback;
 import org.apache.commons.lang3.StringUtils;
-import sun.applet.Main;
 
 import java.io.IOException;
 import java.text.SimpleDateFormat;
@@ -294,6 +292,8 @@ public class MainController{
         private TableView<FxDocument> documentTableView;
         private ObservableList<FxDocument> fxDocumentList;
 
+        private FxDocument lastSelectedItem;
+
         BindService(TableView<FxDocument> documentTableView,ObservableList<FxDocument> fxDocumentList) {
             this.documentTableView = documentTableView;
             this.fxDocumentList = fxDocumentList;
@@ -369,8 +369,14 @@ public class MainController{
                 @Override
                 public void changed(ObservableValue<? extends FxDocument> observable, FxDocument oldValue, FxDocument newValue) {
                     if (newValue != null) {
-                        initUpdateTextArea(contentTextAreaUpdate, newValue);
+                        //避免同步后刷新界面时刷新"更新文本框"
+                        if (lastSelectedItem == null){
+                            initUpdateTextArea(contentTextAreaUpdate, newValue);
+                        }else if (!StringUtils.equals(newValue.getId(), lastSelectedItem.getId())){
+                            initUpdateTextArea(contentTextAreaUpdate, newValue);
+                        }
                         initWebView(webView, newValue);
+                        lastSelectedItem = newValue;
                     }
                 }
             });
@@ -414,19 +420,114 @@ public class MainController{
                         changeInputMethod();
                     }
                 }
-            });
-            contentTextAreaSave.setOnKeyPressed(new EventHandler<KeyEvent>() {
+        });
+        contentTextAreaSave.setOnKeyPressed(new EventHandler<KeyEvent>() {
                 @Override
                 public void handle(KeyEvent event) {
                     if (event.getCode() == KeyCode.ESCAPE)
                         focusTo(documentTableView);
                 }
             });
-            contentTextAreaUpdate.setOnKeyPressed(new EventHandler<KeyEvent>() {
+        contentTextAreaUpdate.setOnKeyPressed(new EventHandler<KeyEvent>() {
                 @Override
                 public void handle(KeyEvent event) {
-                    if (event.getCode() == KeyCode.ESCAPE)
+                    if (event.getCode() == KeyCode.ESCAPE){
                         focusTo(documentTableView);
+                    }else if (event.isControlDown()&& event.getCode() == KeyCode.R){
+                        int caretPosition = contentTextAreaUpdate.getCaretPosition();
+                        F.logger.info("caretPosition: "+caretPosition);
+                        String text = contentTextAreaUpdate.getText();
+                        if (isLineHasStrike(caretPosition, text)){
+                            text = removeStrikeTagForLineAt(caretPosition,text);
+                        }else {
+                            text = insertStrikeTagForLineAt(caretPosition, text);
+                        }
+                        contentTextAreaUpdate.setText(text);
+                        KeyEvent eventToSave = new KeyEvent(event.getSource(),
+                                event.getTarget(),
+                                event.getEventType(),
+                                event.getCharacter(),
+                                event.getText(),
+                                KeyCode.S,
+                                false,
+                                true,
+                                false,
+                                false);
+                        modify(eventToSave);
+                    }
+                }
+
+                private boolean isLineHasStrike(int caretPosition, String text){
+                    char[] chars = (text+"\n").toCharArray();
+                    int start = getLineStart(caretPosition, chars);
+                    int end = getLineEnd(caretPosition, chars);
+                    String substring = String.valueOf(chars).substring(start, end+1);
+                    System.out.println(substring);
+                    return substring.contains(" <strike>") && substring.contains("</strike>");
+                }
+                private int getLineStart(int caretPosition, char[] chars){
+                    int start = caretPosition;
+                    while (chars[start]!='-'){
+                        if (start>0){
+                            start--;
+                        }else {
+                            break;
+                        }
+                    }
+                    start++;
+                    return start;
+                }
+                private int getLineEnd(int caretPosition, char[] chars){
+                    int end = caretPosition;
+                    while (chars[end]!='\n'){
+                        if (end<chars.length-1){
+                            end++;
+                        }else{
+                            break;
+                        }
+                    }
+                    end--;
+                    return end;
+                }
+                private String removeStrikeTagForLineAt(int caretPosition, String text){
+                    StringBuilder result = new StringBuilder();
+                    char[] chars = (text+"\n").toCharArray();
+
+                    int start = getLineStart(caretPosition, chars);
+                    int end = getLineEnd(caretPosition, chars);
+
+                    String substring = String.valueOf(chars).substring(start, end+1);
+                    if (substring.contains(" <strike>")&&substring.contains("</strike>")){
+                        substring = substring.replace(" <strike>","");
+                        substring = substring.replace("</strike>","");
+                    }
+
+                    result.append(text, 0, start);
+                    result.append(substring);
+                    result.append(text, end+1, text.length());
+
+                    return result.toString();
+                }
+                private String insertStrikeTagForLineAt(int caretPosition, String text) {
+                    StringBuilder result = new StringBuilder();
+                    char[] chars = (text+"\n").toCharArray();
+
+                    int start = getLineStart(caretPosition, chars);
+                    int end = getLineEnd(caretPosition, chars);
+
+                    int index = 0;
+                    for (char aChar :chars) {
+                        if (index==start){
+                            result.append(" <strike>");
+                        }
+                        result.append(aChar);
+                        if (index==end){
+                            result.append("</strike>");
+                        }
+                        index++;
+                    }
+
+                    return result.substring(0,result.length()-1);
                 }
             });
         }

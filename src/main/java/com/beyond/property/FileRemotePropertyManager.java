@@ -2,6 +2,7 @@ package com.beyond.property;
 
 import com.beyond.RemoteBase;
 import com.beyond.entity.FileInfo;
+import com.beyond.exception.NoInternetException;
 import com.beyond.exception.RemotePullException;
 import com.beyond.f.F;
 import org.apache.commons.lang3.StringUtils;
@@ -18,6 +19,7 @@ import org.apache.jackrabbit.webdav.client.methods.HttpMkcol;
 
 import java.io.*;
 import java.net.URI;
+import java.net.UnknownHostException;
 import java.util.Map;
 
 
@@ -71,8 +73,12 @@ public class FileRemotePropertyManager extends RemoteBase implements PropertyMan
             objectInputStream = new ObjectInputStream(byteArrayInputStream);
             fileInfo = (FileInfo) objectInputStream.readObject();
         } catch (IOException | ClassNotFoundException e) {
-            F.logger.info(e.getMessage());
-            throw new RemotePullException();
+            F.logger.info(e.getMessage(),e);
+            if (e instanceof UnknownHostException){
+                throw new NoInternetException();
+            }else {
+                throw new RemotePullException();
+            }
         } finally {
             try {
                 if (objectInputStream != null) {
