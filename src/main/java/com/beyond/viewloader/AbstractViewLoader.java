@@ -2,10 +2,12 @@ package com.beyond.viewloader;
 
 import com.beyond.ApplicationContext;
 import com.beyond.MainApplication;
+import javafx.event.EventHandler;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.stage.Stage;
+import javafx.stage.WindowEvent;
 
 import java.io.IOException;
 import java.net.URL;
@@ -14,7 +16,7 @@ import java.net.URL;
  * @author beyondlov1
  * @date 2018/11/03
  */
-public abstract class AbstractViewLoader implements ViewLoader{
+public abstract class AbstractViewLoader implements ViewLoader {
 
     private Stage stage;
 
@@ -24,7 +26,7 @@ public abstract class AbstractViewLoader implements ViewLoader{
 
     protected ApplicationContext context;
 
-    public AbstractViewLoader(ApplicationContext context){
+    public AbstractViewLoader(ApplicationContext context) {
         this.context = context;
     }
 
@@ -37,13 +39,13 @@ public abstract class AbstractViewLoader implements ViewLoader{
 
     @Override
     public void load() throws IOException {
-        if (stage==null){
+        if (stage == null) {
             stage = new Stage();
         }
         FXMLLoader fxmlLoader = new FXMLLoader();
         URL resource = MainApplication.class.getClassLoader().getResource(location);
         fxmlLoader.setLocation(resource);
-        if (controller!=null){
+        if (controller != null) {
             fxmlLoader.setController(controller);
         }
         Parent parent = fxmlLoader.load();
@@ -54,8 +56,11 @@ public abstract class AbstractViewLoader implements ViewLoader{
     }
 
     @Override
-    public void close(){
-        stage.getOnCloseRequest().handle(null);
+    public void close() {
+        EventHandler<WindowEvent> onCloseRequest = stage.getOnCloseRequest();
+        if (onCloseRequest != null) {
+            onCloseRequest.handle(null);
+        }
         stage.close();
     }
 

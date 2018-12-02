@@ -153,8 +153,8 @@ public class LoginController {
             }
 
             private void switchView() throws IOException {
-                context.loadView(MainViewLoader.class);
                 context.closeView(LoginViewLoader.class);
+                context.loadView(MainViewLoader.class);
             }
 
             private void loginFail(){

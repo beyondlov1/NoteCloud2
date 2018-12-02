@@ -17,5 +17,6 @@ public class LoginViewLoader extends AbstractViewLoader {
 
     @Override
     protected void afterLoad() {
+
     }
 }
