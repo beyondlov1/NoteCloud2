@@ -41,9 +41,10 @@ public class FailedTodoQueue implements Runnable {
     }
 
     public void add(Todo todo) {
-        if (!verifyFailCount(todo)) return;
+        if (verifyFailCount(todo)) {
+            isNeedRun.set(true);
+        }
         queue.add(todo);
-        isNeedRun.set(true);
     }
 
     private boolean verifyFailCount(Todo todo) {

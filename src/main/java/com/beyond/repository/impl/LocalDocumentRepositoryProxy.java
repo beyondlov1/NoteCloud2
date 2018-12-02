@@ -29,8 +29,6 @@ public class LocalDocumentRepositoryProxy implements InvocationHandler{
     @Override
     public synchronized Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
         if (method.getName().startsWith("add")||method.getName().startsWith("delete")||method.getName().startsWith("update")){
-            localDocumentRepository.lock();
-
             Object invoke = method.invoke(localDocumentRepository, args);
 
             //添加每个document的版本信息
@@ -57,15 +55,11 @@ public class LocalDocumentRepositoryProxy implements InvocationHandler{
             propertiesMap.put("_modifyIds",propertiesMap.getOrDefault("_modifyIds","")+((Document)args[0]).getId()+",");
             localPropertyManager.batchSet(propertiesMap);
 
-            localDocumentRepository.unlock();
             return invoke;
         }
 
         if ("save".equals(method.getName())){
-            localDocumentRepository.lock();
-            Object result = method.invoke(localDocumentRepository, args);
-            localDocumentRepository.unlock();
-            return result;
+            return method.invoke(localDocumentRepository, args);
         }
         return method.invoke(localDocumentRepository, args);
     }

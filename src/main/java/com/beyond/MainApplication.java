@@ -3,10 +3,7 @@ package com.beyond;
 import com.beyond.entity.User;
 import com.beyond.f.F;
 import com.beyond.service.*;
-import com.beyond.service.impl.AsynRemindServiceImpl;
-import com.beyond.service.impl.ConfigServiceImpl;
-import com.beyond.service.impl.LoginServiceNutStoreImpl;
-import com.beyond.service.impl.SyncRemindServiceImpl;
+import com.beyond.service.impl.*;
 import com.beyond.viewloader.*;
 import javafx.application.Application;
 import javafx.stage.Stage;
@@ -38,10 +35,19 @@ public class MainApplication extends Application {
             context.setConfigService(configService);
         }
         configService.loadPropertiesTo(F.class);
+        //特殊处理
+        F.DEFAULT_REMOTE_PATH = F.DEFAULT_REMOTE_ROOT_PATH + F.DEFAULT_REMOTE_RELATIVE_PATH;
+        F.DEFAULT_REMOTE_FILE_INFO_PATH = F.DEFAULT_REMOTE_ROOT_PATH + F.DEFAULT_REMOTE_FILE_INFO_RELATIVE_PATH;
+        F.DEFAULT_LOGIN_PATH = F.DEFAULT_REMOTE_ROOT_PATH;
+
     }
     private void createContext() {
         context.setApplication(this);
-        context.setLoginService(new LoginServiceNutStoreImpl());
+        if (F.DEFAULT_REMOTE_PATH.contains("teracloud")){
+            context.setLoginService(new LoginServiceTeraImpl());
+        }else {
+            context.setLoginService(new LoginServiceNutStoreImpl());
+        }
         context.setAsynMergeService(new AsynMergeService(context));
         context.setAuthService(new AuthService(context));
         context.setSyncRemindService(new SyncRemindServiceImpl(context.getAuthService()));

@@ -5,6 +5,7 @@ import com.beyond.f.F;
 import com.beyond.service.*;
 import com.beyond.utils.*;
 import com.beyond.viewloader.ConfigViewLoader;
+import com.beyond.viewloader.LoginViewLoader;
 import com.beyond.viewloader.MainViewLoader;
 import javafx.beans.property.Property;
 import javafx.beans.value.ChangeListener;
@@ -252,7 +253,7 @@ public class MainController{
         context.closeView(MainViewLoader.class);
 
         //转到登录页面
-        context.loadView(ConfigViewLoader.class);
+        context.loadView(LoginViewLoader.class);
     }
 
     public void refresh(){
@@ -273,7 +274,8 @@ public class MainController{
         documentTableView.setItems(fxDocuments);
         documentTableView.refresh();
         if (selectedItem != null) {
-            documentTableView.getSelectionModel().select(ListUtils.getFxDocumentIndexById(fxDocuments, selectedItem.getId()));
+            int selectItemIndex = ListUtils.getFxDocumentIndexById(fxDocuments, selectedItem.getId());
+            documentTableView.getSelectionModel().select(selectItemIndex ==-1?0: selectItemIndex);
         } else {
             if (!documentTableView.getItems().isEmpty()) {
                 documentTableView.getSelectionModel().select(0);

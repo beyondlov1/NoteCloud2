@@ -47,7 +47,7 @@ public class FileRemotePropertyManager extends RemoteBase implements PropertyMan
     @Override
     public String getProperty(String key) {
         pull();
-        return fileInfo.getProperties().get(key);
+        return fileInfo.getProperties().getOrDefault(key,"");
     }
 
     @Override

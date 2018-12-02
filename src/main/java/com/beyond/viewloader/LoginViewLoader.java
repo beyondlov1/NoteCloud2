@@ -17,13 +17,5 @@ public class LoginViewLoader extends AbstractViewLoader {
 
     @Override
     protected void afterLoad() {
-        Stage stage = this.getStage();
-        AsynMergeService asynMergeService = this.getContext().getAsynMergeService();
-        stage.setOnCloseRequest(new EventHandler<WindowEvent>() {
-            @Override
-            public void handle(WindowEvent event) {
-                asynMergeService.stopSynchronize();
-            }
-        });
     }
 }

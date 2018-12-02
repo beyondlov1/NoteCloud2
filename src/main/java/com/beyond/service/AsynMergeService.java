@@ -18,10 +18,10 @@ public class AsynMergeService {
         this.mergeService = new MergeService(F.DEFAULT_LOCAL_PATH,
                 F.DEFAULT_REMOTE_PATH,
                 F.DEFAULT_TMP_PATH,context);
-        this.timer = new Timer();
     }
 
     public void startSynchronize() {
+        this.timer = new Timer();
         TimerTask timerTask = new TimerTask() {
             @Override
             public void run() {

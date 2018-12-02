@@ -78,8 +78,10 @@ public class MainService {
         return (String) id;
     }
     private Serializable addWithoutEvent(Document document) {
+        defaultLocalRepository.lock();
         Serializable id = defaultLocalRepository.add(document);
         defaultLocalRepository.save();
+        defaultLocalRepository.unlock();
 
         //同步fxDocument
         FxDocument fxDocument = new FxDocument(document);
@@ -139,11 +141,15 @@ public class MainService {
             return;
         }
 
+        defaultLocalRepository.lock();
         defaultLocalRepository.delete(foundDocument);
         defaultLocalRepository.save();
+        defaultLocalRepository.unlock();
 
+        deletedLocalRepository.lock();
         deletedLocalRepository.add(foundDocument);
         deletedLocalRepository.save();
+        deletedLocalRepository.unlock();
 
         //同步fxDocument
         int index = -1;
@@ -193,8 +199,10 @@ public class MainService {
         });
     }
     public Serializable updateWithoutEvent(Document document) {
+        defaultLocalRepository.lock();
         Serializable id = defaultLocalRepository.update(document);
         defaultLocalRepository.save();
+        defaultLocalRepository.unlock();
 
         //同步fxDocument
         int index = -1;

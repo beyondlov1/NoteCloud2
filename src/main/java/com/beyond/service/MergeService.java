@@ -49,22 +49,29 @@ public class MergeService {
             F.logger.info("merge begin");
             remoteRepository.lock();
             List<Document> mergedList = merge();
+            //判断同步中途是否有其他操作，如果有则重新合并
+            String lastModifyTime = localPropertyManager.getProperty("_lastModifyTime");
+            if (!localPropertiesMap.getOrDefault("_lastModifyTime", "").equals(lastModifyTime)) {
+                F.logger.info("try merge again");
+                handle();
+            }
             updateProperty(localPropertiesMap, remotePropertiesMap);
             updateRepository(mergedList);
             remoteRepository.unlock();
             onSuccess();
-        }catch (Exception e){
+        } catch (Exception e) {
             F.logger.info(e.getMessage());
             onFail(e);
             throw new RuntimeException("合并失败");
         }
 
     }
+
     private boolean isNeedMerge(Map<String, String> localPropertiesMap, Map<String, String> remotePropertiesMap) {
         String localLastModifyTime = localPropertiesMap.getOrDefault("_lastModifyTime", "0");
         String remoteLastModifyTime = remotePropertiesMap.getOrDefault("_lastModifyTime", "0");
-        F.logger.info("localLastModifyTime"+localLastModifyTime);
-        F.logger.info("remoteLastModifyTime"+remoteLastModifyTime);
+        F.logger.info("localLastModifyTime" + localLastModifyTime);
+        F.logger.info("remoteLastModifyTime" + remoteLastModifyTime);
         if (!StringUtils.equals(localLastModifyTime, "")
                 && !StringUtils.equals(localLastModifyTime, "0")
                 && StringUtils.equals(localLastModifyTime, remoteLastModifyTime)) {
@@ -81,6 +88,7 @@ public class MergeService {
         }
         return true;
     }
+
     private List<Document> merge() {
         //获取本地和远程的文档
         localRepository.pull();
@@ -151,10 +159,12 @@ public class MergeService {
 
         return result;
     }
+
     private void updateRepository(List<Document> mergedList) {
         remoteRepository.save(mergedList);
         localRepository.save(mergedList);
     }
+
     private void updateProperty(Map<String, String> localPropertiesMap, Map<String, String> remotePropertiesMap) {
         try {
             //设置属性
@@ -166,7 +176,7 @@ public class MergeService {
                 remoteLocalPropertyManager.set("_lastModifyTime", currentTime);
             } else {
                 String remoteTime = remotePropertiesMap.getOrDefault("_lastModifyTime", "");
-                if (StringUtils.isBlank(remoteTime)||"0".equals(remoteTime)) {
+                if (StringUtils.isBlank(remoteTime) || "0".equals(remoteTime)) {
                     remoteTime = currentTime;
                 }
                 localPropertyManager.set("_lastModifyTime", remoteTime);
@@ -181,19 +191,21 @@ public class MergeService {
             F.logger.info(e.getMessage());
         }
     }
+
     private void onSuccess() {
         context.refresh();
         F.logger.info("merge success");
     }
+
     private void onFail(Exception e) {
-        if (e instanceof RemotePullException){
+        if (e instanceof RemotePullException) {
             localRepository.pull();
             List<Document> localList = localRepository.selectAll();
             updateRepository(localList);
 
             Map<String, String> localPropertiesMap = localPropertyManager.getAllProperties();
             Map<String, String> remotePropertiesMap = remotePropertyManager.getAllProperties();
-            updateProperty(localPropertiesMap,remotePropertiesMap);
+            updateProperty(localPropertiesMap, remotePropertiesMap);
         }
         F.logger.info("merge fail");
     }

@@ -55,6 +55,7 @@ public abstract class AbstractViewLoader implements ViewLoader{
 
     @Override
     public void close(){
+        stage.getOnCloseRequest().handle(null);
         stage.close();
     }
 
