@@ -5,6 +5,7 @@ import com.beyond.f.F;
 import com.beyond.service.*;
 import com.beyond.service.impl.*;
 import com.beyond.viewloader.*;
+import com.sun.org.apache.bcel.internal.generic.FLOAD;
 import javafx.application.Application;
 import javafx.stage.Stage;
 import org.apache.commons.lang3.StringUtils;
@@ -78,17 +79,25 @@ public class MainApplication extends Application {
         authViewLoader.setController(new AuthController(context));
         context.addViewLoader(authViewLoader);
 
+        ViewLoader floatViewLoader = new FloatViewLoader(context);
+        floatViewLoader.setLocation("views/float.fxml");
+        floatViewLoader.setController(new FloatController(context));
+        context.addViewLoader(floatViewLoader);
+
         context.setMainController(mainController);
 
     }
     private void showStartStage() throws Exception {
-
         User user = new User(
                 F.configService.getProperty("username"),
                 F.configService.getProperty("password"));
         if (isLogin(user)) {
             loadConfig();
-            context.loadView(MainViewLoader.class);
+            if ("true".equals(F.IS_FLOAT_PRIMARY)){
+                context.loadView(FloatViewLoader.class);
+            }else {
+                context.loadView(MainViewLoader.class);
+            }
         } else {
             context.loadView(LoginViewLoader.class);
         }

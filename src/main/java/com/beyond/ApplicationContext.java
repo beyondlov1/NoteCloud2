@@ -4,8 +4,11 @@ import com.beyond.entity.Reminder;
 import com.beyond.service.*;
 import com.beyond.service.impl.ConfigServiceImpl;
 import com.beyond.service.impl.SyncRemindServiceImpl;
+import com.beyond.viewloader.FloatViewLoader;
+import com.beyond.viewloader.MainViewLoader;
 import com.beyond.viewloader.ViewLoader;
 import javafx.application.Platform;
+import javafx.stage.Stage;
 
 import java.io.IOException;
 import java.util.*;
@@ -16,8 +19,10 @@ import java.util.*;
  */
 public class ApplicationContext {
 
+    //attribute
     private Map<String,Object> map;
 
+    //service
     private MainService mainService;
     private SyncRemindService<Reminder> syncRemindService;
     private AsynRemindService<Reminder> asynRemindService;
@@ -27,17 +32,26 @@ public class ApplicationContext {
     private AuthService authService;
     private FailedTodoService failedTodoService;
 
+    //application
     private MainApplication application;
 
+    //controller
     private MainController mainController;
 
+    //observe
     private Map<String,Observable> observableMap;
+
+    //viewloader
     private Map<Class, ViewLoader> viewLoaderMap;
+
+    //showed stages
+    private Map<Class, Stage> currentStageMap;
 
     public ApplicationContext() {
         this.map = new HashMap<>();
         this.observableMap = new HashMap<>();
         this.viewLoaderMap = new HashMap<>();
+        this.currentStageMap = new HashMap<>();
     }
 
     public void addObservable(String key,Observable observable){
@@ -133,17 +147,26 @@ public class ApplicationContext {
         this.mainController = mainController;
     }
 
+    public MainController getMainController() {
+        return mainController;
+    }
+
     public void loadView(Class<? extends ViewLoader> viewLoaderClass) throws IOException {
-        ViewLoader viewLoader = getViewLoader(viewLoaderClass);
+        ViewLoader viewLoader = this.getViewLoader(viewLoaderClass);
         viewLoader.load();
+        currentStageMap.put(viewLoaderClass,viewLoader.getStage());
     }
 
     public void closeView(Class<? extends ViewLoader> viewLoaderClass) {
         ViewLoader viewLoader = getViewLoader(viewLoaderClass);
         viewLoader.close();
+        currentStageMap.remove(viewLoaderClass);
     }
 
     public void refresh(){
+        if (!this.currentStageMap.containsKey(MainViewLoader.class)){
+            return;
+        }
         Platform.runLater(new Runnable(){
             @Override
             public void run() {
@@ -166,5 +189,16 @@ public class ApplicationContext {
 
     public void setFailedTodoService(FailedTodoService failedTodoService) {
         this.failedTodoService = failedTodoService;
+    }
+
+    public void addCurrentStage(Class<? extends ViewLoader> viewLoaderClass, Stage stage) {
+        this.currentStageMap.put(viewLoaderClass,stage);
+    }
+
+    public void removeCurrentStage(Class<? extends ViewLoader> viewLoaderClass) {
+        this.currentStageMap.remove(viewLoaderClass);
+    }
+    public Map<Class, Stage> getCurrentStageMap() {
+        return currentStageMap;
     }
 }

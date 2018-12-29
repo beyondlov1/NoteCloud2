@@ -5,6 +5,7 @@ import com.beyond.f.F;
 import com.beyond.service.*;
 import com.beyond.utils.*;
 import com.beyond.viewloader.ConfigViewLoader;
+import com.beyond.viewloader.FloatViewLoader;
 import com.beyond.viewloader.LoginViewLoader;
 import com.beyond.viewloader.MainViewLoader;
 import javafx.beans.property.Property;
@@ -51,7 +52,7 @@ public class MainController{
     private TextArea contentTextAreaUpdate;
 
     @FXML
-    private TextArea contentTextAreaSave;
+    public TextArea contentTextAreaSave;
 
 
     //展示组件
@@ -254,6 +255,15 @@ public class MainController{
 
         //转到登录页面
         context.loadView(LoginViewLoader.class);
+    }
+
+    public void openFloatWindow() throws IOException {
+        context.loadView(FloatViewLoader.class);
+    }
+
+    public void switchFloatWindow() throws IOException {
+        context.loadView(FloatViewLoader.class);
+        context.closeView(MainViewLoader.class);
     }
 
     public void refresh(){

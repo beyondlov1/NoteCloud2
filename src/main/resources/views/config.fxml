@@ -38,6 +38,11 @@
                   <CheckBox fx:id="microsoftEventSwitch" layoutX="251.0" layoutY="14.0" mnemonicParsing="false" onAction="#accessMicrosoftEvent" text="开启事件同步" />
                </children>
             </AnchorPane>
+            <AnchorPane layoutX="10.0" layoutY="283.0" prefHeight="200.0" prefWidth="200.0">
+               <children>
+                  <CheckBox fx:id="floatPrimarySwitch" layoutX="251.0" layoutY="14.0" mnemonicParsing="false" text="打开时只显示悬浮窗" />
+               </children>
+            </AnchorPane>
          </children>
       </VBox>
    </children>

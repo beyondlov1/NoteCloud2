@@ -18,5 +18,7 @@ public interface ViewLoader {
 
     void setStage(Stage stage);
 
+    Stage getStage();
+
     void setContext(ApplicationContext context);
 }

@@ -11,6 +11,8 @@ public class FailedTodoService {
 
     private FailedTodoQueue queue;
 
+    private boolean running;
+
     public FailedTodoService(ApplicationContext context){
         queue = new FailedTodoQueue(context);
     }
@@ -19,6 +21,7 @@ public class FailedTodoService {
         queue.init();
         Thread thread = new Thread(queue);
         thread.start();
+        this.setRunning(true);
     }
 
     public void add(Todo todo){
@@ -27,6 +30,14 @@ public class FailedTodoService {
 
     public void stop(){
         queue.stop();
+        this.setRunning(false);
     }
 
+    public boolean isRunning() {
+        return running;
+    }
+
+    public void setRunning(boolean running) {
+        this.running = running;
+    }
 }

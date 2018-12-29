@@ -24,18 +24,7 @@ public class MainViewLoader extends AbstractViewLoader {
         startSynchronize();
         startFailedTodoService();
 
-        stopOnClose();
-    }
-
-    private void stopOnClose() {
-        Stage stage = this.getStage();
-        stage.setOnCloseRequest(new EventHandler<WindowEvent>() {
-            @Override
-            public void handle(WindowEvent event) {
-                stopSynchronize();
-                stopFailedTodoService();
-            }
-        });
+        this.stopOnClose();
     }
 
     private void startSynchronize() {
@@ -43,20 +32,16 @@ public class MainViewLoader extends AbstractViewLoader {
         AsynMergeService asynMergeService = context.getAsynMergeService();
 
         if (F.SYNC_TYPE == SyncType.LOOP) {
-            asynMergeService.startSynchronize();
+            if (asynMergeService.getTimer() == null) {
+                asynMergeService.startSynchronize();
+            }
         }
-    }
-    private void stopSynchronize() {
-        AsynMergeService asynMergeService = context.getAsynMergeService();
-        asynMergeService.stopSynchronize();
     }
 
     private void startFailedTodoService() {
         FailedTodoService failedTodoService = context.getFailedTodoService();
-        failedTodoService.init();
-    }
-    private void stopFailedTodoService() {
-        FailedTodoService failedTodoService = context.getFailedTodoService();
-        failedTodoService.stop();
+        if (!failedTodoService.isRunning()) {
+            failedTodoService.init();
+        }
     }
 }

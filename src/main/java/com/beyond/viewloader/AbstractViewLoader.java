@@ -1,7 +1,9 @@
 package com.beyond.viewloader;
 
 import com.beyond.ApplicationContext;
+import com.beyond.FailedTodoService;
 import com.beyond.MainApplication;
+import com.beyond.service.AsynMergeService;
 import javafx.event.EventHandler;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
@@ -65,6 +67,31 @@ public abstract class AbstractViewLoader implements ViewLoader {
     }
 
     protected abstract void afterLoad();
+
+    protected void stopOnClose() {
+        Stage stage = this.getStage();
+        Class<? extends ViewLoader> viewLoaderClass = this.getClass();
+        stage.setOnCloseRequest(new EventHandler<WindowEvent>() {
+            @Override
+            public void handle(WindowEvent event) {
+                context.removeCurrentStage(viewLoaderClass);
+                if (context.getCurrentStageMap().isEmpty()) {
+                    stopSynchronize();
+                    stopFailedTodoService();
+                }
+            }
+        });
+    }
+
+    private void stopSynchronize() {
+        AsynMergeService asynMergeService = context.getAsynMergeService();
+        asynMergeService.stopSynchronize();
+    }
+
+    private void stopFailedTodoService() {
+        FailedTodoService failedTodoService = context.getFailedTodoService();
+        failedTodoService.stop();
+    }
 
     public Object getController() {
         return controller;

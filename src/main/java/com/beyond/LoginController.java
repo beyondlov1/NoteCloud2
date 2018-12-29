@@ -5,6 +5,7 @@ import com.beyond.f.F;
 import com.beyond.service.ConfigService;
 import com.beyond.service.impl.ConfigServiceImpl;
 import com.beyond.service.LoginService;
+import com.beyond.viewloader.FloatViewLoader;
 import com.beyond.viewloader.LoginViewLoader;
 import com.beyond.viewloader.MainViewLoader;
 import javafx.concurrent.Service;
@@ -154,7 +155,11 @@ public class LoginController {
 
             private void switchView() throws IOException {
                 context.closeView(LoginViewLoader.class);
-                context.loadView(MainViewLoader.class);
+                if ("true".equals(F.IS_FLOAT_PRIMARY)){
+                    context.loadView(FloatViewLoader.class);
+                }else {
+                    context.loadView(MainViewLoader.class);
+                }
             }
 
             private void loginFail(){

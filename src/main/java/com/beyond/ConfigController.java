@@ -28,6 +28,8 @@ public class ConfigController {
     private TextField docSuffix;
     @FXML
     private CheckBox microsoftEventSwitch;
+    @FXML
+    private CheckBox floatPrimarySwitch;
 
     private ConfigService configService;
 
@@ -80,6 +82,11 @@ public class ConfigController {
             F.DOC_SUFFIX = docSuffix.getText();
             configService.setProperty("docSuffix", F.DOC_SUFFIX);
         }
+        if (floatPrimarySwitch.isSelected()){
+            configService.setProperty("isFloatPrimary","true");
+        }else {
+            configService.setProperty("isFloatPrimary","false");
+        }
         configService.storeProperties();
     }
     private void close(){
@@ -99,5 +106,4 @@ public class ConfigController {
             F.logger.info(e.getMessage());
         }
     }
-
 }

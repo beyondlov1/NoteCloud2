@@ -44,5 +44,7 @@ public class F {
     public static String REFRESH_TOKEN = "";
     public static String EXPIRE_DATE = "";
     public static String ACCESS_TOKEN = "";
+
+    public static String IS_FLOAT_PRIMARY = "false";
     public static final ConfigService configService = new ConfigServiceImpl(F.CONFIG_PATH);
 }

@@ -17,7 +17,7 @@
 <?import javafx.scene.text.Text?>
 <?import javafx.scene.web.WebView?>
 
-<AnchorPane xmlns="http://javafx.com/javafx/8.0.172-ea" xmlns:fx="http://javafx.com/fxml/1">
+<AnchorPane xmlns="http://javafx.com/javafx/8.0.112" xmlns:fx="http://javafx.com/fxml/1">
    <children>
       <SplitPane dividerPositions="0.5" orientation="VERTICAL" prefHeight="673.1875" prefWidth="1241.0" stylesheets="@../css/main.css" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
         <items>
@@ -32,6 +32,12 @@
                     <MenuItem fx:id="logout" mnemonicParsing="false" onAction="#logout" text="注销" />
                   </items>
                 </Menu>
+                  <Menu mnemonicParsing="false" text="悬浮窗">
+                    <items>
+                        <MenuItem fx:id="floatSwitchMenu" mnemonicParsing="false" onAction="#switchFloatWindow" text="切换" />
+                        <MenuItem fx:id="floatMenu" mnemonicParsing="false" onAction="#openFloatWindow" text="打开" />
+                    </items>
+                  </Menu>
               </menus>
             </MenuBar>
             <HBox fx:id="container" prefHeight="661.0" prefWidth="1241.0">
