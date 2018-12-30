@@ -9,6 +9,8 @@ import javafx.event.EventHandler;
 import javafx.stage.Stage;
 import javafx.stage.WindowEvent;
 
+import java.io.IOException;
+
 /**
  * @author beyondlov1
  * @date 2018/11/03
@@ -25,6 +27,25 @@ public class MainViewLoader extends AbstractViewLoader {
         startFailedTodoService();
 
         this.stopOnClose();
+    }
+
+    //关闭时打开悬浮窗
+    protected void stopOnClose() {
+        Stage stage = this.getStage();
+        Class<? extends ViewLoader> viewLoaderClass = this.getClass();
+        stage.setOnCloseRequest(new EventHandler<WindowEvent>() {
+            @Override
+            public void handle(WindowEvent event) {
+                try {
+                    context.removeCurrentStage(viewLoaderClass);
+                    if (!context.getCurrentStageMap().containsKey(FloatViewLoader.class)) {
+                        context.loadView(FloatViewLoader.class);
+                    }
+                } catch (IOException e) {
+                    F.logger.error("打开页面失败",e);
+                }
+            }
+        });
     }
 
     private void startSynchronize() {

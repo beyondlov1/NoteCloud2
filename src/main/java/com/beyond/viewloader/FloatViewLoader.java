@@ -6,13 +6,17 @@ import com.beyond.MainApplication;
 import com.beyond.f.F;
 import com.beyond.f.SyncType;
 import com.beyond.service.AsynMergeService;
+import javafx.event.Event;
 import javafx.event.EventHandler;
+import javafx.event.EventType;
 import javafx.fxml.FXMLLoader;
 import javafx.geometry.Rectangle2D;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
+import javafx.scene.input.MouseEvent;
 import javafx.stage.Screen;
 import javafx.stage.Stage;
+import javafx.stage.StageStyle;
 import javafx.stage.WindowEvent;
 
 import java.io.IOException;
@@ -35,6 +39,7 @@ public class FloatViewLoader extends AbstractViewLoader {
         Object controller = this.getController();
         if (stage == null) {
             stage = new Stage();
+            stage.initStyle(StageStyle.TRANSPARENT);
             this.setStage(stage);
         }
         FXMLLoader fxmlLoader = new FXMLLoader();
@@ -46,8 +51,9 @@ public class FloatViewLoader extends AbstractViewLoader {
         Parent parent = fxmlLoader.load();
         Screen screen = Screen.getPrimary();
         Rectangle2D bounds = screen.getBounds();
-        stage.setX(bounds.getWidth()-280);
+        stage.setX(bounds.getWidth());
         stage.setY(bounds.getHeight()-475);
+        stage.setOpacity(0.3);
         stage.setScene(new Scene(parent));
         stage.setTitle("NoteCloud");
         stage.show();
@@ -56,31 +62,57 @@ public class FloatViewLoader extends AbstractViewLoader {
 
     @Override
     protected void afterLoad() {
-        this.getStage().setAlwaysOnTop(true);
+        Stage stage = this.getStage();
+        stage.setAlwaysOnTop(true);
 
-        startSynchronize();
-        startFailedTodoService();
+        this.startSynchronize();
+        this.startFailedTodoService();
 
+        this.initEventHandler(stage);
         this.stopOnClose();
     }
 
-    protected void stopOnClose() {
-        Stage stage = this.getStage();
-        Class<? extends ViewLoader> viewLoaderClass = this.getClass();
-        stage.setOnCloseRequest(new EventHandler<WindowEvent>() {
+    private void initEventHandler(Stage stage) {
+        stage.getScene().setOnMouseEntered(new EventHandler<MouseEvent>() {
             @Override
-            public void handle(WindowEvent event) {
-                try {
-                    context.removeCurrentStage(viewLoaderClass);
-                    if (!context.getCurrentStageMap().containsKey(MainViewLoader.class)) {
-                        context.loadView(MainViewLoader.class);
-                    }
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
+            public void handle(MouseEvent event) {
+                Screen screen = Screen.getPrimary();
+                Rectangle2D bounds = screen.getBounds();
+                stage.setX(bounds.getWidth()-290-26);
+                stage.setOpacity(1);
+                stage.requestFocus();
+            }
+        });
+
+        stage.getScene().setOnMouseExited(new EventHandler<MouseEvent>() {
+            @Override
+            public void handle(MouseEvent event) {
+                Screen screen = Screen.getPrimary();
+                Rectangle2D bounds = screen.getBounds();
+                stage.setX(bounds.getWidth());
+                stage.setOpacity(0.3);
             }
         });
     }
+
+    //关闭时打开主页面
+//    protected void stopOnClose() {
+//        Stage stage = this.getStage();
+//        Class<? extends ViewLoader> viewLoaderClass = this.getClass();
+//        stage.setOnCloseRequest(new EventHandler<WindowEvent>() {
+//            @Override
+//            public void handle(WindowEvent event) {
+//                try {
+//                    context.removeCurrentStage(viewLoaderClass);
+//                    if (!context.getCurrentStageMap().containsKey(MainViewLoader.class)) {
+//                        context.loadView(MainViewLoader.class);
+//                    }
+//                } catch (IOException e) {
+//                    e.printStackTrace();
+//                }
+//            }
+//        });
+//    }
 
     private void startSynchronize() {
         ApplicationContext context = this.getContext();

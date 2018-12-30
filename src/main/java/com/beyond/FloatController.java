@@ -8,9 +8,13 @@ import com.beyond.entity.Todo;
 import com.beyond.f.F;
 import com.beyond.service.MainService;
 import com.beyond.utils.HtmlUtils;
+import com.beyond.utils.SortUtils;
+import com.beyond.viewloader.FloatViewLoader;
+import com.beyond.viewloader.MainViewLoader;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.geometry.Insets;
+import javafx.scene.control.Button;
 import javafx.scene.control.ListCell;
 import javafx.scene.control.ListView;
 import javafx.scene.control.TextArea;
@@ -45,6 +49,12 @@ public class FloatController {
     @FXML
     private ListView<FxDocument> contentListView;
 
+    @FXML
+    private Button backToMainButton;
+
+    @FXML
+    private Button exitButton;
+
     public FloatController(ApplicationContext context) {
         this.context = context;
     }
@@ -55,6 +65,9 @@ public class FloatController {
     }
 
     private void initListView() {
+        //order
+        SortUtils.sort(this.getFxDocuments(), FxDocument.class, "lastModifyTime", SortUtils.SortType.DESC);
+
         contentListView.setItems(this.getFxDocuments());
         contentListView.setCellFactory(new Callback<ListView<FxDocument>, ListCell<FxDocument>>() {
             @Override
@@ -72,7 +85,7 @@ public class FloatController {
                             }
                             TextFlow textFlow = new TextFlow(text);
                             textFlow.setPadding(new Insets(5, 10, 5, 10));
-                            textFlow.setMaxWidth(250);
+                            textFlow.setPrefWidth(250);
                             setGraphic(textFlow);
                         }else {
                             setGraphic(null);
@@ -160,5 +173,20 @@ public class FloatController {
             textArea.setText(null);
         }
         context.refresh();
+    }
+
+    public void backToMain(){
+        try {
+            if (!context.getCurrentStageMap().containsKey(MainViewLoader.class)){
+                context.loadView(MainViewLoader.class);
+                context.closeView(FloatViewLoader.class);
+            }
+        }catch (Exception e){
+            F.logger.error("加载页面出错",e);
+        }
+    }
+
+    public void exit(){
+        context.closeView(FloatViewLoader.class);
     }
 }

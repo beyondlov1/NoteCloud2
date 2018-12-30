@@ -60,6 +60,9 @@ public class ConfigController {
         if (StringUtils.isNotBlank(F.ACCESS_TOKEN)) {
             microsoftEventSwitch.setSelected(true);
         }
+        if ("true".equalsIgnoreCase(F.IS_FLOAT_PRIMARY)) {
+            floatPrimarySwitch.setSelected(true);
+        }
     }
 
     public void save() {

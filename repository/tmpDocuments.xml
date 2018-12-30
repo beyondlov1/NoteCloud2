@@ -76,21 +76,4 @@ dongtaiwang.com</content>
     <lastModifyTime>2018-12-01 16:27:46.521 UTC</lastModifyTime>
     <version>51</version>
   </document>
-  <document id="9eb2ce4d6f8942ea8ff8de3f0f1ee5b1">
-    <content>天下无贼</content>
-    <createTime>2018-12-29 10:27:47.143 UTC</createTime>
-    <lastModifyTime reference="../createTime"/>
-    <version>1</version>
-  </document>
-  <todo id="bfb41a9d868449399200d92086ae0eba">
-    <content>明天上午十点</content>
-    <createTime>2018-12-29 10:27:55.854 UTC</createTime>
-    <lastModifyTime>2018-12-29 10:27:57.966 UTC</lastModifyTime>
-    <version>3</version>
-    <reminder class="com.beyond.entity.MicrosoftReminder">
-      <eventId>AQMkADAwATYwMAItYzA0OS00NjE1LTAwAi0wMAoARgAAA3ReKIZ-w-ZKgMurvBMuDeAHAEaZl6wLYyVFhABtfIbsR3cAAAIBDQAAAEaZl6wLYyVFhABtfIbsR3cAAl8QSO0AAAA=</eventId>
-      <remindTime>2018-12-30 02:00:00.0 UTC</remindTime>
-      <remoteRemindTime>2018-12-30 02:00:00.0 UTC</remoteRemindTime>
-    </reminder>
-  </todo>
 </documents>
