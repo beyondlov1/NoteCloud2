@@ -39,7 +39,7 @@ public class FloatViewLoader extends AbstractViewLoader {
         Object controller = this.getController();
         if (stage == null) {
             stage = new Stage();
-            stage.initStyle(StageStyle.TRANSPARENT);
+            stage.initStyle(StageStyle.UTILITY);//状态栏不显示图标和窗口不显示装饰不可兼得
             this.setStage(stage);
         }
         FXMLLoader fxmlLoader = new FXMLLoader();
@@ -52,7 +52,7 @@ public class FloatViewLoader extends AbstractViewLoader {
         Screen screen = Screen.getPrimary();
         Rectangle2D bounds = screen.getBounds();
         stage.setX(bounds.getWidth());
-        stage.setY(bounds.getHeight()-475);
+        stage.setY(bounds.getHeight() - 475);
         stage.setOpacity(0.3);
         stage.setScene(new Scene(parent));
         stage.setTitle("NoteCloud");
@@ -78,7 +78,7 @@ public class FloatViewLoader extends AbstractViewLoader {
             public void handle(MouseEvent event) {
                 Screen screen = Screen.getPrimary();
                 Rectangle2D bounds = screen.getBounds();
-                stage.setX(bounds.getWidth()-290-26);
+                stage.setX(bounds.getWidth() - 290 - 35);
                 stage.setOpacity(1);
                 stage.requestFocus();
             }
@@ -102,14 +102,10 @@ public class FloatViewLoader extends AbstractViewLoader {
 //        stage.setOnCloseRequest(new EventHandler<WindowEvent>() {
 //            @Override
 //            public void handle(WindowEvent event) {
-//                try {
 //                    context.removeCurrentStage(viewLoaderClass);
 //                    if (!context.getCurrentStageMap().containsKey(MainViewLoader.class)) {
 //                        context.loadView(MainViewLoader.class);
 //                    }
-//                } catch (IOException e) {
-//                    e.printStackTrace();
-//                }
 //            }
 //        });
 //    }

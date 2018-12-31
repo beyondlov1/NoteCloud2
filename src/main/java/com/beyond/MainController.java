@@ -239,12 +239,12 @@ public class MainController{
         refresh();
     }
 
-    public void openConfig() throws IOException {
+    public void openConfig() {
         F.logger.info("open config");
         context.loadView(ConfigViewLoader.class);
     }
 
-    public void logout() throws IOException {
+    public void logout(){
         F.logger.info("logout");
         //注销
         configService.setProperty("password", "");
@@ -257,11 +257,11 @@ public class MainController{
         context.loadView(LoginViewLoader.class);
     }
 
-    public void openFloatWindow() throws IOException {
+    public void openFloatWindow() {
         context.loadView(FloatViewLoader.class);
     }
 
-    public void switchFloatWindow() throws IOException {
+    public void switchFloatWindow()  {
         context.loadView(FloatViewLoader.class);
         context.closeView(MainViewLoader.class);
     }

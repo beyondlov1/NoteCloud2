@@ -36,13 +36,9 @@ public class MainViewLoader extends AbstractViewLoader {
         stage.setOnCloseRequest(new EventHandler<WindowEvent>() {
             @Override
             public void handle(WindowEvent event) {
-                try {
-                    context.removeCurrentStage(viewLoaderClass);
-                    if (!context.getCurrentStageMap().containsKey(FloatViewLoader.class)) {
-                        context.loadView(FloatViewLoader.class);
-                    }
-                } catch (IOException e) {
-                    F.logger.error("打开页面失败",e);
+                context.removeCurrentStage(viewLoaderClass);
+                if (!context.getCurrentStageMap().containsKey(FloatViewLoader.class)) {
+                    context.loadView(FloatViewLoader.class);
                 }
             }
         });

@@ -43,9 +43,11 @@ public class ConfigController {
         initService();
         initViews();
     }
+
     private void initService() {
         configService = context.getConfigService();
     }
+
     private void initViews() {
         //获取设置值
         if (StringUtils.isNotBlank(F.NOTE_SUFFIX)) {
@@ -69,9 +71,11 @@ public class ConfigController {
         storeConfig();
         close();
     }
+
     public void cancel() {
         close();
     }
+
     private void storeConfig() {
         if (StringUtils.isNotBlank(noteSuffix.getText())) {
             F.NOTE_SUFFIX = noteSuffix.getText();
@@ -85,14 +89,15 @@ public class ConfigController {
             F.DOC_SUFFIX = docSuffix.getText();
             configService.setProperty("docSuffix", F.DOC_SUFFIX);
         }
-        if (floatPrimarySwitch.isSelected()){
-            configService.setProperty("isFloatPrimary","true");
-        }else {
-            configService.setProperty("isFloatPrimary","false");
+        if (floatPrimarySwitch.isSelected()) {
+            configService.setProperty("isFloatPrimary", "true");
+        } else {
+            configService.setProperty("isFloatPrimary", "false");
         }
         configService.storeProperties();
     }
-    private void close(){
+
+    private void close() {
         context.closeView(ConfigViewLoader.class);
     }
 
@@ -102,11 +107,8 @@ public class ConfigController {
             showAuthView();
         }
     }
+
     private void showAuthView() {
-        try {
-            context.loadView(AuthViewLoader.class);
-        } catch (IOException e) {
-            F.logger.info(e.getMessage());
-        }
+        context.loadView(AuthViewLoader.class);
     }
 }

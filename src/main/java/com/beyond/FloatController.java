@@ -72,22 +72,22 @@ public class FloatController {
         contentListView.setCellFactory(new Callback<ListView<FxDocument>, ListCell<FxDocument>>() {
             @Override
             public ListCell<FxDocument> call(ListView<FxDocument> param) {
-                return new ListCell<FxDocument>(){
+                return new ListCell<FxDocument>() {
                     @Override
                     protected void updateItem(FxDocument item, boolean empty) {
                         super.updateItem(item, empty);
-                        if (!empty){
+                        if (!empty) {
                             String content = HtmlUtils.parseHtml2Text(item.getContent());
                             content = com.beyond.utils.StringUtils.cutAndPretty(content, 100);
                             Text text = new Text(content);
-                            if (item.toNormalDocument() instanceof Todo){
+                            if (item.toNormalDocument() instanceof Todo) {
                                 text.setFill(Color.RED);
                             }
                             TextFlow textFlow = new TextFlow(text);
                             textFlow.setPadding(new Insets(5, 10, 5, 10));
                             textFlow.setPrefWidth(250);
                             setGraphic(textFlow);
-                        }else {
+                        } else {
                             setGraphic(null);
                         }
                     }
@@ -95,7 +95,8 @@ public class FloatController {
             }
         });
     }
-    private ObservableList<FxDocument> getFxDocuments(){
+
+    private ObservableList<FxDocument> getFxDocuments() {
         return mainService.getFxDocuments();
     }
 
@@ -109,14 +110,16 @@ public class FloatController {
             Document document = createDocument(content);
             mainService.add(document);
             postSave(keyEvent);
-        }catch (Exception e){
+        } catch (Exception e) {
             F.logger.info("保存错误");
             contentTextAreaSave.setText("保存错误");
         }
     }
+
     private String getSaveContent() {
         return contentTextAreaSave.getText();
     }
+
     private boolean isValid(String content, KeyEvent keyEvent) {
         if (StringUtils.isNotBlank(content)) {
             int length = content.length();
@@ -135,6 +138,7 @@ public class FloatController {
         }
         return false;
     }
+
     private Document createDocument(String content) {
         Document document;
         int length = content.length();
@@ -166,6 +170,7 @@ public class FloatController {
 
         return document;
     }
+
     private void postSave(KeyEvent keyEvent) {
         Object source = keyEvent.getSource();
         if (source instanceof TextArea) {
@@ -175,18 +180,14 @@ public class FloatController {
         context.refresh();
     }
 
-    public void backToMain(){
-        try {
-            if (!context.getCurrentStageMap().containsKey(MainViewLoader.class)){
-                context.loadView(MainViewLoader.class);
-                context.closeView(FloatViewLoader.class);
-            }
-        }catch (Exception e){
-            F.logger.error("加载页面出错",e);
+    public void backToMain() {
+        if (!context.getCurrentStageMap().containsKey(MainViewLoader.class)) {
+            context.loadView(MainViewLoader.class);
+            context.closeView(FloatViewLoader.class);
         }
     }
 
-    public void exit(){
+    public void exit() {
         context.closeView(FloatViewLoader.class);
     }
 }

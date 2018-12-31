@@ -76,22 +76,12 @@ public abstract class AbstractViewLoader implements ViewLoader {
             public void handle(WindowEvent event) {
                 context.removeCurrentStage(viewLoaderClass);
                 if (context.getCurrentStageMap().isEmpty()) {
-                    stopSynchronize();
-                    stopFailedTodoService();
+                    context.exit();
                 }
             }
         });
     }
 
-    private void stopSynchronize() {
-        AsynMergeService asynMergeService = context.getAsynMergeService();
-        asynMergeService.stopSynchronize();
-    }
-
-    private void stopFailedTodoService() {
-        FailedTodoService failedTodoService = context.getFailedTodoService();
-        failedTodoService.stop();
-    }
 
     public Object getController() {
         return controller;

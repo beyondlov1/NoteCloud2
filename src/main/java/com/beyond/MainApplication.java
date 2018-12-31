@@ -7,8 +7,14 @@ import com.beyond.service.impl.*;
 import com.beyond.viewloader.*;
 import com.sun.org.apache.bcel.internal.generic.FLOAD;
 import javafx.application.Application;
+import javafx.application.Platform;
 import javafx.stage.Stage;
 import org.apache.commons.lang3.StringUtils;
+
+import javax.imageio.ImageIO;
+import java.awt.*;
+import java.io.IOException;
+import java.net.URL;
 
 public class MainApplication extends Application {
 
@@ -29,6 +35,7 @@ public class MainApplication extends Application {
         createContext();
         showStartStage();
     }
+
     private void loadConfig() {
         ConfigService configService = context.getConfigService();
         if (configService == null) {
@@ -87,7 +94,7 @@ public class MainApplication extends Application {
         context.setMainController(mainController);
 
     }
-    private void showStartStage() throws Exception {
+    private void showStartStage() {
         User user = new User(
                 F.configService.getProperty("username"),
                 F.configService.getProperty("password"));
@@ -110,4 +117,5 @@ public class MainApplication extends Application {
             return false;
         }
     }
+
 }

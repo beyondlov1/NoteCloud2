@@ -1,6 +1,7 @@
 package com.beyond;
 
 import com.beyond.entity.Reminder;
+import com.beyond.f.F;
 import com.beyond.service.*;
 import com.beyond.service.impl.ConfigServiceImpl;
 import com.beyond.service.impl.SyncRemindServiceImpl;
@@ -10,6 +11,7 @@ import com.beyond.viewloader.ViewLoader;
 import javafx.application.Platform;
 import javafx.stage.Stage;
 
+import java.awt.*;
 import java.io.IOException;
 import java.util.*;
 
@@ -20,7 +22,7 @@ import java.util.*;
 public class ApplicationContext {
 
     //attribute
-    private Map<String,Object> map;
+    private Map<String, Object> map;
 
     //service
     private MainService mainService;
@@ -39,13 +41,14 @@ public class ApplicationContext {
     private MainController mainController;
 
     //observe
-    private Map<String,Observable> observableMap;
+    private Map<String, Observable> observableMap;
 
     //viewloader
     private Map<Class, ViewLoader> viewLoaderMap;
 
     //showed stages
     private Map<Class, Stage> currentStageMap;
+    private TrayIcon trayIcon;
 
     public ApplicationContext() {
         this.map = new HashMap<>();
@@ -54,13 +57,13 @@ public class ApplicationContext {
         this.currentStageMap = new HashMap<>();
     }
 
-    public void addObservable(String key,Observable observable){
-        observableMap.put(key,observable);
+    public void addObservable(String key, Observable observable) {
+        observableMap.put(key, observable);
     }
 
-    public void observe(Observer observer,String observableKey){
+    public void observe(Observer observer, String observableKey) {
         Observable observable = observableMap.get(observableKey);
-        if (observable!=null){
+        if (observable != null) {
             observable.addObserver(observer);
         }
     }
@@ -69,12 +72,12 @@ public class ApplicationContext {
         return map;
     }
 
-    public Object getAttribute(String key){
+    public Object getAttribute(String key) {
         return map.get(key);
     }
 
-    public void setAttribute(String key,String value){
-        map.put(key,value);
+    public void setAttribute(String key, String value) {
+        map.put(key, value);
     }
 
     public MainService getMainService() {
@@ -133,17 +136,17 @@ public class ApplicationContext {
         this.authService = authService;
     }
 
-    public void addViewLoader(ViewLoader viewLoader){
-        viewLoaderMap.put(viewLoader.getClass(),viewLoader);
+    public void addViewLoader(ViewLoader viewLoader) {
+        viewLoaderMap.put(viewLoader.getClass(), viewLoader);
     }
 
     private ViewLoader getViewLoader(Class clazz) {
         ViewLoader viewLoader = viewLoaderMap.get(clazz);
-        if (viewLoader==null) throw new RuntimeException("viewLoader not found");
+        if (viewLoader == null) throw new RuntimeException("viewLoader not found");
         else return viewLoader;
     }
 
-    public void setMainController(MainController mainController){
+    public void setMainController(MainController mainController) {
         this.mainController = mainController;
     }
 
@@ -151,10 +154,14 @@ public class ApplicationContext {
         return mainController;
     }
 
-    public void loadView(Class<? extends ViewLoader> viewLoaderClass) throws IOException {
-        ViewLoader viewLoader = this.getViewLoader(viewLoaderClass);
-        viewLoader.load();
-        currentStageMap.put(viewLoaderClass,viewLoader.getStage());
+    public void loadView(Class<? extends ViewLoader> viewLoaderClass) {
+        try {
+            ViewLoader viewLoader = this.getViewLoader(viewLoaderClass);
+            viewLoader.load();
+            currentStageMap.put(viewLoaderClass, viewLoader.getStage());
+        } catch (IOException e) {
+            F.logger.error("页面加载出错", e);
+        }
     }
 
     public void closeView(Class<? extends ViewLoader> viewLoaderClass) {
@@ -163,16 +170,28 @@ public class ApplicationContext {
         currentStageMap.remove(viewLoaderClass);
     }
 
-    public void refresh(){
-        if (!this.currentStageMap.containsKey(MainViewLoader.class)){
+    public void refresh() {
+        if (!this.currentStageMap.containsKey(MainViewLoader.class)) {
             return;
         }
-        Platform.runLater(new Runnable(){
+        Platform.runLater(new Runnable() {
             @Override
             public void run() {
                 mainController.refresh();
             }
         });
+    }
+
+    public void exit() {
+        if (asynMergeService != null) {
+            asynMergeService.stopSynchronize();
+        }
+        if (failedTodoService != null) {
+            failedTodoService.stop();
+        }
+        if (trayIcon!=null){
+            SystemTray.getSystemTray().remove(trayIcon);
+        }
     }
 
     public SyncRemindService<Reminder> getSyncRemindService() {
@@ -192,13 +211,23 @@ public class ApplicationContext {
     }
 
     public void addCurrentStage(Class<? extends ViewLoader> viewLoaderClass, Stage stage) {
-        this.currentStageMap.put(viewLoaderClass,stage);
+        this.currentStageMap.put(viewLoaderClass, stage);
     }
 
     public void removeCurrentStage(Class<? extends ViewLoader> viewLoaderClass) {
         this.currentStageMap.remove(viewLoaderClass);
     }
+
     public Map<Class, Stage> getCurrentStageMap() {
         return currentStageMap;
+    }
+
+
+    public void setTrayIcon(TrayIcon trayIcon) {
+        this.trayIcon = trayIcon;
+    }
+
+    public TrayIcon getTrayIcon() {
+        return trayIcon;
     }
 }
