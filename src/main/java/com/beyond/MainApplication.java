@@ -88,10 +88,12 @@ public class MainApplication extends Application {
 
         ViewLoader floatViewLoader = new FloatViewLoader(context);
         floatViewLoader.setLocation("views/float.fxml");
-        floatViewLoader.setController(new FloatController(context));
+        FloatController floatController = new FloatController(context);
+        floatViewLoader.setController(floatController);
         context.addViewLoader(floatViewLoader);
 
         context.setMainController(mainController);
+        context.setFloatController(floatController);
 
     }
     private void showStartStage() {

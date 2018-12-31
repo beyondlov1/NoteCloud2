@@ -267,14 +267,13 @@ public class MainController{
     }
 
     public void refresh(){
-        refreshTable();
-        refreshWebView();
+        context.refreshData();
+        this.refreshTable();
+        this.refreshWebView();
     }
+
     private void refreshTable() {
         FxDocument selectedItem = documentTableView.getSelectionModel().getSelectedItem();
-        //从文件获取文档
-        mainService.pull();
-        mainService.initFxDocument();
         ObservableList<FxDocument> fxDocuments = mainService.getFxDocuments();
 
         //order

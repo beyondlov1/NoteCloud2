@@ -207,4 +207,14 @@ public class FloatController {
     public void exit() {
         context.closeView(FloatViewLoader.class);
     }
+
+    public void refresh(){
+        context.refreshData();
+        this.refreshList();
+    }
+    private void refreshList(){
+        ObservableList<FxDocument> fxDocuments = mainService.getFxDocuments();
+        SortUtils.sort(fxDocuments,FxDocument.class,"lastModifyTime", SortUtils.SortType.DESC);
+        contentListView.setItems(fxDocuments);
+    }
 }

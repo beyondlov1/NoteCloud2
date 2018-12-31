@@ -40,8 +40,11 @@ public class ApplicationContext {
     //application
     private MainApplication application;
 
-    //controller
+    //main controller
     private MainController mainController;
+
+    //float controller
+    private FloatController floatController;
 
     //observe
     private Map<String, Observable> observableMap;
@@ -178,15 +181,31 @@ public class ApplicationContext {
     }
 
     public void refresh() {
-        if (!this.currentStageMap.containsKey(MainViewLoader.class)) {
+        if (this.currentStageMap.containsKey(MainViewLoader.class)) {
+            Platform.runLater(new Runnable() {
+                @Override
+                public void run() {
+                    mainController.refresh();
+                }
+            });
             return;
         }
-        Platform.runLater(new Runnable() {
-            @Override
-            public void run() {
-                mainController.refresh();
-            }
-        });
+        if (this.currentStageMap.containsKey(FloatViewLoader.class)){
+            Platform.runLater(new Runnable() {
+                @Override
+                public void run() {
+                    floatController.refresh();
+                }
+            });
+            return;
+        }
+        this.refreshData();
+    }
+
+    public void refreshData(){
+        //从文件获取文档
+        mainService.pull();
+        mainService.initFxDocument();
     }
 
     public void exit() {
@@ -243,5 +262,13 @@ public class ApplicationContext {
 
     public TrayIcon getTrayIcon() {
         return trayIcon;
+    }
+
+    public void setFloatController(FloatController floatController) {
+        this.floatController = floatController;
+    }
+
+    public FloatController getFloatController() {
+        return floatController;
     }
 }
