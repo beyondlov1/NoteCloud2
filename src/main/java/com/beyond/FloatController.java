@@ -24,6 +24,7 @@ import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
 import javafx.scene.text.Text;
 import javafx.scene.text.TextFlow;
+import javafx.stage.Stage;
 import javafx.util.Callback;
 import org.apache.commons.lang3.StringUtils;
 
@@ -51,6 +52,9 @@ public class FloatController {
 
     @FXML
     private Button backToMainButton;
+
+    @FXML
+    private Button frontButton;
 
     @FXML
     private Button exitButton;
@@ -184,6 +188,19 @@ public class FloatController {
         if (!context.getCurrentStageMap().containsKey(MainViewLoader.class)) {
             context.loadView(MainViewLoader.class);
             context.closeView(FloatViewLoader.class);
+        }
+    }
+
+    public void changeFront(){
+        Stage stage = context.getCurrentStageMap().get(FloatViewLoader.class);
+        if (stage.isAlwaysOnTop()){
+            stage.setAlwaysOnTop(false);
+            stage.toBack();
+            frontButton.setText("置顶");
+        }else {
+            stage.setAlwaysOnTop(true);
+            stage.toFront();
+            frontButton.setText("置底");
         }
     }
 
