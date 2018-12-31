@@ -21,10 +21,19 @@ import java.util.concurrent.Executors;
  */
 public class RepositoryFactory {
 
+    private static  LocalDocumentRepository localDocumentRepository;
+
+    private static Repository localDocumentRepositoryProxy;
+
     public static Repository getLocalRepository(String path) {
-        final LocalDocumentRepository localDocumentRepository = new LocalDocumentRepository(path);
-        return (Repository)Proxy.newProxyInstance(localDocumentRepository.getClass().getSuperclass().getClassLoader(), localDocumentRepository.getClass().getSuperclass().getInterfaces(),
-                new LocalDocumentRepositoryProxy(localDocumentRepository));
+        if (localDocumentRepository==null){
+            localDocumentRepository = new LocalDocumentRepository(path);
+        }
+        if (localDocumentRepositoryProxy == null){
+            localDocumentRepositoryProxy = (Repository)Proxy.newProxyInstance(localDocumentRepository.getClass().getSuperclass().getClassLoader(), localDocumentRepository.getClass().getSuperclass().getInterfaces(),
+                    new LocalDocumentRepositoryProxy(localDocumentRepository));
+        }
+        return localDocumentRepositoryProxy;
     }
 
     public static Repository getRemoteRepository(String path,LocalDocumentRepository localDocumentRepository) {

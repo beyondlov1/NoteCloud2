@@ -6,6 +6,7 @@ import com.beyond.MainApplication;
 import com.beyond.f.F;
 import com.beyond.f.SyncType;
 import com.beyond.service.AsynMergeService;
+import com.beyond.service.AsynTodoService;
 import javafx.event.Event;
 import javafx.event.EventHandler;
 import javafx.event.EventType;
@@ -67,6 +68,7 @@ public class FloatViewLoader extends AbstractViewLoader {
 
         this.startSynchronize();
         this.startFailedTodoService();
+        this.startDeleteExpiredTodo();
 
         this.initEventHandler(stage);
         this.stopOnClose();
@@ -128,5 +130,12 @@ public class FloatViewLoader extends AbstractViewLoader {
         }
     }
 
+    private void startDeleteExpiredTodo(){
+        ApplicationContext context = this.getContext();
+        AsynTodoService asynTodoService = context.getAsynTodoService();
+        if (asynTodoService.getTimer()==null){
+            asynTodoService.startDeleteExpiredTodo();
+        }
+    }
 
 }

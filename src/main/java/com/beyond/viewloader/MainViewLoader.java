@@ -5,6 +5,7 @@ import com.beyond.FailedTodoService;
 import com.beyond.f.F;
 import com.beyond.f.SyncType;
 import com.beyond.service.AsynMergeService;
+import com.beyond.service.AsynTodoService;
 import javafx.event.EventHandler;
 import javafx.stage.Stage;
 import javafx.stage.WindowEvent;
@@ -23,8 +24,9 @@ public class MainViewLoader extends AbstractViewLoader {
 
     @Override
     protected void afterLoad() {
-        startSynchronize();
-        startFailedTodoService();
+        this.startSynchronize();
+        this.startFailedTodoService();
+        this.startDeleteExpiredTodo();
 
         this.stopOnClose();
     }
@@ -59,6 +61,14 @@ public class MainViewLoader extends AbstractViewLoader {
         FailedTodoService failedTodoService = context.getFailedTodoService();
         if (!failedTodoService.isRunning()) {
             failedTodoService.init();
+        }
+    }
+
+    private void startDeleteExpiredTodo(){
+        ApplicationContext context = this.getContext();
+        AsynTodoService asynTodoService = context.getAsynTodoService();
+        if (asynTodoService.getTimer()==null){
+            asynTodoService.startDeleteExpiredTodo();
         }
     }
 }

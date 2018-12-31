@@ -61,6 +61,7 @@ public class MainApplication extends Application {
         context.setSyncRemindService(new SyncRemindServiceImpl(context.getAuthService()));
         context.setAsynRemindService(new AsynRemindServiceImpl(context.getSyncRemindService()));
         context.setFailedTodoService(new FailedTodoService(context));
+        context.setAsynTodoService(new AsynTodoService(new TodoServiceImpl(context)));
         MainService mainService = new MainService(context);
         context.setMainService(mainService);
         mainService.init();

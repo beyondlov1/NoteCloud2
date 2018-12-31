@@ -36,6 +36,7 @@ public class ApplicationContext {
     private ConfigService configService;
     private AuthService authService;
     private FailedTodoService failedTodoService;
+    private AsynTodoService asynTodoService;
 
     //application
     private MainApplication application;
@@ -215,6 +216,9 @@ public class ApplicationContext {
         if (failedTodoService != null) {
             failedTodoService.stop();
         }
+        if (asynTodoService != null){
+            asynTodoService.stop();
+        }
         if (trayIcon!=null){
             SystemTray.getSystemTray().remove(trayIcon);
         }
@@ -270,5 +274,13 @@ public class ApplicationContext {
 
     public FloatController getFloatController() {
         return floatController;
+    }
+
+    public AsynTodoService getAsynTodoService() {
+        return asynTodoService;
+    }
+
+    public void setAsynTodoService(AsynTodoService asynTodoService) {
+        this.asynTodoService = asynTodoService;
     }
 }

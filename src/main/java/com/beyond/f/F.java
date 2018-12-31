@@ -7,6 +7,8 @@ import org.apache.logging.log4j.Logger;
 
 public class F {
     public final static Logger logger = LogManager.getLogger();
+    public static final ConfigService configService = new ConfigServiceImpl(F.CONFIG_PATH);
+
     public static final String CONTENT_PREFIX = "";
     public static final String DEFAULT_REMOTE_RELATIVE_PATH = "/NoteCloud/repository/documents.xml";
     public static final String DEFAULT_REMOTE_FILE_INFO_RELATIVE_PATH = "/NoteCloud/repository/remoteProperty.obj";
@@ -46,5 +48,7 @@ public class F {
     public static String ACCESS_TOKEN = "";
 
     public static String IS_FLOAT_PRIMARY = "false";
-    public static final ConfigService configService = new ConfigServiceImpl(F.CONFIG_PATH);
+
+    public static long EXPIRE_TODO_DELETE_PERIOD = 1000 * 60;
+
 }
