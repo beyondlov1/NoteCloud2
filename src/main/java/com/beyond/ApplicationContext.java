@@ -14,6 +14,9 @@ import javafx.stage.Stage;
 import java.awt.*;
 import java.io.IOException;
 import java.util.*;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ThreadPoolExecutor;
 
 /**
  * @author beyondlov1
@@ -48,7 +51,11 @@ public class ApplicationContext {
 
     //showed stages
     private Map<Class, Stage> currentStageMap;
+
+    //trayIcon
     private TrayIcon trayIcon;
+
+    private ExecutorService executorService;
 
     public ApplicationContext() {
         this.map = new HashMap<>();
@@ -192,6 +199,13 @@ public class ApplicationContext {
         if (trayIcon!=null){
             SystemTray.getSystemTray().remove(trayIcon);
         }
+    }
+
+    public void execute(Runnable runnable){
+        if (executorService==null){
+            this.executorService = Executors.newCachedThreadPool();
+        }
+        executorService.execute(runnable);
     }
 
     public SyncRemindService<Reminder> getSyncRemindService() {
