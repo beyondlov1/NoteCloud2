@@ -76,16 +76,4 @@ dongtaiwang.com</content>
     <lastModifyTime>2018-12-01 16:27:46.521 UTC</lastModifyTime>
     <version>51</version>
   </document>
-  <document id="060746fecfe8496784edada2f62ba469">
-    <content>sho</content>
-    <createTime>2018-12-31 02:13:36.295 UTC</createTime>
-    <lastModifyTime reference="../createTime"/>
-    <version>1</version>
-  </document>
-  <document id="984eddad7cb943e896cc6b062ff6c1df">
-    <content>77</content>
-    <createTime>2018-12-31 02:14:49.791 UTC</createTime>
-    <lastModifyTime reference="../createTime"/>
-    <version>1</version>
-  </document>
 </documents>

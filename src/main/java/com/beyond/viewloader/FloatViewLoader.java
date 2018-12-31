@@ -39,7 +39,7 @@ public class FloatViewLoader extends AbstractViewLoader {
         Object controller = this.getController();
         if (stage == null) {
             stage = new Stage();
-            stage.initStyle(StageStyle.UTILITY);//状态栏不显示图标和窗口不显示装饰不可兼得
+            stage.initStyle(StageStyle.TRANSPARENT);//状态栏不显示图标和窗口不显示装饰不可兼得
             this.setStage(stage);
         }
         FXMLLoader fxmlLoader = new FXMLLoader();
