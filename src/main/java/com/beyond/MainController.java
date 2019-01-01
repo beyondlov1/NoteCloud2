@@ -560,18 +560,20 @@ public class MainController{
             String timeStamp = "";
             if (fxDocument==null) return;
             if (fxDocument.toNormalDocument() instanceof Todo
-                    && ((Todo)fxDocument.toNormalDocument()).getReminder().getRemindTime()!=null
-                    && StringUtils.isNotBlank(TimeUtils.getTimeNorm(fxDocument.getContent()))){
+                    && ((Todo)fxDocument.toNormalDocument()).getReminder().getRemindTime()!=null){
                 Todo todo = (Todo)fxDocument.toNormalDocument();
                 Date remoteRemindTime = todo.getReminder().getRemoteRemindTime();
                 if (remoteRemindTime !=null){
                     SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
                     timeStamp = "  \n\n\n***\n提醒时间:"+ simpleDateFormat.format(remoteRemindTime);
                 }
+                //webview加载内容
+                webView.getEngine().loadContent(MarkDownUtils.convertMarkDownToHtml(fxDocument.getContent()+timeStamp));
+            }else {
+                //webview加载内容
+                webView.getEngine().loadContent(MarkDownUtils.convertMarkDownToHtml(fxDocument.getContent()));
             }
 
-            //webview加载内容
-            webView.getEngine().loadContent(MarkDownUtils.convertMarkDownToHtml(fxDocument.getContent()+timeStamp));
         }
 
         private <S, T> Callback<TableColumn<S, T>, TableCell<S, T>> getCellFactory() {

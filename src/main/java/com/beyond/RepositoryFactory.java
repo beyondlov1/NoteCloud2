@@ -21,33 +21,24 @@ import java.util.concurrent.Executors;
  */
 public class RepositoryFactory {
 
-    private static  LocalDocumentRepository localDocumentRepository;
-
-    private static Repository localDocumentRepositoryProxy;
-
     public static Repository getLocalRepository(String path) {
-        if (localDocumentRepository==null){
-            localDocumentRepository = new LocalDocumentRepository(path);
-        }
-        if (localDocumentRepositoryProxy == null){
-            localDocumentRepositoryProxy = (Repository)Proxy.newProxyInstance(localDocumentRepository.getClass().getSuperclass().getClassLoader(), localDocumentRepository.getClass().getSuperclass().getInterfaces(),
-                    new LocalDocumentRepositoryProxy(localDocumentRepository));
-        }
-        return localDocumentRepositoryProxy;
+        final LocalDocumentRepository localDocumentRepository = new LocalDocumentRepository(path);
+        return (Repository) Proxy.newProxyInstance(localDocumentRepository.getClass().getSuperclass().getClassLoader(), localDocumentRepository.getClass().getSuperclass().getInterfaces(),
+                new LocalDocumentRepositoryProxy(localDocumentRepository));
     }
 
-    public static Repository getRemoteRepository(String path,LocalDocumentRepository localDocumentRepository) {
-        final RemoteDocumentRepository remoteDocumentRepository = new RemoteDocumentRepository(path,localDocumentRepository);
-        return (Repository)Proxy.newProxyInstance(remoteDocumentRepository.getClass().getClassLoader(), remoteDocumentRepository.getClass().getInterfaces(), new InvocationHandler() {
+    public static Repository getRemoteRepository(String path, LocalDocumentRepository localDocumentRepository) {
+        final RemoteDocumentRepository remoteDocumentRepository = new RemoteDocumentRepository(path, localDocumentRepository);
+        return (Repository) Proxy.newProxyInstance(remoteDocumentRepository.getClass().getClassLoader(), remoteDocumentRepository.getClass().getInterfaces(), new InvocationHandler() {
             @Override
             public synchronized Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
-                if (StringUtils.equals(method.getName(),"save")||StringUtils.equals(method.getName(),"pull")){
+                if (StringUtils.equals(method.getName(), "save") || StringUtils.equals(method.getName(), "pull")) {
                     ExecutorService executorService = Executors.newCachedThreadPool();
                     executorService.submit(new Runnable() {
                         @Override
                         public void run() {
                             try {
-                                method.invoke(remoteDocumentRepository,args);
+                                method.invoke(remoteDocumentRepository, args);
                             } catch (Exception e) {
                                 e.printStackTrace();
                                 F.logger.info(e.getMessage());
@@ -56,14 +47,14 @@ public class RepositoryFactory {
                     });
                     return null;
                 }
-                return method.invoke(remoteDocumentRepository,args);
+                return method.invoke(remoteDocumentRepository, args);
             }
         });
     }
 
     public static void main(String[] args) {
         Repository repository = RepositoryFactory.getLocalRepository("./document/tmp.xml");
-        repository.add(new Document("3","content"));
+        repository.add(new Document("3", "content"));
 
         LocalPropertyManager localPropertyManager = new LocalPropertyManager(repository.getPath());
         Map<String, String> allProperties = localPropertyManager.getAllProperties();
