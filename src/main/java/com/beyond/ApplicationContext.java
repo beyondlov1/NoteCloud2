@@ -11,9 +11,11 @@ import com.beyond.viewloader.ViewLoader;
 import javafx.application.Platform;
 import javafx.stage.Stage;
 
+import javax.swing.text.View;
 import java.awt.*;
 import java.io.IOException;
 import java.util.*;
+import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadPoolExecutor;
@@ -56,6 +58,9 @@ public class ApplicationContext {
     //showed stages
     private Map<Class, Stage> currentStageMap;
 
+    //showed reminders  viewloader:id
+    private Map<ViewLoader,String> remindingViewLoaderMap;
+
     //trayIcon
     private TrayIcon trayIcon;
 
@@ -66,6 +71,7 @@ public class ApplicationContext {
         this.observableMap = new HashMap<>();
         this.viewLoaderMap = new HashMap<>();
         this.currentStageMap = new HashMap<>();
+        this.remindingViewLoaderMap = new HashMap<>();
     }
 
     public void addObservable(String key, Observable observable) {
@@ -283,4 +289,9 @@ public class ApplicationContext {
     public void setAsynTodoService(AsynTodoService asynTodoService) {
         this.asynTodoService = asynTodoService;
     }
+
+    public Map<ViewLoader, String> getRemindingViewLoaderMap() {
+        return remindingViewLoaderMap;
+    }
+
 }

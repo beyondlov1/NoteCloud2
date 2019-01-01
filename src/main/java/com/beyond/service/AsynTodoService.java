@@ -27,10 +27,10 @@ public class AsynTodoService {
             timer = new Timer();
         }
         TimerTask timerTask = new DeleteTodoTask();
-//        timer.schedule(timerTask,0, F.EXPIRE_TODO_DELETE_PERIOD);
-        Calendar calendar = Calendar.getInstance();
-        calendar.set(2019,Calendar.JANUARY,0,0,0,0);
-        timer.schedule(timerTask,calendar.getTime(),24*60*60*1000L);
+        timer.schedule(timerTask,0, F.EXPIRE_TODO_DELETE_PERIOD);
+//        Calendar calendar = Calendar.getInstance();
+//        calendar.set(2019,Calendar.JANUARY,0,0,0,0);
+//        timer.schedule(timerTask,calendar.getTime(),24*60*60*1000L);
     }
 
     public void stop(){
@@ -46,6 +46,7 @@ public class AsynTodoService {
     private class DeleteTodoTask extends TimerTask{
         @Override
         public void run() {
+            todoService.popup();
             todoService.deleteExpiredTodo();
         }
     }

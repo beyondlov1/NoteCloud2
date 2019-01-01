@@ -163,6 +163,18 @@ public class MainService {
             fxDocuments.remove(index);
         }
     }
+    public void deleteWithoutEvent(Document document){
+        deleteById(document.getId());
+    }
+    public void bulkDeleteWithoutEvent(List<? extends Document> documents){
+        defaultLocalRepository.lock();
+        defaultLocalRepository.pull();
+        for (Document document : documents) {
+            defaultLocalRepository.delete(document);
+        }
+        defaultLocalRepository.save();
+        defaultLocalRepository.unlock();
+    }
 
     public String update(Document document) {
         Serializable id = updateWithoutEvent(document);
@@ -255,4 +267,7 @@ public class MainService {
         defaultLocalRepository.pull();
     }
 
+    public List<Document> findAllFromCache() {
+        return defaultLocalRepository.selectAll();
+    }
 }

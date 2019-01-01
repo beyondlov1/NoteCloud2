@@ -75,7 +75,8 @@ public abstract class AbstractViewLoader implements ViewLoader {
             @Override
             public void handle(WindowEvent event) {
                 context.removeCurrentStage(viewLoaderClass);
-                if (context.getCurrentStageMap().isEmpty()) {
+                if (context.getCurrentStageMap().isEmpty()
+                        &&context.getRemindingViewLoaderMap().isEmpty()) {
                     context.exit();
                 }
             }

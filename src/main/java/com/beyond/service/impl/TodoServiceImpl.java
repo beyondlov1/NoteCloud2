@@ -1,18 +1,20 @@
 package com.beyond.service.impl;
 
 import com.beyond.ApplicationContext;
-import com.beyond.RepositoryFactory;
+import com.beyond.RemindController;
 import com.beyond.entity.Document;
 import com.beyond.entity.FxDocument;
 import com.beyond.entity.Todo;
 import com.beyond.f.F;
-import com.beyond.repository.Repository;
 import com.beyond.service.MainService;
 import com.beyond.service.TodoService;
-import javafx.collections.ObservableList;
-import org.apache.commons.lang3.time.DateUtils;
+import com.beyond.viewloader.RemindViewLoader;
+import com.beyond.viewloader.ViewLoader;
+import javafx.application.Platform;
 
+import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 
@@ -24,40 +26,87 @@ public class TodoServiceImpl implements TodoService {
 
     private ApplicationContext context;
 
-    private Repository<Document> defaultLocalRepository;
+    private MainService mainService;
 
-    @SuppressWarnings("unchecked")
-    public TodoServiceImpl(ApplicationContext context){
+    public TodoServiceImpl(ApplicationContext context) {
         this.context = context;
-        this.defaultLocalRepository = RepositoryFactory.getLocalRepository(F.DEFAULT_LOCAL_PATH);
+    }
+
+    public void init() {
+        this.mainService = context.getMainService();
     }
 
     @Override
     public void deleteExpiredTodo() {
         List<Todo> todoList = this.getExpiredTodoList();
-        this.bulkDeleteWithoutEvent(todoList);
+        mainService.bulkDeleteWithoutEvent(todoList);
         context.refresh();
     }
 
-    private void bulkDeleteWithoutEvent(List<Todo> todoList) {
-        Date current = new Date();
-        for (Todo todo : todoList) {
-            if (todo.getReminder()!=null
-                    &&todo.getReminder().getRemindTime()!=null
-                    && todo.getReminder().getRemindTime().before(current)){
-                defaultLocalRepository.delete(todo);
-                F.logger.info("delete expired todo, id:"+todo.getId());
-            }
+    @Override
+    public void popup() {
+        List<Todo> expiringTodoList = this.getExpiringTodoList();
+        if (expiringTodoList.isEmpty()) {
+            return;
         }
-        defaultLocalRepository.save();
+        for (Todo todo : expiringTodoList) {
+            if (context.getRemindingViewLoaderMap().containsValue(todo.getId())) {
+                continue;
+            }
+            ViewLoader remindViewLoader = new RemindViewLoader(context);
+            remindViewLoader.setLocation("views/remind.fxml");
+            RemindController remindController = new RemindController(context);
+            FxDocument fxDocument = new FxDocument(todo);
+            remindController.setFxDocument(fxDocument);
+            remindViewLoader.setController(remindController);
+
+            Platform.runLater(new Runnable() {
+                @Override
+                public void run() {
+                    try {
+                        remindViewLoader.load();
+                        context.getRemindingViewLoaderMap().put(remindViewLoader, todo.getId());
+                    } catch (IOException e) {
+                        F.logger.error("页面加载错误", e);
+                    }
+                }
+            });
+        }
     }
 
     private List<Todo> getExpiredTodoList() {
+        Calendar calendar = Calendar.getInstance();
+        calendar.add(Calendar.MINUTE, -30);// 过期todo延迟30分钟后过期
+        Date expireDate = calendar.getTime();
         List<Todo> todoList = new ArrayList<>();
-        List<Document> documents = defaultLocalRepository.selectAll();
+        List<Document> documents = mainService.findAllFromCache();
         for (Document document : documents) {
-            if (document instanceof Todo){
-                todoList.add((Todo) document);
+            if (document instanceof Todo) {
+                Todo todo = (Todo) document;
+                if (todo.getReminder() != null
+                        && todo.getReminder().getRemindTime() != null
+                        && todo.getReminder().getRemindTime().before(expireDate)) {
+                    todoList.add(todo);
+                }
+            }
+        }
+        return todoList;
+    }
+
+    private List<Todo> getExpiringTodoList() {
+        Date curr = new Date();
+        Date preCurr = new Date(System.currentTimeMillis() - F.EXPIRE_TODO_DELETE_PERIOD);
+        List<Todo> todoList = new ArrayList<>();
+        List<Document> documents = mainService.findAllFromCache();
+        for (Document document : documents) {
+            if (document instanceof Todo) {
+                Todo todo = (Todo) document;
+                if (todo.getReminder() != null
+                        && todo.getReminder().getRemindTime() != null
+                        && todo.getReminder().getRemindTime().before(curr)
+                        && todo.getReminder().getRemindTime().after(preCurr)) {
+                    todoList.add(todo);
+                }
             }
         }
         return todoList;

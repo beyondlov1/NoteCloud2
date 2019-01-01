@@ -1,5 +1,7 @@
 package com.beyond;
 
+import com.beyond.entity.Document;
+import com.beyond.entity.FxDocument;
 import com.beyond.entity.User;
 import com.beyond.f.F;
 import com.beyond.service.*;
@@ -61,10 +63,12 @@ public class MainApplication extends Application {
         context.setSyncRemindService(new SyncRemindServiceImpl(context.getAuthService()));
         context.setAsynRemindService(new AsynRemindServiceImpl(context.getSyncRemindService()));
         context.setFailedTodoService(new FailedTodoService(context));
-        context.setAsynTodoService(new AsynTodoService(new TodoServiceImpl(context)));
+        TodoServiceImpl todoService = new TodoServiceImpl(context);
+        context.setAsynTodoService(new AsynTodoService(todoService));
         MainService mainService = new MainService(context);
         context.setMainService(mainService);
         mainService.init();
+        todoService.init();
 
         ViewLoader mainViewLoader = new MainViewLoader(context);
         mainViewLoader.setLocation("views/main.fxml");
@@ -95,7 +99,6 @@ public class MainApplication extends Application {
 
         context.setMainController(mainController);
         context.setFloatController(floatController);
-
     }
     private void showStartStage() {
         User user = new User(
