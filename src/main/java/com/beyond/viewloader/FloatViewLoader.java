@@ -7,9 +7,7 @@ import com.beyond.f.F;
 import com.beyond.f.SyncType;
 import com.beyond.service.AsynMergeService;
 import com.beyond.service.AsynTodoService;
-import javafx.event.Event;
 import javafx.event.EventHandler;
-import javafx.event.EventType;
 import javafx.fxml.FXMLLoader;
 import javafx.geometry.Rectangle2D;
 import javafx.scene.Parent;
@@ -18,7 +16,6 @@ import javafx.scene.input.MouseEvent;
 import javafx.stage.Screen;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
-import javafx.stage.WindowEvent;
 
 import java.io.IOException;
 import java.net.URL;
@@ -52,7 +49,11 @@ public class FloatViewLoader extends AbstractViewLoader {
         Parent parent = fxmlLoader.load();
         Screen screen = Screen.getPrimary();
         Rectangle2D bounds = screen.getBounds();
-        stage.setX(bounds.getWidth());
+        if ("right".equalsIgnoreCase(F.FLOAT_POSITION)) {
+            stage.setX(bounds.getWidth());//靠右
+        } else if ("left".equalsIgnoreCase(F.FLOAT_POSITION)) {
+            stage.setX(0 - 290);//靠左
+        }
         stage.setY(bounds.getHeight() - 475);
         stage.setOpacity(0.3);
         stage.setScene(new Scene(parent));
@@ -80,7 +81,11 @@ public class FloatViewLoader extends AbstractViewLoader {
             public void handle(MouseEvent event) {
                 Screen screen = Screen.getPrimary();
                 Rectangle2D bounds = screen.getBounds();
-                stage.setX(bounds.getWidth() - 290 - 35);
+                if ("right".equalsIgnoreCase(F.FLOAT_POSITION)) {
+                    stage.setX(bounds.getWidth() - 290 - 35);//靠右
+                } else if ("left".equalsIgnoreCase(F.FLOAT_POSITION)) {
+                    stage.setX(0);//靠左
+                }
                 stage.setOpacity(1);
                 stage.requestFocus();
             }
@@ -91,7 +96,11 @@ public class FloatViewLoader extends AbstractViewLoader {
             public void handle(MouseEvent event) {
                 Screen screen = Screen.getPrimary();
                 Rectangle2D bounds = screen.getBounds();
-                stage.setX(bounds.getWidth());
+                if ("right".equalsIgnoreCase(F.FLOAT_POSITION)) {
+                    stage.setX(bounds.getWidth());//靠右
+                } else if ("left".equalsIgnoreCase(F.FLOAT_POSITION)) {
+                    stage.setX(0 - 290);//靠左
+                }
                 stage.setOpacity(0.3);
             }
         });
@@ -130,10 +139,10 @@ public class FloatViewLoader extends AbstractViewLoader {
         }
     }
 
-    private void startDeleteExpiredTodo(){
+    private void startDeleteExpiredTodo() {
         ApplicationContext context = this.getContext();
         AsynTodoService asynTodoService = context.getAsynTodoService();
-        if (asynTodoService.getTimer()==null){
+        if (asynTodoService.getTimer() == null) {
             asynTodoService.startDeleteExpiredTodo();
         }
     }

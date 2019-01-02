@@ -58,6 +58,7 @@ public class TodoServiceImpl implements TodoService {
             RemindController remindController = new RemindController(context);
             FxDocument fxDocument = new FxDocument(todo);
             remindController.setFxDocument(fxDocument);
+            remindController.setViewLoader(remindViewLoader);
             remindViewLoader.setController(remindController);
 
             Platform.runLater(new Runnable() {

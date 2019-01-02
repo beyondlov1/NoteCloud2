@@ -23,7 +23,6 @@ public class RemindViewLoader extends AbstractViewLoader {
     @Override
     protected void stopOnClose() {
         Stage stage = this.getStage();
-        Class<? extends ViewLoader> viewLoaderClass = this.getClass();
         final ViewLoader viewLoader = this;
         stage.setOnCloseRequest(new EventHandler<WindowEvent>() {
             @Override

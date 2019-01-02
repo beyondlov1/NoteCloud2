@@ -4,6 +4,7 @@ import com.beyond.entity.FxDocument;
 import com.beyond.entity.Todo;
 import com.beyond.utils.MarkDownUtils;
 import com.beyond.viewloader.RemindViewLoader;
+import com.beyond.viewloader.ViewLoader;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
@@ -33,15 +34,22 @@ public class RemindController {
     private ApplicationContext context;
 
     private FxDocument fxDocument;
+    private ViewLoader viewLoader;
 
     public RemindController(ApplicationContext context) {
         this.context = context;
     }
 
     public void initialize(){
+        initChoiceBox();
+        refreshWebView();
+    }
+    private void initChoiceBox() {
         List<Map.Entry<Integer,String>> items = new ArrayList<>();
         items.add(new AbstractMap.SimpleEntry<>(10,"十分钟"));
-        items.add(new AbstractMap.SimpleEntry<>(20,"二十分钟"));
+        items.add(new AbstractMap.SimpleEntry<>(30,"三十分钟"));
+        items.add(new AbstractMap.SimpleEntry<>(60,"一小时"));
+        items.add(new AbstractMap.SimpleEntry<>(-1,"无限"));
         ObservableList<Map.Entry<Integer,String>> observableList = FXCollections.observableList(items);
         delayChoiceBox.setConverter(new StringConverter<Map.Entry<Integer, String>>() {
             @Override
@@ -55,10 +63,8 @@ public class RemindController {
             }
         });
         delayChoiceBox.setItems(observableList);
-
-        refresh();
     }
-    private void refresh(){
+    private void refreshWebView(){
         //添加事件戳
         String timeStamp = "";
         if (fxDocument==null) return;
@@ -78,9 +84,8 @@ public class RemindController {
         }
     }
 
-
     public void deleteAndClose(){
-
+        viewLoader.close();
     }
 
     public void delay(){
@@ -97,5 +102,13 @@ public class RemindController {
 
     public void setFxDocument(FxDocument fxDocument) {
         this.fxDocument = fxDocument;
+    }
+
+    public void setViewLoader(ViewLoader viewLoader) {
+        this.viewLoader = viewLoader;
+    }
+
+    public ViewLoader getViewLoader() {
+        return viewLoader;
     }
 }

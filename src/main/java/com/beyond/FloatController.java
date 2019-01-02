@@ -41,6 +41,7 @@ import static com.beyond.DocumentType.TODO;
  * @date 2018/12/08
  */
 public class FloatController {
+
     private ApplicationContext context;
 
     private MainService mainService;
@@ -213,6 +214,7 @@ public class FloatController {
         context.refreshData();
         this.refreshList();
     }
+
     private void refreshList(){
         ObservableList<FxDocument> fxDocuments = mainService.getFxDocuments();
         SortUtils.sort(fxDocuments,FxDocument.class,"lastModifyTime", SortUtils.SortType.DESC);
