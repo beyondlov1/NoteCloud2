@@ -13,7 +13,6 @@ import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.collections.ObservableList;
 import javafx.event.EventHandler;
-import javafx.event.EventType;
 import javafx.fxml.FXML;
 import javafx.geometry.Insets;
 import javafx.scene.Node;
@@ -30,14 +29,6 @@ import javafx.scene.web.WebView;
 import javafx.util.Callback;
 import org.apache.commons.lang3.StringUtils;
 
-import java.io.IOException;
-import java.text.SimpleDateFormat;
-import java.util.*;
-
-import static com.beyond.DocumentType.DOC;
-import static com.beyond.DocumentType.NOTE;
-import static com.beyond.DocumentType.TODO;
-
 
 public class MainController{
 
@@ -52,8 +43,7 @@ public class MainController{
     private TextArea contentTextAreaUpdate;
 
     @FXML
-    public TextArea contentTextAreaSave;
-
+    private TextArea contentTextAreaSave;
 
     //展示组件
     @FXML
@@ -78,7 +68,9 @@ public class MainController{
     private TableColumn<FxDocument, String> deletedContentTableColumn;
 
     private MainService mainService;
+
     private BindService bindService;
+
     private ConfigService configService;
 
     private ApplicationContext context;
@@ -97,74 +89,21 @@ public class MainController{
     }
 
     public void save(KeyEvent keyEvent) {
-        String content = getSaveContent();
-        if (!isValid(content, keyEvent)) {
+        String content = contentTextAreaSave.getText();
+        if (!DocumentUtils.validContentAndEvent(content, keyEvent)) {
             return;
         }
 
         try {
-            Document document = createDocument(content);
+            Document document = DocumentUtils.createDocument(content);
             mainService.add(document);
-            postSave(keyEvent);
+            this.changeViewAfterSave(keyEvent);
         }catch (Exception e){
             F.logger.info("保存错误");
             message.setText("保存错误");
         }
     }
-    private String getSaveContent() {
-        return contentTextAreaSave.getText();
-    }
-    private boolean isValid(String content, KeyEvent keyEvent) {
-        if (StringUtils.isNotBlank(content)) {
-            int length = content.length();
-            if (length > NOTE.getType().length() + 1 && content.endsWith(NOTE.getType() + "\n")) {
-                return true;
-            }
-            if (length > TODO.getType().length() + 1 && content.endsWith(TODO.getType() + "\n")) {
-                return true;
-            }
-            if (length > DOC.getType().length() + 1 && content.endsWith(DOC.getType() + "\n")) {
-                return true;
-            }
-            if (keyEvent.isControlDown() && keyEvent.getCode() == KeyCode.S) {
-                return true;
-            }
-        }
-        return false;
-    }
-    private Document createDocument(String content) {
-        Document document;
-        int length = content.length();
-        if (content.endsWith(NOTE.getType() + "\n")) {
-            content = content.substring(0, length - NOTE.getType().length() - 1);
-            Note note = new Note();
-            note.setContent(content);
-            document = note;
-        } else if (content.endsWith(TODO.getType() + "\n")) {
-            content = content.substring(0, length - TODO.getType().length() - 1);
-            Todo todo = new Todo();
-            todo.setContent(content);
-            todo.setRemindTimeFromContent();
-            document = todo;
-        } else if (content.endsWith(DOC.getType() + "\n")) {
-            content = content.substring(0, length - DOC.getType().length() - 1);
-            document = new Document();
-            document.setContent(content);
-        } else {
-            document = new Document();
-            document.setContent(content);
-        }
-
-        Date curr = new Date();
-        document.setId(UUID.randomUUID().toString().replace("-", ""));
-        document.setCreateTime(curr);
-        document.setLastModifyTime(curr);
-        document.setVersion(1);
-        document.setContent(F.CONTENT_PREFIX + document.getContent());
-
-        return document;
-    }
-    private void postSave(KeyEvent keyEvent) {
+    private void changeViewAfterSave(KeyEvent keyEvent) {
         Object source = keyEvent.getSource();
         if (source instanceof TextArea) {
             TextArea textArea = (TextArea) source;
@@ -172,23 +111,23 @@ public class MainController{
         }
         documentTableView.requestFocus();
         documentTableView.getSelectionModel().select(0);
-        refresh();
+        this.refresh();
     }
 
     public void modify(KeyEvent keyEvent) {
-        String content = getUpdateContent();
-        if (!isValid(content, keyEvent)) {
+        String content = contentTextAreaUpdate.getText();
+        if (!DocumentUtils.validContentAndEvent(content, keyEvent)) {
             return;
         }
 
         try {
-            Document document = getSelectedDocument();
+            Document document = this.getSelectedDocument();
             if (keyEvent.isControlDown() && keyEvent.getCode() == KeyCode.S) {
                 document.setContent(content);
             } else {
                 String id = document.getId();
                 Integer oldVersion = document.getVersion();
-                document = createDocument(content);
+                document = DocumentUtils.createDocument(content);
                 document.setId(id);
                 document.setVersion(oldVersion);
             }
@@ -197,25 +136,20 @@ public class MainController{
                 todo.setRemindTimeFromContent();
             }
             mainService.update(document);
-            postUpdate(keyEvent);
+            changeViewAfterUpdate(keyEvent);
         }catch (Exception e){
             F.logger.info(e.getMessage());
             message.setText("更新出錯");
         }
     }
-    private String getUpdateContent() {
-        return contentTextAreaUpdate.getText();
-    }
     private Document getSelectedDocument() {
         FxDocument selectedDocument = documentTableView.getSelectionModel().getSelectedItem();
         return selectedDocument.toNormalDocument();
     }
-    private void postUpdate(KeyEvent keyEvent) {
+    private void changeViewAfterUpdate(KeyEvent keyEvent) {
         Object source = keyEvent.getSource();
-
         documentTableView.requestFocus();
-        refresh();
-
+        this.refresh();
         if (source instanceof TextArea) {
             TextArea textArea = (TextArea) source;
             textArea.setText(getSelectedDocument().getContent());
@@ -225,10 +159,9 @@ public class MainController{
 
     public void delete() {
         try {
-            FxDocument selectedItem = documentTableView.getSelectionModel().getSelectedItem();
-            Document selectedDocument = selectedItem.toNormalDocument();
+            Document selectedDocument = this.getSelectedDocument();
             mainService.delete(selectedDocument);
-            postDelete();
+            changeViewAfterDelete();
         }catch (Exception e){
             e.printStackTrace();
             F.logger.info(e.getMessage());
@@ -240,12 +173,11 @@ public class MainController{
         }
 
     }
-    private void postDelete() {
-        refresh();
+    private void changeViewAfterDelete() {
+        this.refresh();
     }
 
     public void openConfig() {
-        F.logger.info("open config");
         context.loadView(ConfigViewLoader.class);
     }
 
@@ -255,11 +187,12 @@ public class MainController{
         configService.setProperty("password", "");
         configService.storeProperties();
 
+        //转到登录页面
+        context.loadView(LoginViewLoader.class);
+
         //关闭当前页面
         context.closeView(MainViewLoader.class);
 
-        //转到登录页面
-        context.loadView(LoginViewLoader.class);
     }
 
     public void openFloatWindow() {
@@ -276,7 +209,6 @@ public class MainController{
         this.refreshTable();
         this.refreshWebView();
     }
-
     private void refreshTable() {
         FxDocument selectedItem = documentTableView.getSelectionModel().getSelectedItem();
         ObservableList<FxDocument> fxDocuments = mainService.getFxDocuments();
@@ -561,24 +493,7 @@ public class MainController{
         }
 
         private void initWebView(WebView webView, FxDocument fxDocument) {
-            //添加事件戳
-            String timeStamp = "";
-            if (fxDocument==null) return;
-            if (fxDocument.toNormalDocument() instanceof Todo
-                    && ((Todo)fxDocument.toNormalDocument()).getReminder().getRemindTime()!=null){
-                Todo todo = (Todo)fxDocument.toNormalDocument();
-                Date remoteRemindTime = todo.getReminder().getRemoteRemindTime();
-                if (remoteRemindTime !=null){
-                    SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-                    timeStamp = "  \n\n\n***\n提醒时间:"+ simpleDateFormat.format(remoteRemindTime);
-                }
-                //webview加载内容
-                webView.getEngine().loadContent(MarkDownUtils.convertMarkDownToHtml(fxDocument.getContent()+timeStamp));
-            }else {
-                //webview加载内容
-                webView.getEngine().loadContent(MarkDownUtils.convertMarkDownToHtml(fxDocument.getContent()));
-            }
-
+           ViewUtils.loadContentForWebView(fxDocument,webView);
         }
 
         private <S, T> Callback<TableColumn<S, T>, TableCell<S, T>> getCellFactory() {

@@ -20,8 +20,8 @@ public class SortUtils {
             @Override
             public int compare(T t1, T t2) {
                 Field[] declaredFields = clazz.getDeclaredFields();
-                for (int i = 0; i < declaredFields.length; i++) {
-                    String fieldName = declaredFields[i].getName();
+                for (Field declaredField : declaredFields) {
+                    String fieldName = declaredField.getName();
                     if (fieldName.equalsIgnoreCase(propertyName)) {
                         try {
                             Method method = clazz.getMethod("get" + fieldName.substring(0, 1).toUpperCase() + fieldName.substring(1));

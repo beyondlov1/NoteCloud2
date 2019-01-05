@@ -81,10 +81,13 @@ public class AuthService {
     }
 
     private String refreshAccessToken(String refreshToken) throws InterruptedException, ExecutionException, IOException {
-        String newAccessToken = oAuth20Service.refreshAccessToken(refreshToken).getAccessToken();
+        OAuth2AccessToken refreshAccessToken = oAuth20Service.refreshAccessToken(refreshToken);
+        String newAccessToken = refreshAccessToken.getAccessToken();
         if (StringUtils.isNotBlank(newAccessToken)) {
             F.ACCESS_TOKEN = newAccessToken;
             F.configService.setProperty("accessToken",F.ACCESS_TOKEN);
+            Integer expiresIn = refreshAccessToken.getExpiresIn();
+            F.EXPIRE_DATE = String.valueOf(new Date().getTime()+expiresIn);
             F.configService.storeProperties();
         }else {
             throw new RuntimeException("refresh access fail");

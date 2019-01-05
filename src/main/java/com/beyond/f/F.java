@@ -51,5 +51,5 @@ public class F {
 
     public static long EXPIRE_TODO_DELETE_PERIOD = 1000 * 60;
 
-    public static String FLOAT_POSITION = "left";
+    public static String FLOAT_POSITION = "right";
 }

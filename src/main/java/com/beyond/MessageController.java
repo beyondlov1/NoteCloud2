@@ -3,9 +3,9 @@ package com.beyond;
 import com.beyond.entity.Document;
 import com.beyond.entity.FxDocument;
 import com.beyond.entity.Todo;
-import com.beyond.service.MainService;
 import com.beyond.utils.MarkDownUtils;
-import com.beyond.viewloader.RemindViewLoader;
+import com.beyond.utils.TimeUtils;
+import com.beyond.utils.ViewUtils;
 import com.beyond.viewloader.ViewLoader;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -15,7 +15,6 @@ import javafx.scene.control.ChoiceBox;
 import javafx.scene.web.WebView;
 import javafx.util.StringConverter;
 import org.apache.commons.lang3.time.DateUtils;
-import org.apache.commons.lang3.tuple.MutablePair;
 
 import java.text.SimpleDateFormat;
 import java.util.*;
@@ -27,32 +26,37 @@ import java.util.*;
 public class MessageController {
     @FXML
     private WebView contentWebView;
+
     @FXML
     private Button deleteAndCloseButton;
+
     @FXML
     private ChoiceBox<Map.Entry<Integer,String>> delayChoiceBox;
+
     @FXML
     private Button delayButton;
 
-    private ApplicationContext context;
-
     private FxDocument fxDocument;
+
     private ViewLoader viewLoader;
+
+    private ApplicationContext context;
 
     public MessageController(ApplicationContext context) {
         this.context = context;
     }
 
     public void initialize(){
-        initChoiceBox();
-        refreshWebView();
+        this.initDelayView();
+        this.loadMessage();
     }
-    private void initChoiceBox() {
+
+    private void initDelayView() {
         List<Map.Entry<Integer,String>> items = new ArrayList<>();
         items.add(new AbstractMap.SimpleEntry<>(10,"十分钟"));
         items.add(new AbstractMap.SimpleEntry<>(30,"三十分钟"));
         items.add(new AbstractMap.SimpleEntry<>(60,"一小时"));
-        items.add(new AbstractMap.SimpleEntry<>(-1,"无限"));
+        items.add(new AbstractMap.SimpleEntry<>(24*60*365*10,"无限"));
         ObservableList<Map.Entry<Integer,String>> observableList = FXCollections.observableList(items);
         delayChoiceBox.setConverter(new StringConverter<Map.Entry<Integer, String>>() {
             @Override
@@ -67,24 +71,9 @@ public class MessageController {
         });
         delayChoiceBox.setItems(observableList);
     }
-    private void refreshWebView(){
-        //添加事件戳
-        String timeStamp = "";
-        if (fxDocument==null) return;
-        if (fxDocument.toNormalDocument() instanceof Todo
-                && ((Todo)fxDocument.toNormalDocument()).getReminder().getRemindTime()!=null){
-            Todo todo = (Todo)fxDocument.toNormalDocument();
-            Date remoteRemindTime = todo.getReminder().getRemoteRemindTime();
-            if (remoteRemindTime !=null){
-                SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-                timeStamp = "  \n\n\n***\n提醒时间:"+ simpleDateFormat.format(remoteRemindTime);
-            }
-            //webview加载内容
-            contentWebView.getEngine().loadContent(MarkDownUtils.convertMarkDownToHtml(fxDocument.getContent()+timeStamp));
-        }else {
-            //webview加载内容
-            contentWebView.getEngine().loadContent(MarkDownUtils.convertMarkDownToHtml(fxDocument.getContent()));
-        }
+
+    private void loadMessage() {
+        ViewUtils.loadContentForWebView(fxDocument,contentWebView);
     }
 
     public void deleteAndClose(){
@@ -106,20 +95,12 @@ public class MessageController {
         viewLoader.close();
     }
 
-    public FxDocument getFxDocument() {
-        return fxDocument;
-    }
-
     public void setFxDocument(FxDocument fxDocument) {
         this.fxDocument = fxDocument;
     }
 
     public void setViewLoader(ViewLoader viewLoader) {
         this.viewLoader = viewLoader;
-    }
-
-    public ViewLoader getViewLoader() {
-        return viewLoader;
     }
 
 }

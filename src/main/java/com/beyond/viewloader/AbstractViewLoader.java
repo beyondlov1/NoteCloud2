@@ -54,7 +54,8 @@ public abstract class AbstractViewLoader implements ViewLoader {
         stage.setScene(new Scene(parent));
         stage.setTitle("NoteCloud");
         stage.show();
-        afterLoad();
+        this.afterLoad();
+        this.stopOnClose();
     }
 
     @Override

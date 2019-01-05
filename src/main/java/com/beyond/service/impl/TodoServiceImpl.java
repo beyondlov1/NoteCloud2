@@ -8,7 +8,7 @@ import com.beyond.entity.Todo;
 import com.beyond.f.F;
 import com.beyond.service.MainService;
 import com.beyond.service.TodoService;
-import com.beyond.viewloader.RemindViewLoader;
+import com.beyond.viewloader.MessageViewLoader;
 import com.beyond.viewloader.ViewLoader;
 import javafx.application.Platform;
 
@@ -53,7 +53,7 @@ public class TodoServiceImpl implements TodoService {
             if (context.getRemindingViewLoaderMap().containsValue(todo.getId())) {
                 continue;
             }
-            ViewLoader remindViewLoader = new RemindViewLoader(context);
+            ViewLoader remindViewLoader = new MessageViewLoader(context);
             remindViewLoader.setLocation("views/remind.fxml");
             MessageController messageController = new MessageController(context);
             FxDocument fxDocument = new FxDocument(todo);

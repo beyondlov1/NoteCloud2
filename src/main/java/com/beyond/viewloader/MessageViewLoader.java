@@ -9,15 +9,15 @@ import javafx.stage.WindowEvent;
  * @author beyondlov1
  * @date 2019/01/01
  */
-public class RemindViewLoader extends AbstractViewLoader {
+public class MessageViewLoader extends AbstractViewLoader {
 
-    public RemindViewLoader(ApplicationContext context) {
+    public MessageViewLoader(ApplicationContext context) {
         super(context);
     }
 
     @Override
     protected void afterLoad() {
-        this.stopOnClose();
+
     }
 
     @Override

@@ -228,12 +228,12 @@ public class LoginController {
             }
 
             private void switchView() {
-                context.closeView(LoginViewLoader.class);
                 if ("true".equals(F.IS_FLOAT_PRIMARY)) {
                     context.loadView(FloatViewLoader.class);
                 } else {
                     context.loadView(MainViewLoader.class);
                 }
+                context.closeView(LoginViewLoader.class);
             }
 
             private void loginFail() {

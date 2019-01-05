@@ -7,6 +7,7 @@ import com.beyond.entity.Note;
 import com.beyond.entity.Todo;
 import com.beyond.f.F;
 import com.beyond.service.MainService;
+import com.beyond.utils.DocumentUtils;
 import com.beyond.utils.HtmlUtils;
 import com.beyond.utils.SortUtils;
 import com.beyond.utils.TimeUtils;
@@ -42,10 +43,6 @@ import static com.beyond.DocumentType.TODO;
  */
 public class FloatController {
 
-    private ApplicationContext context;
-
-    private MainService mainService;
-
     @FXML
     private TextArea contentTextAreaSave;
 
@@ -60,6 +57,10 @@ public class FloatController {
 
     @FXML
     private Button exitButton;
+
+    private ApplicationContext context;
+
+    private MainService mainService;
 
     public FloatController(ApplicationContext context) {
         this.context = context;
@@ -107,78 +108,20 @@ public class FloatController {
     }
 
     public void save(KeyEvent keyEvent) {
-        String content = getSaveContent();
-        if (!isValid(content, keyEvent)) {
+        String content = contentTextAreaSave.getText();
+        if (!DocumentUtils.validContentAndEvent(content, keyEvent)) {
             return;
         }
 
         try {
-            Document document = createDocument(content);
+            Document document = DocumentUtils.createDocument(content);
             mainService.add(document);
-            postSave(keyEvent);
-        } catch (Exception e) {
+            this.changeViewAfterSave(keyEvent);
+        }catch (Exception e){
             F.logger.info("保存错误");
-            contentTextAreaSave.setText("保存错误");
         }
     }
-
-    private String getSaveContent() {
-        return contentTextAreaSave.getText();
-    }
-
-    private boolean isValid(String content, KeyEvent keyEvent) {
-        if (StringUtils.isNotBlank(content)) {
-            int length = content.length();
-            if (length > NOTE.getType().length() + 1 && content.endsWith(NOTE.getType() + "\n")) {
-                return true;
-            }
-            if (length > TODO.getType().length() + 1 && content.endsWith(TODO.getType() + "\n")) {
-                return true;
-            }
-            if (length > DOC.getType().length() + 1 && content.endsWith(DOC.getType() + "\n")) {
-                return true;
-            }
-            if (keyEvent.isControlDown() && keyEvent.getCode() == KeyCode.S) {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    private Document createDocument(String content) {
-        Document document;
-        int length = content.length();
-        if (content.endsWith(NOTE.getType() + "\n")) {
-            content = content.substring(0, length - NOTE.getType().length() - 1);
-            Note note = new Note();
-            note.setContent(content);
-            document = note;
-        } else if (content.endsWith(TODO.getType() + "\n")) {
-            content = content.substring(0, length - TODO.getType().length() - 1);
-            Todo todo = new Todo();
-            todo.setContent(content);
-            todo.setRemindTimeFromContent();
-            document = todo;
-        } else if (content.endsWith(DOC.getType() + "\n")) {
-            content = content.substring(0, length - DOC.getType().length() - 1);
-            document = new Document();
-            document.setContent(content);
-        } else {
-            document = new Document();
-            document.setContent(content);
-        }
-
-        Date curr = new Date();
-        document.setId(UUID.randomUUID().toString().replace("-", ""));
-        document.setCreateTime(curr);
-        document.setLastModifyTime(curr);
-        document.setVersion(1);
-        document.setContent(F.CONTENT_PREFIX + document.getContent());
-
-        return document;
-    }
-
-    private void postSave(KeyEvent keyEvent) {
+    private void changeViewAfterSave(KeyEvent keyEvent) {
         Object source = keyEvent.getSource();
         if (source instanceof TextArea) {
             TextArea textArea = (TextArea) source;
