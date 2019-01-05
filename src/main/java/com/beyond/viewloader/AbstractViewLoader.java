@@ -1,9 +1,7 @@
 package com.beyond.viewloader;
 
 import com.beyond.ApplicationContext;
-import com.beyond.FailedTodoService;
 import com.beyond.MainApplication;
-import com.beyond.service.AsynMergeService;
 import javafx.event.EventHandler;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
@@ -77,7 +75,7 @@ public abstract class AbstractViewLoader implements ViewLoader {
             public void handle(WindowEvent event) {
                 context.removeCurrentStage(viewLoaderClass);
                 if (context.getCurrentStageMap().isEmpty()
-                        &&context.getRemindingViewLoaderMap().isEmpty()) {
+                        &&context.getMessageViewLoaderMap().isEmpty()) {
                     context.exit();
                 }
             }

@@ -27,9 +27,9 @@ public class MessageViewLoader extends AbstractViewLoader {
         stage.setOnCloseRequest(new EventHandler<WindowEvent>() {
             @Override
             public void handle(WindowEvent event) {
-                context.getRemindingViewLoaderMap().remove(viewLoader);
+                context.getMessageViewLoaderMap().remove(viewLoader);
                 if (context.getCurrentStageMap().isEmpty()
-                        &&context.getRemindingViewLoaderMap().isEmpty()) {
+                        &&context.getMessageViewLoaderMap().isEmpty()) {
                     context.exit();
                 }
             }

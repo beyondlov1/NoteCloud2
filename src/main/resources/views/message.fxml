@@ -14,8 +14,8 @@
             <Font size="22.0" />
          </font></Text>
        <WebView fx:id="contentWebView" layoutY="42.0" prefHeight="299.0" prefWidth="600.0" />
-       <Button fx:id="deleteAndCloseButton" layoutX="125.0" layoutY="354.0" mnemonicParsing="false" onAction="#deleteAndClose" text="删除并关闭" />
-       <ChoiceBox fx:id="delayChoiceBox" layoutX="294.0" layoutY="354.0" prefWidth="150.0" />
+       <Button fx:id="deleteAndCloseButton" layoutX="125.0" layoutY="354.0" mnemonicParsing="false" onAction="#deleteAndClose" text="30分钟后自动删除" />
+       <ChoiceBox fx:id="delayChoiceBox" layoutX="294.0" layoutY="354.0" prefWidth="100.0" />
        <Button fx:id="delayButton" layoutX="444.0" layoutY="354.0" mnemonicParsing="false" onAction="#delay" text="延迟提醒" />
    </children>
 </AnchorPane>

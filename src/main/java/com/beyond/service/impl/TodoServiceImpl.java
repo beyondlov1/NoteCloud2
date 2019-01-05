@@ -50,23 +50,24 @@ public class TodoServiceImpl implements TodoService {
             return;
         }
         for (Todo todo : expiringTodoList) {
-            if (context.getRemindingViewLoaderMap().containsValue(todo.getId())) {
+            if (context.getMessageViewLoaderMap().containsValue(todo.getId())) {
                 continue;
             }
-            ViewLoader remindViewLoader = new MessageViewLoader(context);
-            remindViewLoader.setLocation("views/remind.fxml");
+            ViewLoader messageViewLoader = new MessageViewLoader(context);
+            messageViewLoader.setLocation("views/message.fxml");
             MessageController messageController = new MessageController(context);
             FxDocument fxDocument = new FxDocument(todo);
             messageController.setFxDocument(fxDocument);
-            messageController.setViewLoader(remindViewLoader);
-            remindViewLoader.setController(messageController);
+            messageController.setViewLoader(messageViewLoader);
+            messageViewLoader.setController(messageController);
 
             Platform.runLater(new Runnable() {
                 @Override
                 public void run() {
                     try {
-                        remindViewLoader.load();
-                        context.getRemindingViewLoaderMap().put(remindViewLoader, todo.getId());
+                        messageViewLoader.load();
+                        messageViewLoader.getStage().toFront();
+                        context.getMessageViewLoaderMap().put(messageViewLoader, todo.getId());
                     } catch (IOException e) {
                         F.logger.error("页面加载错误", e);
                     }

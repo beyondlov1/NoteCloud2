@@ -9,10 +9,16 @@ import com.beyond.utils.ViewUtils;
 import com.beyond.viewloader.ViewLoader;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
+import javafx.concurrent.ScheduledService;
+import javafx.concurrent.Service;
+import javafx.concurrent.Task;
+import javafx.concurrent.WorkerStateEvent;
+import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
 import javafx.scene.control.ChoiceBox;
 import javafx.scene.web.WebView;
+import javafx.util.Duration;
 import javafx.util.StringConverter;
 import org.apache.commons.lang3.time.DateUtils;
 
@@ -49,6 +55,34 @@ public class MessageController {
     public void initialize(){
         this.initDelayView();
         this.loadMessage();
+        this.initCloseTimer();
+    }
+
+    private void initCloseTimer() {
+        ScheduledService service = new ScheduledService() {
+            @Override
+            protected Task createTask() {
+                return new Task() {
+                    @Override
+                    protected Object call() throws Exception {
+                        return null;
+                    }
+                };
+            }
+        };
+        service.setOnSucceeded(new EventHandler<WorkerStateEvent>() {
+            private int remainMinutesBeforeClose = 30;
+            @Override
+            public void handle(WorkerStateEvent event) {
+                deleteAndCloseButton.setText(remainMinutesBeforeClose+"分钟后自动删除");
+                remainMinutesBeforeClose--;
+                if (remainMinutesBeforeClose < 1){
+                    deleteAndClose();
+                }
+            }
+        });
+        service.setPeriod(Duration.minutes(1));
+        service.start();
     }
 
     private void initDelayView() {

@@ -3,22 +3,17 @@ package com.beyond;
 import com.beyond.entity.Reminder;
 import com.beyond.f.F;
 import com.beyond.service.*;
-import com.beyond.service.impl.ConfigServiceImpl;
-import com.beyond.service.impl.SyncRemindServiceImpl;
 import com.beyond.viewloader.FloatViewLoader;
 import com.beyond.viewloader.MainViewLoader;
 import com.beyond.viewloader.ViewLoader;
 import javafx.application.Platform;
 import javafx.stage.Stage;
 
-import javax.swing.text.View;
 import java.awt.*;
 import java.io.IOException;
 import java.util.*;
-import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.concurrent.ThreadPoolExecutor;
 
 /**
  * @author beyondlov1
@@ -59,7 +54,7 @@ public class ApplicationContext {
     private Map<Class, Stage> currentStageMap;
 
     //showed reminders  viewloader:id
-    private Map<ViewLoader,String> remindingViewLoaderMap;
+    private Map<ViewLoader,String> messageViewLoaderMap;
 
     //trayIcon
     private TrayIcon trayIcon;
@@ -71,7 +66,7 @@ public class ApplicationContext {
         this.observableMap = new HashMap<>();
         this.viewLoaderMap = new HashMap<>();
         this.currentStageMap = new HashMap<>();
-        this.remindingViewLoaderMap = new HashMap<>();
+        this.messageViewLoaderMap = new HashMap<>();
     }
 
     public void addObservable(String key, Observable observable) {
@@ -290,8 +285,8 @@ public class ApplicationContext {
         this.asynTodoService = asynTodoService;
     }
 
-    public Map<ViewLoader, String> getRemindingViewLoaderMap() {
-        return remindingViewLoaderMap;
+    public Map<ViewLoader, String> getMessageViewLoaderMap() {
+        return messageViewLoaderMap;
     }
 
 }
