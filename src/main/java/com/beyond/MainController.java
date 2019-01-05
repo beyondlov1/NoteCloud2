@@ -144,6 +144,7 @@ public class MainController{
             content = content.substring(0, length - TODO.getType().length() - 1);
             Todo todo = new Todo();
             todo.setContent(content);
+            todo.setRemindTimeFromContent();
             document = todo;
         } else if (content.endsWith(DOC.getType() + "\n")) {
             content = content.substring(0, length - DOC.getType().length() - 1);
@@ -190,6 +191,10 @@ public class MainController{
                 document = createDocument(content);
                 document.setId(id);
                 document.setVersion(oldVersion);
+            }
+            if (document instanceof Todo){
+                Todo todo = (Todo) document;
+                todo.setRemindTimeFromContent();
             }
             mainService.update(document);
             postUpdate(keyEvent);

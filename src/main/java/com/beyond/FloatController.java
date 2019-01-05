@@ -157,6 +157,7 @@ public class FloatController {
             content = content.substring(0, length - TODO.getType().length() - 1);
             Todo todo = new Todo();
             todo.setContent(content);
+            todo.setRemindTimeFromContent();
             document = todo;
         } else if (content.endsWith(DOC.getType() + "\n")) {
             content = content.substring(0, length - DOC.getType().length() - 1);

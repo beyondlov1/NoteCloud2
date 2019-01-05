@@ -3,15 +3,18 @@ package com.beyond;
 
 import com.beyond.f.F;
 import com.beyond.service.ConfigService;
-import com.beyond.service.impl.ConfigServiceImpl;
 import com.beyond.viewloader.AuthViewLoader;
 import com.beyond.viewloader.ConfigViewLoader;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.scene.control.CheckBox;
+import javafx.scene.control.ChoiceBox;
 import javafx.scene.control.TextField;
 import org.apache.commons.lang3.StringUtils;
 
-import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
 public class ConfigController {
     @FXML
@@ -30,6 +33,8 @@ public class ConfigController {
     private CheckBox microsoftEventSwitch;
     @FXML
     private CheckBox floatPrimarySwitch;
+    @FXML
+    private ChoiceBox<String> floatPosition;
 
     private ConfigService configService;
 
@@ -65,6 +70,13 @@ public class ConfigController {
         if ("true".equalsIgnoreCase(F.IS_FLOAT_PRIMARY)) {
             floatPrimarySwitch.setSelected(true);
         }
+        ObservableList<String> floatPositionItems = FXCollections.observableList(new ArrayList<>());
+        floatPositionItems.add("left");
+        floatPositionItems.add("right");
+        floatPosition.setItems(floatPositionItems);
+        if (StringUtils.isNotBlank(F.FLOAT_POSITION)) {
+            floatPosition.setValue(F.FLOAT_POSITION);
+        }
     }
 
     public void save() {
@@ -93,6 +105,10 @@ public class ConfigController {
             configService.setProperty("isFloatPrimary", "true");
         } else {
             configService.setProperty("isFloatPrimary", "false");
+        }
+        if (StringUtils.isNotBlank(floatPosition.getValue())) {
+            F.FLOAT_POSITION = floatPosition.getValue();
+            configService.setProperty("floatPosition", F.FLOAT_POSITION);
         }
         configService.storeProperties();
     }

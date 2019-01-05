@@ -158,6 +158,9 @@ public class MicrosoftReminder implements Reminder {
     @JsonIgnore
     public void setRemindTime(Date remindTime) {
         this.remindTime = remindTime;
+        if (start == null) {
+            start  = new TimeUnit();
+        }
         start.setDateTime(TimeUtils.getDateStringForMicrosoftEvent(remindTime, "GMT+8:00"));
     }
 

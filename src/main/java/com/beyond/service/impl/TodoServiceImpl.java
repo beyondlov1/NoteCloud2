@@ -1,7 +1,7 @@
 package com.beyond.service.impl;
 
 import com.beyond.ApplicationContext;
-import com.beyond.RemindController;
+import com.beyond.MessageController;
 import com.beyond.entity.Document;
 import com.beyond.entity.FxDocument;
 import com.beyond.entity.Todo;
@@ -55,11 +55,11 @@ public class TodoServiceImpl implements TodoService {
             }
             ViewLoader remindViewLoader = new RemindViewLoader(context);
             remindViewLoader.setLocation("views/remind.fxml");
-            RemindController remindController = new RemindController(context);
+            MessageController messageController = new MessageController(context);
             FxDocument fxDocument = new FxDocument(todo);
-            remindController.setFxDocument(fxDocument);
-            remindController.setViewLoader(remindViewLoader);
-            remindViewLoader.setController(remindController);
+            messageController.setFxDocument(fxDocument);
+            messageController.setViewLoader(remindViewLoader);
+            remindViewLoader.setController(messageController);
 
             Platform.runLater(new Runnable() {
                 @Override

@@ -1,7 +1,9 @@
 package com.beyond;
 
+import com.beyond.entity.Document;
 import com.beyond.entity.FxDocument;
 import com.beyond.entity.Todo;
+import com.beyond.service.MainService;
 import com.beyond.utils.MarkDownUtils;
 import com.beyond.viewloader.RemindViewLoader;
 import com.beyond.viewloader.ViewLoader;
@@ -12,6 +14,7 @@ import javafx.scene.control.Button;
 import javafx.scene.control.ChoiceBox;
 import javafx.scene.web.WebView;
 import javafx.util.StringConverter;
+import org.apache.commons.lang3.time.DateUtils;
 import org.apache.commons.lang3.tuple.MutablePair;
 
 import java.text.SimpleDateFormat;
@@ -21,7 +24,7 @@ import java.util.*;
  * @author beyondlov1
  * @date 2019/01/01
  */
-public class RemindController {
+public class MessageController {
     @FXML
     private WebView contentWebView;
     @FXML
@@ -36,7 +39,7 @@ public class RemindController {
     private FxDocument fxDocument;
     private ViewLoader viewLoader;
 
-    public RemindController(ApplicationContext context) {
+    public MessageController(ApplicationContext context) {
         this.context = context;
     }
 
@@ -92,8 +95,15 @@ public class RemindController {
         Map.Entry<Integer, String> selectedItem = delayChoiceBox.getSelectionModel().getSelectedItem();
         if (selectedItem!=null){
             Integer key = selectedItem.getKey();
+            Document document = fxDocument.toNormalDocument();
             System.out.println(key);
+            if (document instanceof Todo){
+                Todo todo = (Todo) document;
+                todo.getReminder().setRemindTime(DateUtils.addMinutes(todo.getReminder().getRemindTime(),key));
+                context.getMainService().update(todo);
+            }
         }
+        viewLoader.close();
     }
 
     public FxDocument getFxDocument() {
@@ -111,4 +121,5 @@ public class RemindController {
     public ViewLoader getViewLoader() {
         return viewLoader;
     }
+
 }

@@ -52,7 +52,7 @@ public class FloatViewLoader extends AbstractViewLoader {
         if ("right".equalsIgnoreCase(F.FLOAT_POSITION)) {
             stage.setX(bounds.getWidth());//靠右
         } else if ("left".equalsIgnoreCase(F.FLOAT_POSITION)) {
-            stage.setX(0 - 290);//靠左
+            stage.setX(0 - 290-35+5);//靠左
         }
         stage.setY(bounds.getHeight() - 475);
         stage.setOpacity(0.3);
@@ -97,9 +97,9 @@ public class FloatViewLoader extends AbstractViewLoader {
                 Screen screen = Screen.getPrimary();
                 Rectangle2D bounds = screen.getBounds();
                 if ("right".equalsIgnoreCase(F.FLOAT_POSITION)) {
-                    stage.setX(bounds.getWidth());//靠右
+                    stage.setX(bounds.getWidth()-5);//靠右
                 } else if ("left".equalsIgnoreCase(F.FLOAT_POSITION)) {
-                    stage.setX(0 - 290);//靠左
+                    stage.setX(0 - 290-35+5);//靠左
                 }
                 stage.setOpacity(0.3);
             }

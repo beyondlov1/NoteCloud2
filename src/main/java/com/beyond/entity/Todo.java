@@ -12,10 +12,11 @@ public class Todo extends Document {
         reminder = new MicrosoftReminder();
     }
 
-    @Override
-    public void setContent(String content) {
-        super.setContent(content);
-        Date remindTime = TimeUtils.parse(content);
+    public void setRemindTimeFromContent(){
+        if (this.getContent() == null){
+            return;
+        }
+        Date remindTime = TimeUtils.parse(this.getContent());
         if (remindTime != null) {
             reminder.setRemindTime(remindTime);
             this.setReminder(reminder);
