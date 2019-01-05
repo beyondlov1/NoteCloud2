@@ -11,6 +11,7 @@ import com.github.scribejava.core.httpclient.jdk.JDKHttpClient;
 import com.github.scribejava.core.httpclient.jdk.JDKHttpClientConfig;
 import com.github.scribejava.core.model.OAuth2AccessToken;
 import com.github.scribejava.core.oauth.OAuth20Service;
+import javafx.application.Platform;
 import org.apache.commons.lang3.StringUtils;
 
 import java.io.IOException;
@@ -37,7 +38,7 @@ public class AuthService {
                 .build(api);
     }
 
-    public AuthService(ApplicationContext context){
+    public AuthService(ApplicationContext context) {
         this();
         this.context = context;
     }
@@ -52,11 +53,13 @@ public class AuthService {
                 return refreshAccessToken(F.REFRESH_TOKEN);
             }
         } catch (Exception e) {
-            F.logger.info(e.getMessage(),e);
-            F.logger.info("current thread:"+Thread.currentThread().getName(),e);
-            if (Thread.currentThread().getName().equals("JavaFX Application Thread")){
-                context.loadView(AuthViewLoader.class);
-            }
+            F.logger.info(e.getMessage(), e);
+            Platform.runLater(new Runnable() {
+                @Override
+                public void run() {
+                    context.loadView(AuthViewLoader.class);
+                }
+            });
             throw new RuntimeException("get access token fail");
         }
     }
@@ -70,9 +73,9 @@ public class AuthService {
             F.ACCESS_TOKEN = accessToken.getAccessToken();
             F.REFRESH_TOKEN = accessToken.getRefreshToken();
 
-            F.configService.setProperty("expireDate",F.EXPIRE_DATE);
-            F.configService.setProperty("accessToken",F.ACCESS_TOKEN);
-            F.configService.setProperty("refreshToken",F.REFRESH_TOKEN);
+            F.configService.setProperty("expireDate", F.EXPIRE_DATE);
+            F.configService.setProperty("accessToken", F.ACCESS_TOKEN);
+            F.configService.setProperty("refreshToken", F.REFRESH_TOKEN);
             F.configService.storeProperties();
 
         } catch (Exception e) {
@@ -85,11 +88,11 @@ public class AuthService {
         String newAccessToken = refreshAccessToken.getAccessToken();
         if (StringUtils.isNotBlank(newAccessToken)) {
             F.ACCESS_TOKEN = newAccessToken;
-            F.configService.setProperty("accessToken",F.ACCESS_TOKEN);
+            F.configService.setProperty("accessToken", F.ACCESS_TOKEN);
             Integer expiresIn = refreshAccessToken.getExpiresIn();
-            F.EXPIRE_DATE = String.valueOf(new Date().getTime()+expiresIn);
+            F.EXPIRE_DATE = String.valueOf(new Date().getTime() + expiresIn);
             F.configService.storeProperties();
-        }else {
+        } else {
             throw new RuntimeException("refresh access fail");
         }
         return newAccessToken;
