@@ -39,7 +39,9 @@ public class AsynMergeService {
     }
 
     public void stopSynchronize() {
-        timer.cancel();
+        if (timer!=null){
+            timer.cancel();
+        }
     }
 
     public synchronized void synchronizeImmediately(){

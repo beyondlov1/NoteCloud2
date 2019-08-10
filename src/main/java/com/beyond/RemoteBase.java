@@ -29,7 +29,7 @@ import java.util.Set;
  * 远程服务基类
  * 提供基本的远程连接方法
  */
-public class RemoteBase {
+public abstract class RemoteBase {
 
     protected CredentialsProvider getCredentialsProvider(User user) {
         //初始化登陆
